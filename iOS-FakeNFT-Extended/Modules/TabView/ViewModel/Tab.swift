@@ -10,7 +10,6 @@ import SwiftUI
 enum Tab: String, CaseIterable, Identifiable {
 	case profile
 	case catalog
-	case shoppingCart
 	case statistics
 	
 	var title: String {
@@ -19,23 +18,20 @@ enum Tab: String, CaseIterable, Identifiable {
 			"Профиль"
 		case .catalog:
 			"Каталог"
-		case .shoppingCart:
-			"Корзина"
 		case .statistics:
 			"Статистика"
 		}
 	}
 	
-	var systemImageName: String {
+	@ViewBuilder
+	func imageView() -> some View {
 		switch self {
 		case .profile:
-			"person.crop.circle.fill"
+			Image.profilePerson
 		case .catalog:
-			"rectangle.stack.fill"
-		case .shoppingCart:
-			"handbag.fill"
+			Image.catalog
 		case .statistics:
-			"flag.2.crossed.fill"
+			Image.statistics
 		}
 	}
 	
@@ -57,14 +53,6 @@ enum Tab: String, CaseIterable, Identifiable {
 				title: title
 			)
 		case .catalog:
-			ReplaceThisViewIsteadOfYours(
-				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismiss,
-				title: title
-			)
-		case .shoppingCart:
 			ReplaceThisViewIsteadOfYours(
 				appContainer: appContainer,
 				push: push,

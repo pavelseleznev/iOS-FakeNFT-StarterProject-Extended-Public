@@ -19,10 +19,10 @@ struct TabBarView: View {
 					dismiss: dismiss
 				)
 				.tabItem {
-					Label(
-						tab.title,
-						systemImage: tab.systemImageName
-					)
+					Group {
+						tab.imageView()
+						Text(tab.title)
+					}
 				}
 			}
         }
@@ -37,12 +37,16 @@ struct ReplaceThisViewIsteadOfYours: View {
 	let title: String
 	
 	var body: some View {
-		Button {
-			push(.tabView)
-		} label: {
-			Text(title)
-				.font(.title)
-				.bold()
+		ZStack {
+			Color.ypWhite.ignoresSafeArea()
+			
+			Button {
+				push(.tabView)
+			} label: {
+				Text(title)
+					.font(.title)
+					.bold()
+			}
 		}
 	}
 }
