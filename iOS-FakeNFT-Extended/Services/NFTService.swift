@@ -19,7 +19,6 @@ actor NFTService: NFTServiceProtocol {
             return nft
         }
 
-		let request = GetNFTByIDRequest(id: id)
 		let nft = try await api.getNFT(by: id)
         await storage.saveNft(nft)
         return nft
