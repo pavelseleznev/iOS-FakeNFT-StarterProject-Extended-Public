@@ -67,6 +67,10 @@
 		2D0DD88C2EDEDEDD00EB1D66 /* UIComponents */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = UIComponents; sourceTree = "<group>"; };
 		2D0DD8B02EDF238D00EB1D66 /* AboutAuthor */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AboutAuthor; sourceTree = "<group>"; };
 		2D0DD8D72EE04A6C00EB1D66 /* NFTDetail */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = NFTDetail; sourceTree = "<group>"; };
+		2D0DD9CE2EE19B2000EB1D66 /* Catalog */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Catalog; sourceTree = "<group>"; };
+		2D0DD9D22EE19B3D00EB1D66 /* Profile */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Profile; sourceTree = "<group>"; };
+		2D0DD9D62EE19B4800EB1D66 /* Statistics */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Statistics; sourceTree = "<group>"; };
+		2D0DD9E02EE1A5FF00EB1D66 /* Splash */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Splash; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -220,6 +224,10 @@
 		ABC5E1B32C31FC03002B4068 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
+				2D0DD9D62EE19B4800EB1D66 /* Statistics */,
+				2D0DD9D22EE19B3D00EB1D66 /* Profile */,
+				2D0DD9CE2EE19B2000EB1D66 /* Catalog */,
 				2D0DD8D72EE04A6C00EB1D66 /* NFTDetail */,
 				2D0DD8B02EDF238D00EB1D66 /* AboutAuthor */,
 				2D0DD88C2EDEDEDD00EB1D66 /* UIComponents */,
@@ -253,6 +261,10 @@
 				2D0DD88C2EDEDEDD00EB1D66 /* UIComponents */,
 				2D0DD8B02EDF238D00EB1D66 /* AboutAuthor */,
 				2D0DD8D72EE04A6C00EB1D66 /* NFTDetail */,
+				2D0DD9CE2EE19B2000EB1D66 /* Catalog */,
+				2D0DD9D22EE19B3D00EB1D66 /* Profile */,
+				2D0DD9D62EE19B4800EB1D66 /* Statistics */,
+				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
 			);
 			name = "iOS-FakeNFT-Extended";
 			packageProductDependencies = (

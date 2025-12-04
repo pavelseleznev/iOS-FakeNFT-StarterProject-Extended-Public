@@ -45,28 +45,19 @@ enum Tab: String, CaseIterable, Identifiable {
 	) -> some View {
 		switch self {
 		case .profile:
-			ReplaceThisViewIsteadOfYours(
+			ProfileView(
 				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismiss,
-				title: title
+				push: push
 			)
 		case .catalog:
-			ReplaceThisViewIsteadOfYours(
+			CatalogView(
 				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismiss,
-				title: title
+				push: push
 			)
 		case .statistics:
-			ReplaceThisViewIsteadOfYours(
+			StatisticsView(
 				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismiss,
-				title: title
+				push: push
 			)
 		}
 	}

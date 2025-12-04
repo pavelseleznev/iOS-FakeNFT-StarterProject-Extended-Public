@@ -5,9 +5,12 @@ struct TabBarView: View {
 	let push: (Page) -> Void
 	let present: (Sheet) -> Void
 	let dismiss: () -> Void
+	let pop: () -> Void
+	
+	@State private var tab: Tab = .catalog
 	
     var body: some View {
-        TabView {
+		TabView(selection: $tab) {
 			ForEach(
 				Array(Tab.allCases.enumerated()),
 				id: \.offset
@@ -18,6 +21,7 @@ struct TabBarView: View {
 					present: present,
 					dismiss: dismiss
 				)
+				.tag(tab)
 				.tabItem {
 					Group {
 						tab.imageView()
@@ -27,26 +31,4 @@ struct TabBarView: View {
 			}
         }
     }
-}
-
-struct ReplaceThisViewIsteadOfYours: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	let present: (Sheet) -> Void
-	let dismiss: () -> Void
-	let title: String
-	
-	var body: some View {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			
-			Button {
-				push(.tabView)
-			} label: {
-				Text(title)
-					.font(.title)
-					.bold()
-			}
-		}
-	}
 }
