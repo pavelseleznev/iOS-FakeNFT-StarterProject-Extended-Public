@@ -22,6 +22,7 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 	
 	@State private var activeSortOption: SortOption = .name
 	
+	let placement: BaseConfirmationDialogTriggerPlacement
 	let didTapRate: () -> Void
 	let didTapName: () -> Void
 	
@@ -29,6 +30,7 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 		content
 			.modifier(
 				BaseConfirmationDialogViewModifier(
+					placement: placement,
 					title: "Сортировка",
 					activeSortOption: activeSortOption.description,
 					actions: {

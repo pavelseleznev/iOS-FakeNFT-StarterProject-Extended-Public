@@ -21,8 +21,14 @@ struct CoordinatorView: View {
 				.sheet(item: $coordinator.sheet) { sheet in
 					coordinator.build(sheet)
 				}
+				.fullScreenCover(
+					item: $coordinator.fullScreencover
+				) { fullScreenCover in
+					coordinator.build(fullScreenCover)
+				}
 				.overlay(content: loadingView)
 				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
+				.onAppear(perform: checkAuthState)
 		}
 	}
 	
@@ -36,6 +42,10 @@ struct CoordinatorView: View {
 	
 	private func loadingView() -> some View {
 		LoadingView(loadingState: coordinator.appContainer.api.loadingState)
+	}
+	
+	private func checkAuthState() {
+		coordinator.dismissFullScreenCover()
 	}
 }
 

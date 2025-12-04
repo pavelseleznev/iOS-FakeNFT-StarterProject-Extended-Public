@@ -7,9 +7,14 @@
 
 import SwiftUI
 
+enum BaseConfirmationDialogTriggerPlacement {
+	case toolbar, safeAreaTop
+}
+
 struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	@State private var isPresented = false
 	
+	let placement: BaseConfirmationDialogTriggerPlacement
 	let title: String
 	let activeSortOption: String
 	let actions: () -> Actions
@@ -17,36 +22,67 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	private let animation: Animation = .easeInOut(duration: 0.1)
 	
 	func body(content: Content) -> some View {
-		NavigationStack {
-			content
-				.confirmationDialog(
-					title,
-					isPresented: $isPresented,
-					actions: actions
+		content
+			.confirmationDialog(
+				title,
+				isPresented: $isPresented,
+				actions: actions
+			)
+			.toolbar {
+				ToolbarItem(
+					placement: .destructiveAction,
+					content: toolbarContent
 				)
-				.toolbar {
-					ToolbarItem(placement: .confirmationAction) {
-						Button {
-							withAnimation(animation) {
-								isPresented.toggle()
-							}
-						} label: {
-							Text(activeSortOption)
-								.foregroundStyle(.ypGreenUniversal)
-								.contentTransition(.numericText())
-								.font(.medium10)
-						}
-						.buttonStyle(.plain)
+			}
+			.safeAreaInset(
+				edge: .top,
+				content: safeAreaTopContent
+			)
+			.animation(animation, value: activeSortOption)
+	}
+	
+	private var content: some View {
+		HStack {
+			Spacer()
+			HStack(spacing: 0) {
+				Button {
+					withAnimation(animation) {
+						isPresented.toggle()
 					}
-					ToolbarItem(placement: .confirmationAction) {
-						ToolbarSortButton(action: {
-							withAnimation(animation) {
-								isPresented.toggle()
-							}
-						})
-					}
+				} label: {
+					Text(activeSortOption)
+						.foregroundStyle(.ypGreenUniversal)
+						.contentTransition(.numericText())
+						.font(.medium10)
 				}
-				.animation(animation, value: activeSortOption)
+				.buttonStyle(.plain)
+				
+				RoundedRectangle(cornerRadius: 8)
+					.fill(.ypBlack)
+					.frame(width: 0.5, height: 20)
+					.offset(x: placement == .toolbar ? 6 : 3)
+				
+				ToolbarSortButton(action: {
+					withAnimation(animation) {
+						isPresented.toggle()
+					}
+				})
+			}
+		}
+		.offset(x: placement == .toolbar ? 8 : 0)
+	}
+	
+	@ViewBuilder
+	private func toolbarContent() -> some View {
+		if case .toolbar = placement {
+			content
+		}
+	}
+	
+	@ViewBuilder
+	private func safeAreaTopContent() -> some View {
+		if case .safeAreaTop = placement {
+			content
 		}
 	}
 }

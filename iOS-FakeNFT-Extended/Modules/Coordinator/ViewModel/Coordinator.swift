@@ -13,6 +13,7 @@ final class Coordinator {
 	let appContainer: AppContainer
 	var path = NavigationPath()
 	var sheet: Sheet?
+	var fullScreencover: FullScreenCover? = .splash
 	
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
@@ -38,8 +39,16 @@ extension Coordinator {
 		self.sheet = sheet
 	}
 	
-	func dismiss() {
+	func dismissSheet() {
 		self.sheet = nil
+	}
+	
+	func present(_ fullScreenCover: FullScreenCover) {
+		self.fullScreencover = fullScreenCover
+	}
+	
+	func dismissFullScreenCover() {
+		self.fullScreencover = nil
 	}
 }
 
@@ -53,8 +62,10 @@ extension Coordinator {
 				appContainer: appContainer,
 				push: push,
 				present: present,
-				dismiss: dismiss
+				dismiss: dismissSheet,
+				pop: pop
 			)
+			
 		case .aboutAuthor:
 			AboutAuthorVIew()
 		}
@@ -65,6 +76,14 @@ extension Coordinator {
 		switch sheet {
 		case let .nftDetail(nft):
 			NFTDetailView(nft: nft)
+		}
+	}
+	
+	@ViewBuilder
+	func build(_ fullScreenCover: FullScreenCover) -> some View {
+		switch fullScreenCover {
+		case .splash:
+			SplashView()
 		}
 	}
 }

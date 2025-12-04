@@ -9,6 +9,7 @@ import SwiftUI
 
 extension View {
 	func applyProfileSort(
+		placement: BaseConfirmationDialogTriggerPlacement,
 		didTapCost: @escaping () -> Void,
 		didTapRate: @escaping () -> Void,
 		didTapName: @escaping () -> Void
@@ -16,6 +17,7 @@ extension View {
 		self
 			.modifier(
 				ProfileSortActionsViewModifier(
+					placement: placement,
 					didTapCost: didTapCost,
 					didTapRate: didTapRate,
 					didTapName: didTapName
@@ -24,12 +26,14 @@ extension View {
 	}
 	
 	func applyStatisticsSort(
+		placement: BaseConfirmationDialogTriggerPlacement,
 		didTapName: @escaping () -> Void,
 		didTapRate: @escaping () -> Void
 	) -> some View {
 		self
 			.modifier(
 				StatisticsSortActionsViewModifier(
+					placement: placement,
 					didTapRate: didTapRate,
 					didTapName: didTapName
 				)
@@ -37,12 +41,14 @@ extension View {
 	}
 	
 	func applyCatalogSort(
+		placement: BaseConfirmationDialogTriggerPlacement,
 		didTapName: @escaping () -> Void,
 		didTapNFTCount: @escaping () -> Void
 	) -> some View {
 		self
 			.modifier(
 				CatalogSortActionsViewModifier(
+					placement: placement,
 					didTapName: didTapName,
 					didTapNFTCount: didTapNFTCount
 				)
@@ -71,6 +77,7 @@ extension View {
 		Color.ypWhite.ignoresSafeArea()
 	}
 	.applyStatisticsSort(
+		placement: .safeAreaTop,
 		didTapName: {},
 		didTapRate: {}
 	)
@@ -81,6 +88,7 @@ extension View {
 		Color.ypWhite.ignoresSafeArea()
 	}
 	.applyProfileSort(
+		placement: .safeAreaTop,
 		didTapCost: {},
 		didTapRate: {},
 		didTapName: {}
@@ -93,6 +101,7 @@ extension View {
 			Color.ypWhite.ignoresSafeArea()
 		}
 		.applyCatalogSort(
+			placement: .safeAreaTop,
 			didTapName: {},
 			didTapNFTCount: {}
 		)
