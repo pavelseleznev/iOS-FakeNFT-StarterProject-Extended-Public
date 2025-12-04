@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension View {
-	func repeatableAlert(
+	func applyRepeatableAlert(
 		isPresneted: Binding<Bool>,
 		message: String,
 		didTapRepeat: @escaping () -> Void
@@ -20,7 +20,7 @@ extension View {
 			}
 	}
 	
-	func exitAlert(
+	func applyExitAlert(
 		isPresneted: Binding<Bool>,
 		message: String,
 		didTapExit: @escaping () -> Void
@@ -42,7 +42,7 @@ extension View {
 			isPresented.toggle()
 		}
 	}
-	.repeatableAlert(
+	.applyRepeatableAlert(
 		isPresneted: $isPresented,
 		message: "Не удалось получить данные",
 		didTapRepeat: {}
@@ -57,7 +57,7 @@ extension View {
 			isPresented.toggle()
 		}
 	}
-	.exitAlert(
+	.applyExitAlert(
 		isPresneted: $isPresented,
 		message: "Уверены, что хотите выйти?",
 		didTapExit: {}
