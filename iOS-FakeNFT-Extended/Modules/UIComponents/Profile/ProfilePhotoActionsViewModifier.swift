@@ -17,6 +17,7 @@ struct ProfilePhotoActionsViewModifier: ViewModifier {
 			.confirmationDialog(
 				"Фото профиля",
 				isPresented: isPresented,
+				titleVisibility: .visible,
 				actions: {
 					Button("Изменить фото", action: didTapChangePhoto)
 					Button("Удалить фото", role: .destructive, action: didTapDeletePhoto)
