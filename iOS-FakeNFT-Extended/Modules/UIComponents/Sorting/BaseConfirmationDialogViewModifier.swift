@@ -14,6 +14,8 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	let activeSortOption: String
 	let actions: () -> Actions
 	
+	private let animation: Animation = .easeInOut(duration: 0.1)
+	
 	func body(content: Content) -> some View {
 		NavigationStack {
 			content
@@ -24,20 +26,27 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 				)
 				.toolbar {
 					ToolbarItem(placement: .confirmationAction) {
-						Text(activeSortOption)
-							.foregroundStyle(.ypGreenUniversal)
-							.contentTransition(.numericText())
-							.font(.medium10)
+						Button {
+							withAnimation(animation) {
+								isPresented.toggle()
+							}
+						} label: {
+							Text(activeSortOption)
+								.foregroundStyle(.ypGreenUniversal)
+								.contentTransition(.numericText())
+								.font(.medium10)
+						}
+						.buttonStyle(.plain)
 					}
 					ToolbarItem(placement: .confirmationAction) {
 						ToolbarSortButton(action: {
-							withAnimation {
+							withAnimation(animation) {
 								isPresented.toggle()
 							}
 						})
 					}
 				}
-				.animation(.easeInOut(duration: 0.1), value: activeSortOption)
+				.animation(animation, value: activeSortOption)
 		}
 	}
 }
