@@ -8,105 +8,79 @@
 import SwiftUI
 
 extension View {
-	func sortDialog(
-		title: String,
-		isPresented: Binding<Bool>,
+	func applyProfileSort(
 		didTapCost: @escaping () -> Void,
 		didTapRate: @escaping () -> Void,
 		didTapName: @escaping () -> Void
 	) -> some View {
 		self
-			.confirmationDialog(
-				title,
-				isPresented: isPresented,
-				titleVisibility: .visible
-			) {
-				Button("По цене", action: didTapCost)
-				Button("По рейтингу", action: didTapRate)
-				Button("По названию", action: didTapName)
-				Button("Закрыть", role: .cancel) {}
-			}
+			.modifier(
+				ProfileSortActionsViewModifier(
+					didTapCost: didTapCost,
+					didTapRate: didTapRate,
+					didTapName: didTapName
+				)
+			)
 	}
 	
-	func sortDialog(
-		title: String,
-		isPresented: Binding<Bool>,
+	func applyStatisticsSort(
 		didTapName: @escaping () -> Void,
 		didTapRate: @escaping () -> Void
 	) -> some View {
 		self
-			.confirmationDialog(
-				title,
-				isPresented: isPresented,
-				titleVisibility: .visible
-			) {
-				Button("По имени", action: didTapName)
-				Button("По рейтингу", action: didTapRate)
-				Button("Закрыть", role: .cancel) {}
-			}
+			.modifier(
+				StatisticsSortActionsViewModifier(
+					didTapRate: didTapRate,
+					didTapName: didTapName
+				)
+			)
 	}
 	
-	func sortDialog(
-		title: String,
-		isPresented: Binding<Bool>,
+	func applyCatalogSort(
 		didTapName: @escaping () -> Void,
 		didTapNFTCount: @escaping () -> Void
 	) -> some View {
 		self
-			.confirmationDialog(
-				title,
-				isPresented: isPresented,
-				titleVisibility: .visible
-			) {
-				Button("По названию", action: didTapName)
-				Button("По количеству NFT", action: didTapNFTCount)
-				Button("Закрыть", role: .cancel) {}
-			}
+			.modifier(
+				CatalogSortActionsViewModifier(
+					didTapName: didTapName,
+					didTapNFTCount: didTapNFTCount
+				)
+			)
 	}
 	
-	func photoActionDialog(
-		title: String,
+	func applyProfilePhotoActions(
 		isPresented: Binding<Bool>,
 		didTapChangePhoto: @escaping () -> Void,
 		didTapDeletePhoto: @escaping () -> Void
 	) -> some View {
 		self
-			.confirmationDialog(title, isPresented: isPresented) {
-				Button("Изменить фото", action: didTapChangePhoto)
-				Button("Удалить фото", role: .destructive, action: didTapDeletePhoto)
-				Button("Отмена", role: .cancel) {}
-			}
+			.modifier(
+				ProfilePhotoActionsViewModifier(
+					isPresented: isPresented,
+					didTapChangePhoto: didTapChangePhoto,
+					didTapDeletePhoto: didTapDeletePhoto
+				)
+			)
 	}
 }
 
 #if DEBUG
 #Preview("Statistic") {
-	@Previewable @State var isPresented: Bool = false
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
-		Button("Show statistic sort dialog") {
-			isPresented.toggle()
-		}
 	}
-	.sortDialog(
-		title: "Сортировка",
-		isPresented: $isPresented,
+	.applyStatisticsSort(
 		didTapName: {},
 		didTapRate: {}
 	)
 }
 
 #Preview("Profile Sort") {
-	@Previewable @State var isPresented: Bool = false
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
-		Button("Show profile sort dialog") {
-			isPresented.toggle()
-		}
 	}
-	.sortDialog(
-		title: "Сортировка",
-		isPresented: $isPresented,
+	.applyProfileSort(
 		didTapCost: {},
 		didTapRate: {},
 		didTapName: {}
@@ -114,31 +88,28 @@ extension View {
 }
 
 #Preview("Catalog Sort") {
-	@Previewable @State var isPresented: Bool = false
-	ZStack {
-		Color.ypWhite.ignoresSafeArea()
-		Button("Show catalog sort dialog") {
-			isPresented.toggle()
+	NavigationStack {
+		ZStack {
+			Color.ypWhite.ignoresSafeArea()
 		}
+		.applyCatalogSort(
+			didTapName: {},
+			didTapNFTCount: {}
+		)
 	}
-	.sortDialog(
-		title: "Сортировка",
-		isPresented: $isPresented,
-		didTapName: {},
-		didTapNFTCount: {}
-	)
 }
 
 #Preview("Profile Image") {
-	@Previewable @State var isPresented: Bool = false
+	@Previewable @State var isPresented = false
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
-		Button("Show profile image actions dialog") {
-			isPresented.toggle()
+		Button("Toogle profile image actions presentation") {
+			withAnimation {
+				isPresented.toggle()
+			}
 		}
 	}
-	.photoActionDialog(
-		title: "Фото прпофиля",
+	.applyProfilePhotoActions(
 		isPresented: $isPresented,
 		didTapChangePhoto: {},
 		didTapDeletePhoto: {}
