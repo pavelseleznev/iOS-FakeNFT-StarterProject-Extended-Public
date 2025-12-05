@@ -83,6 +83,7 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	private func safeAreaTopContent() -> some View {
 		if case .safeAreaTop = placement {
 			content
+				.padding([.bottom, .trailing], 8)
 		}
 	}
 }
