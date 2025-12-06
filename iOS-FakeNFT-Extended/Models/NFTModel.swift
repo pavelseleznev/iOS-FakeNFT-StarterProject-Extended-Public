@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct NFTModel: Identifiable {
+struct NFTModel: Identifiable, Hashable {
 	let imageURLString: String
 	let name: String
 	let author: String
