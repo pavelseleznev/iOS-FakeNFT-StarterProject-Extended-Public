@@ -7,5 +7,5 @@
 
 
 enum NFTDetailState {
-    case initial, loading, failed(Error), data(NFT)
+    case initial, loading, failed(Error), data(NFTResponse)
 }

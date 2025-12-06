@@ -1,7 +1,7 @@
 import Foundation
 
 protocol NFTServiceProtocol: Sendable {
-    func loadNft(id: String) async throws -> NFT
+    func loadNft(id: String) async throws -> NFTResponse
 }
 
 actor NFTService: NFTServiceProtocol {
@@ -14,7 +14,7 @@ actor NFTService: NFTServiceProtocol {
         self.api = api
     }
 
-    func loadNft(id: String) async throws -> NFT {
+    func loadNft(id: String) async throws -> NFTResponse {
         if let nft = await storage.getNft(with: id) {
             return nft
         }

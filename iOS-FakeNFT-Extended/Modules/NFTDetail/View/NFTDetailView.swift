@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NFTDetailView: View {
-	let nft: NFT
+	let nft: NFTModel
 	
 	@State private var images = [URL:UIImage]()
 	@State private var nftImageScale: CGFloat = 1
@@ -20,29 +20,29 @@ struct NFTDetailView: View {
 			Color.ypWhite.ignoresSafeArea()
 			
 			TabView(selection: $selection) {
-				ForEach(Array(nft.images.enumerated()), id: \.offset) { index, url in
-					if let image = images[url] {
-						Image(uiImage: image)
-							.resizable()
-							.aspectRatio(contentMode: .fit)
-							.scaleEffect(nftImageScale)
-							.gesture(
-								MagnifyGesture()
-									.onChanged { value in
-										nftImageScale = value.magnification
-									}
-									.onEnded { value in
-										if nftImageScale > nftImageMaxScale {
-											withAnimation {
-												nftImageScale = nftImageMaxScale
-											}
-										}
-									}
-							)
-							.id(url)
-							.tag(url)
-					}
-				}
+//				ForEach(Array(nft.images.enumerated()), id: \.offset) { index, url in
+//					if let image = images[url] {
+//						Image(uiImage: image)
+//							.resizable()
+//							.aspectRatio(contentMode: .fit)
+//							.scaleEffect(nftImageScale)
+//							.gesture(
+//								MagnifyGesture()
+//									.onChanged { value in
+//										nftImageScale = value.magnification
+//									}
+//									.onEnded { value in
+//										if nftImageScale > nftImageMaxScale {
+//											withAnimation {
+//												nftImageScale = nftImageMaxScale
+//											}
+//										}
+//									}
+//							)
+//							.id(url)
+//							.tag(url)
+//					}
+//				}
 			}
 			.tabViewStyle(.page(indexDisplayMode: .never))
 			.overlay(alignment: .bottom) {
@@ -66,9 +66,9 @@ struct NFTDetailView: View {
 		.task {
 			// load image from url
 			withAnimation {
-				nft.images.forEach {
-					images[$0, default: .big] = .big
-				}
+//				nft.images.forEach {
+//					images[$0, default: .big] = .big
+//				}
 			}
 		}
 	}
@@ -81,15 +81,7 @@ struct NFTDetailView: View {
 			.sheet(isPresented: $isPresented) {
 				NavigationStack {
 					NFTDetailView(
-						nft: .init(
-							id: "1",
-							images: [
-								.init(string: "https://example.com/nft1.jpg")!,
-								.init(string: "https://example.com/nft2.jpg")!,
-								.init(string: "https://example.com/nft3.jpg")!,
-								.init(string: "https://example.com/nft4.jpg")!
-							]
-						)
+						nft: .mock
 					)
 				}
 			}
