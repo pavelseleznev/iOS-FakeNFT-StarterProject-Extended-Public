@@ -24,9 +24,23 @@ struct UpdateProfileRequest: NetworkRequest {
 }
 
 struct ProfilePayload: Encodable {
-	let name: String
-	let description: String
-	let avatar: String
-	let website: String
-	let likes: [String]
+	let name: String?
+	let description: String?
+	let avatar: String?
+	let website: String?
+	let likes: [String]?
+	
+	init(
+		name: String? = nil,
+		description: String? = nil,
+		avatar: String? = nil,
+		website: String? = nil,
+		likes: [String]? = nil
+	) {
+		self.name = name
+		self.description = description
+		self.avatar = avatar
+		self.website = website
+		self.likes = likes
+	}
 }

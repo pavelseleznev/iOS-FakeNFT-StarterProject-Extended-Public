@@ -8,7 +8,13 @@
 
 import Foundation
 
-typealias OrderPayload = [String]
+struct OrderPayload: Encodable {
+	let nfts: String?
+	
+	init(nfts: [String]? = nil) {
+		self.nfts = nfts?.joined(separator: ",") ?? "null"
+	}
+}
 
 struct PutOrderAndPayRequest: NetworkRequest {
 	let payload: OrderPayload

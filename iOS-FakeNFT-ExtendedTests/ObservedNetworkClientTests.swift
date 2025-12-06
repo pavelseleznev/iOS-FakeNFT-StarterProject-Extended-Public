@@ -66,15 +66,11 @@ extension ObservedNetworkClientTests {
 	}
 	
 	func testUpdateProfile() async throws {
-		let _ = try await sut.updateProfile(
-			payload: .init(
-				name: "Студентус Практикумс Test",
-				description: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100 NFT, и еще больше — на моём сайте.",
-				avatar: "https://photo.bank/1.png",
-				website: "https://practicum.yandex.ru",
-				likes: []
-			)
+		let expectedName = "Студентус Практикумс Test"
+		let response = try await sut.updateProfile(
+			payload: .init(name: expectedName)
 		)
+		XCTAssertEqual(expectedName, response.name)
 	}
 }
 
@@ -98,29 +94,27 @@ extension ObservedNetworkClientTests {
 		var nftsToBuy = [String]()
 		
 		let nfts = try await sut.getNFTs()
-		for index in 0..<2 {
+		for index in 0..<3 {
 			nftsToBuy.append(nfts[index].id)
 		}
 		
-		let firstEmptyRepsonse = try await sut.putOrderAndPay(payload: ["null"])
+		let firstEmptyRepsonse = try await sut.putOrderAndPay(
+			payload: .init(nfts: nil)
+		)
 		XCTAssertTrue(firstEmptyRepsonse.nftsIDs.isEmpty)
 		
-		print("\n\n\n", nftsToBuy, "\n\n\n")
 		let fullResponse = try await sut.putOrderAndPay(
-			payload: nftsToBuy
+			payload: .init(nfts: nftsToBuy)
 		)
-		print("\n\n\n", fullResponse.nftsIDs, "\n\n", nftsToBuy, "\n\n\n")
 		XCTAssertEqual(nftsToBuy, fullResponse.nftsIDs)
 		
-		let secondEmptyRepsonse = try await sut.putOrderAndPay(payload: ["null"])
+		let secondEmptyRepsonse = try await sut.putOrderAndPay(
+			payload: .init(nfts: nil)
+		)
 		XCTAssertTrue(secondEmptyRepsonse.nftsIDs.isEmpty)
 	}
 	
 	func testGetOrder() async throws {
 		let _ = try await sut.getOrder()
-	}
-	
-	private func resetCart() async throws {
-		let _ = try await sut.putOrderAndPay(payload: ["null"])
 	}
 }
