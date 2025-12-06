@@ -1,10 +1,7 @@
 import Foundation
 
 enum HttpMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
+    case GET, PUT
 }
 
 protocol NetworkRequest: Sendable {
@@ -15,6 +12,6 @@ protocol NetworkRequest: Sendable {
 
 // default values
 extension NetworkRequest {
-    var httpMethod: HttpMethod { .get }
+    var httpMethod: HttpMethod { .GET }
     var dto: Encodable? { nil }
 }
