@@ -36,7 +36,7 @@ extension ObservedNetworkClientTests {
 		XCTAssertFalse(nfts.isEmpty)
 	}
 	
-	func testGetNFTById() async throws {
+	func testGetNFTByID() async throws {
 		if let nft = try await sut.getNFTs().first {
 			let _ = try await sut.getNFT(by: nft.id)
 		} else {
@@ -95,7 +95,6 @@ extension ObservedNetworkClientTests {
 
 extension ObservedNetworkClientTests {
 	func testPutOrderAndPay() async throws {
-		
 		var nftsToBuy = [String]()
 		
 		let nfts = try await sut.getNFTs()
@@ -103,9 +102,7 @@ extension ObservedNetworkClientTests {
 			nftsToBuy.append(nfts[index].id)
 		}
 		
-		let firstEmptyRepsonse = try await sut.putOrderAndPay(
-			payload: ["null"]
-		)
+		let firstEmptyRepsonse = try await sut.putOrderAndPay(payload: ["null"])
 		XCTAssertTrue(firstEmptyRepsonse.nftsIDs.isEmpty)
 		
 		print("\n\n\n", nftsToBuy, "\n\n\n")
@@ -115,9 +112,7 @@ extension ObservedNetworkClientTests {
 		print("\n\n\n", fullResponse.nftsIDs, "\n\n", nftsToBuy, "\n\n\n")
 		XCTAssertEqual(nftsToBuy, fullResponse.nftsIDs)
 		
-		let secondEmptyRepsonse = try await sut.putOrderAndPay(
-			payload: ["null"]
-		)
+		let secondEmptyRepsonse = try await sut.putOrderAndPay(payload: ["null"])
 		XCTAssertTrue(secondEmptyRepsonse.nftsIDs.isEmpty)
 	}
 	
