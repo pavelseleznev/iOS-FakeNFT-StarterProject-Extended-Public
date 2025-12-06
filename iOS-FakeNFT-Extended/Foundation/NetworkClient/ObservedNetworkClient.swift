@@ -27,98 +27,88 @@ final class ObservedNetworkClient {
 	init(api: NetworkClient = DefaultNetworkClient()) {
 		self.api = api
 	}
+}
 
-	func getCollections() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetCollectionRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	func getCollection(by id: String) async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetCollectionByIDRequest(id: id)
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func getNFTs() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetNFTsRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	func getNFT(by id: String) async throws -> NFT {
-		let request: NetworkRequest = GetNFTByIDRequest(id: id)
-		
-		let result: NFT = try await fetch(request)
-		return result
-	}
-	
-	func getCurrencies() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetCurrenciesRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	func getCurrency(by id: String) async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetCurrencyByIDRequest(id: id)
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func getOrder() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetOrderRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
+// MARK: - ObservedNetworkClient Extensions
 
-	func orderSetConcurrencyBeforePayment() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetOrderSetConcurrencyBeforePaymentRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	func putOrderAndPay() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = PutOrderAndPayRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func getProfile() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = PutLikesNamePhoto()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func setLikesNamePhoto() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = PutLikesNamePhoto()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func getUsers() async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetUsersRequest()
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	func getUser(by id: String) async throws -> RemoveThisAnyDecodableDummy {
-		let request: NetworkRequest = GetUserByIDRequest(id: id)
-		
-		let result: RemoveThisAnyDecodableDummy = try await fetch(request)
-		return result
-	}
-	
-	private func fetch<T: Decodable & Sendable>(_ request: NetworkRequest) async throws -> T {
+// --- private helpers ---
+private extension ObservedNetworkClient {
+	func fetch<T: Decodable & Sendable>(_ request: NetworkRequest) async throws -> T {
 		try await loader.fetchData {
 			try await self.api.send(T.self, request: request)
 		}
 	}
 }
 
+// --- nft collections ---
+extension ObservedNetworkClient {
+	func getCollections() async throws -> [NFTCollectionItemResponse] {
+		let request = GetCollectionRequest()
+		return try await fetch(request)
+	}
+	
+	func getCollection(by id: String) async throws -> NFTCollectionItemResponse {
+		let request = GetCollectionByIDRequest(id: id)
+		return try await fetch(request)
+	}
+}
+
+// --- nft ---
+extension ObservedNetworkClient {
+	func getNFTs() async throws -> [NFTResponse] {
+		let request = GetNFTsRequest()
+		return try await fetch(request)
+	}
+	
+	func getNFT(by id: String) async throws -> NFTResponse {
+		let request = GetNFTByIDRequest(id: id)
+		return try await fetch(request)
+	}
+}
+
+// --- currencies ---
+extension ObservedNetworkClient {
+	func getCurrencies() async throws -> [CurrencyResponse] {
+		let request = GetCurrenciesRequest()
+		return try await fetch(request)
+	}
+	
+	func getCurrency(by id: String) async throws -> CurrencyResponse {
+		let request = GetCurrencyByIDRequest(id: id)
+		return try await fetch(request)
+	}
+}
+
+// --- order ---
+extension ObservedNetworkClient {
+	func putOrderPayAndClear(payload: OrderPayload) async throws -> OrderRepsonse {
+		let request = PutOrderPayAndClearRequest(payload: payload)
+		return try await fetch(request)
+	}
+}
+
+// --- profile ---
+extension ObservedNetworkClient {
+	func getProfile() async throws -> ProfileResponse {
+		let request = GetProfileRequest()
+		return try await fetch(request)
+	}
+	
+	func updateProfile(payload: ProfilePayload) async throws -> ProfileResponse {
+		let request = UpdateProfileRequest(payload: payload)
+		return try await fetch(request)
+	}
+}
+
+// --- users ---
+extension ObservedNetworkClient {
+	func getUsers() async throws -> [UserListItemResponse] {
+		let request = GetUsersRequest()
+		return try await fetch(request)
+	}
+	
+	func getUser(by id: String) async throws -> UserListItemResponse {
+		let request = GetUserByIDRequest(id: id)
+		return try await fetch(request)
+	}
+}
