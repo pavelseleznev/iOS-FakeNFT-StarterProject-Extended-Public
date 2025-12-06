@@ -81,8 +81,13 @@ extension ObservedNetworkClient {
 
 // --- order ---
 extension ObservedNetworkClient {
-	func putOrderPayAndClear(payload: OrderPayload) async throws -> OrderRepsonse {
-		let request = PutOrderPayAndClearRequest(payload: payload)
+	func putOrderAndPay(payload: OrderPayload) async throws -> OrderRepsonse {
+		let request = PutOrderAndPayRequest(payload: payload)
+		return try await fetch(request)
+	}
+	
+	func getOrder() async throws -> OrderRepsonse {
+		let request = GetOrderRequest()
 		return try await fetch(request)
 	}
 }

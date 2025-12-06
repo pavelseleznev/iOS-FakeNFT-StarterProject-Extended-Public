@@ -8,15 +8,19 @@
 
 import Foundation
 
-struct OrderPayload: Encodable {
-	let nfts: [String]
-}
+typealias OrderPayload = [String]
 
-struct PutOrderPayAndClearRequest: NetworkRequest {
+struct PutOrderAndPayRequest: NetworkRequest {
 	let payload: OrderPayload
 	
 	var httpMethod: HttpMethod = .PUT
 	var dto: (any Encodable)? { payload }
+	var endpoint: URL? {
+		URL(string: "\(RequestConstants.baseURL)/api/v1/orders/1")
+	}
+}
+
+struct GetOrderRequest: NetworkRequest {
 	var endpoint: URL? {
 		URL(string: "\(RequestConstants.baseURL)/api/v1/orders/1")
 	}
