@@ -1,0 +1,13 @@
+//
+//  FullScreenCover.swift
+//  iOS-FakeNFT-Extended
+//
+//  Created by Superior Warden on 04.12.2025.
+//
+
+
+enum FullScreenCover: Hashable, Identifiable {
+	case splash
+	
+	var id: Self { self }
+}
