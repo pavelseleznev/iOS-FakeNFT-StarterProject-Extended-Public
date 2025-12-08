@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-struct AboutAuthorVIew: View {
+struct AboutAuthorView: View {
+	let websiteURLString: String
+	
 	@State private var isLoading = false
 	@Environment(\.colorScheme) private var theme
 	
 	var body: some View {
-		if let url = URL(string: "https://practicum.yandex.ru") {
+		if let url = URL(string: websiteURLString) {
 			WebViewRepresentable(
 				url: url,
 				isLoading: $isLoading,
@@ -25,7 +27,7 @@ struct AboutAuthorVIew: View {
 
 #Preview {
 	NavigationStack {
-		AboutAuthorVIew()
+		AboutAuthorView(websiteURLString: "https://practicum.yandex.ru")
 			.customNavigationBackButton(backAction: {})
 	}
 }
