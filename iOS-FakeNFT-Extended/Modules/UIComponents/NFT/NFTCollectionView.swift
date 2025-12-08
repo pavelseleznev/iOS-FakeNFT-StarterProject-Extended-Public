@@ -14,9 +14,9 @@ struct NFTCollectionView: View {
 	let cartActionOn: (NFTModel) -> Void
 	
 	private let columns = [
-		GridItem(.flexible(), spacing: 8),
-		GridItem(.flexible(), spacing: 8),
-		GridItem(.flexible(), spacing: 8)
+		GridItem(.flexible(), spacing: 9),
+		GridItem(.flexible(), spacing: 9),
+		GridItem(.flexible(), spacing: 9)
 	]
 	
 	var body: some View {
@@ -24,8 +24,7 @@ struct NFTCollectionView: View {
 			LazyVGrid(
 				columns: columns,
 				alignment: .center,
-				spacing: 28,
-				pinnedViews: .sectionFooters
+				spacing: 28
 			) {
 				ForEach(nfts) { nft in
 					NFTVerticalCell(
