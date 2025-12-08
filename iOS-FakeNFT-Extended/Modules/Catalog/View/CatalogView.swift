@@ -15,7 +15,7 @@ struct CatalogView: View {
 		ZStack {
 			Color.ypWhite.ignoresSafeArea()
 			Button {
-				push(.aboutAuthor)
+//				push(.aboutAuthor)
 			} label: {
 				Text("Catalog")
 					.font(.title)
