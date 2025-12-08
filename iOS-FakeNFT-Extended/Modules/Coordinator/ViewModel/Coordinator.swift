@@ -22,6 +22,13 @@ final class Coordinator {
 
 // MARK: - Coordinator Extensions
 
+// --- private helpers ---
+private extension Coordinator {
+	func onLoadingStateFromWebsite(_ state: LoadingState) {
+		appContainer.api.setLoadingStateFromWebsite(state)
+	}
+}
+
 // --- internal navigation ---
 extension Coordinator {
 	func push(_ page: Page) {
@@ -67,7 +74,10 @@ extension Coordinator {
 			)
 			
 		case .aboutAuthor(let websiteURLString):
-			AboutAuthorView(websiteURLString: websiteURLString)
+			AboutAuthorView(
+				websiteURLString: websiteURLString,
+				onLoadingStateChange: onLoadingStateFromWebsite
+			)
 			
 		case .statNFTCollection(let nfts):
 			StatisticsNFTCollectionView(

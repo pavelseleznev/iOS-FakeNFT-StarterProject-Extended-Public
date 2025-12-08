@@ -23,6 +23,10 @@ final class ObservedNetworkClient {
 	func resetLoadingState() {
 		loader.resetState()
 	}
+	
+	func setLoadingStateFromWebsite(_ state: LoadingState) {
+		loader.setLoadingStateFromWebsite(state)
+	}
 
 	init(api: NetworkClient = DefaultNetworkClient()) {
 		self.api = api

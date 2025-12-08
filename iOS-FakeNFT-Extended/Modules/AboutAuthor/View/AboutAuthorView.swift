@@ -9,25 +9,36 @@ import SwiftUI
 
 struct AboutAuthorView: View {
 	let websiteURLString: String
+	let onLoadingStateChange: (LoadingState) -> Void
 	
-	@State private var isLoading = false
+	@State private var loadingState: LoadingState = .idle
 	@Environment(\.colorScheme) private var theme
 	
 	var body: some View {
-		if let url = URL(string: websiteURLString) {
-			WebViewRepresentable(
-				url: url,
-				isLoading: $isLoading,
-				colorScheme: theme
-			)
-			.ignoresSafeArea(edges: .bottom)
+		ZStack {
+			Color.ypWhite.ignoresSafeArea()
+				.onChange(of: loadingState) {
+					onLoadingStateChange(loadingState)
+				}
+
+			if let url = URL(string: websiteURLString) {
+				WebViewRepresentable(
+					url: url,
+					loadingState: $loadingState,
+					colorScheme: theme
+				)
+				.ignoresSafeArea(edges: .bottom)
+			}
 		}
 	}
 }
 
 #Preview {
 	NavigationStack {
-		AboutAuthorView(websiteURLString: "https://practicum.yandex.ru")
-			.customNavigationBackButton(backAction: {})
+		AboutAuthorView(
+			websiteURLString: "https://www.google.com",
+			onLoadingStateChange: {_ in}
+		)
+		.customNavigationBackButton(backAction: {})
 	}
 }

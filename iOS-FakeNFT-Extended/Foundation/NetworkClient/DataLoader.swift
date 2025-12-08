@@ -38,4 +38,8 @@ final class DataLoader {
 	func resetState() {
 		loadingState = .idle
 	}
+	
+	func setLoadingStateFromWebsite(_ state: LoadingState) {
+		self.loadingState = state
+	}
 }
