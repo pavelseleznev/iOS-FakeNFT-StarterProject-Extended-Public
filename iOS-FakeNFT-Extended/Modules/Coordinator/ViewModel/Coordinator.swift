@@ -66,8 +66,20 @@ extension Coordinator {
 				pop: pop
 			)
 			
-		case .aboutAuthor:
-			AboutAuthorVIew()
+		case .aboutAuthor(let websiteURLString):
+			AboutAuthorView(websiteURLString: websiteURLString)
+			
+		case .statNFTCollection(let nfts):
+			StatisticsNFTCollectionView(
+				nfts: nfts, api: appContainer.api
+			)
+			
+		case .statProfile(profile: let profile):
+			StatisticsProfileView(
+				api: appContainer.api,
+				push: push,
+				model: profile
+			)
 		}
 	}
 	
