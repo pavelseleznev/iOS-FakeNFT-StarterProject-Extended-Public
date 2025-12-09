@@ -15,7 +15,7 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 			case .rate:
 				"По рейтингу"
 			case .name:
-				"По названию"
+				"По имени"
 			}
 		}
 	}
@@ -35,13 +35,13 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 					activeSortOption: activeSortOption.description,
 					actions: {
 						Group {
+							Button("По имени") {
+								didTapName()
+								activeSortOption = .name
+							}
 							Button("По рейтингу") {
 								didTapRate()
 								activeSortOption = .rate
-							}
-							Button("По названию") {
-								didTapName()
-								activeSortOption = .name
 							}
 							Button("Закрыть", role: .cancel) {}
 						}
