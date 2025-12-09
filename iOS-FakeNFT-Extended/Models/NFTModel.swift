@@ -20,7 +20,7 @@ struct NFTModel: Identifiable, Hashable {
 	static var mock: Self {
 		.init(
 			imageURLString: "https://public.bnbstatic.com/static/content/square/images/21ba7a4483794ab5a1bfb2cf9a3338ab.png",
-			name: "Treasure",
+			name: "Treasures of Westeros",
 			author: "Jhon Snow",
 			cost: "1,78 ETH",
 			rate: "2.5/5",
