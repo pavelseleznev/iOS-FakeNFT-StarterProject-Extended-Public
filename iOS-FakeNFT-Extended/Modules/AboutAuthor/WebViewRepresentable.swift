@@ -56,6 +56,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 		weak var webView: WKWebView?
 
 		private var progressObservation: NSKeyValueObservation?
+		private let estimatedProgressTreshold: Double = 0.999
 
 		init(
 			loadingState: Binding<LoadingState>,
@@ -73,7 +74,7 @@ struct WebViewRepresentable: UIViewRepresentable {
 				guard let self, let value = change.newValue else { return }
 				DispatchQueue.main.async {
 					self.onProgress(value)
-					self.loadingState = value < 0.999 ? .idle : .fetching
+					self.loadingState = value < self.estimatedProgressTreshold ? .idle : .fetching
 				}
 			}
 		}
@@ -103,7 +104,6 @@ struct WebViewRepresentable: UIViewRepresentable {
 
 		@MainActor
 		func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-			// code -999 = cancelled load / redirect, можно игнорировать как ошибку
 			loadingState = .error
 		}
 
