@@ -23,7 +23,7 @@ struct StatisticsView: View {
 	}
 	
 	var body: some View {
-		ZStack {
+		ZStack(alignment: .top) {
 			Color.ypWhite.ignoresSafeArea()
 			
 			List(Array(viewModel.users.enumerated()), id: \.offset) { counter, user in
@@ -37,10 +37,12 @@ struct StatisticsView: View {
 					.padding(.trailing, 16)
 					.padding(.leading, 24)
 			}
+			.safeAreaPadding(.bottom)
 			.listRowSpacing(8)
 			.scrollContentBackground(.hidden)
 			.listStyle(.plain)
 		}
+		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
 			didTapName: viewModel.applySortByName,
