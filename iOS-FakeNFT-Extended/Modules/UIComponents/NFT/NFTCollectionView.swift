@@ -14,9 +14,9 @@ struct NFTCollectionView: View {
 	let cartActionOn: (NFTModel) -> Void
 	
 	private let columns = [
-		GridItem(.flexible(), spacing: 9),
-		GridItem(.flexible(), spacing: 9),
-		GridItem(.flexible(), spacing: 9)
+		GridItem(.flexible(), spacing: 9, alignment: .top),
+		GridItem(.flexible(), spacing: 9, alignment: .top),
+		GridItem(.flexible(), spacing: 9, alignment: .top)
 	]
 	
 	var body: some View {
