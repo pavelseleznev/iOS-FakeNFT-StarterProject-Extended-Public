@@ -21,6 +21,7 @@ struct NFTMyCellView: View {
 				layout: layout,
 				likeAction: likeAction,
 			)
+			.frame(width: 108)
 			
 			HStack {
 				NFTNameRateAuthorView(model: model, layout: layout)

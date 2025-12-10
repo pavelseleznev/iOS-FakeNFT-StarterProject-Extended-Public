@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct ProfileContainer<Link: View>: View {
-	let name: String
-	let image: Image
-	let about: String
+	let model: UserListItemResponse
 	
 	let link: () -> Link
 	let actions: () -> [ProfileActionCell]
@@ -19,9 +17,9 @@ struct ProfileContainer<Link: View>: View {
 		VStack(alignment: .leading, spacing: 40) {
 			VStack(alignment: .leading, spacing: 8) {
 				ProfileHeader(
-					name: name,
-					image: image,
-					about: about
+					name: model.name,
+					imageURLString: model.avatarURLString,
+					about: model.description ?? ""
 				)
 				
 				link()
@@ -46,11 +44,7 @@ struct ProfileContainer<Link: View>: View {
 		ZStack {
 			Color.ypWhite.ignoresSafeArea()
 			
-			ProfileContainer(
-				name: "Joaquin Phoenix",
-				image: Image(.userPickMock),
-				about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
-			) {
+			ProfileContainer(model: .mock) {
 				Link("Joaquin Phienix.com", destination: .init(string: "https://google.com")!)
 			} actions: {
 				[
@@ -75,11 +69,7 @@ struct ProfileContainer<Link: View>: View {
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 		
-		ProfileContainer(
-			name: "Joaquin Phoenix",
-			image: Image(.userPickMock),
-			about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
-		) {
+		ProfileContainer(model: .mock) {
 			Button(action: {}) {
 				Text("Перейти на сайт пользователя")
 			}

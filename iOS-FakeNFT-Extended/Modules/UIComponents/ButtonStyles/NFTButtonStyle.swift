@@ -13,7 +13,7 @@ private struct NFTButtonStyle: ButtonStyle {
 		configuration.label
 			.padding(10)
 			.font(.regular15)
-			.foregroundStyle(filled ? .ypBlackUniversal : .ypWhiteUniversal)
+			.foregroundStyle(filled ? .ypWhite : .ypBlack)
 			.frame(maxWidth: .infinity)
 			.background(
 				RoundedRectangle(cornerRadius: 16)

@@ -61,6 +61,8 @@ struct NFTCompactCellView: View {
 					)
 				}
 			}
+			.padding(.horizontal)
+			.safeAreaPadding(.top)
 		}
 	}
 }

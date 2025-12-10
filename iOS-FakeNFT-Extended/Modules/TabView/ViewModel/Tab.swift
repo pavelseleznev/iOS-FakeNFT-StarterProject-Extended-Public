@@ -56,7 +56,7 @@ enum Tab: String, CaseIterable, Identifiable {
 			)
 		case .statistics:
 			StatisticsView(
-				appContainer: appContainer,
+				api: appContainer.api,
 				push: push
 			)
 		}

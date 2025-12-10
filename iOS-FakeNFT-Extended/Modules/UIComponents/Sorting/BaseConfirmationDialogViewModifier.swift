@@ -26,6 +26,7 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 			.confirmationDialog(
 				title,
 				isPresented: $isPresented,
+				titleVisibility: .visible,
 				actions: actions
 			)
 			.toolbar {
@@ -83,7 +84,8 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	private func safeAreaTopContent() -> some View {
 		if case .safeAreaTop = placement {
 			content
-				.padding([.bottom, .trailing], 8)
+				.padding(.bottom, 16)
+				.padding(.trailing, 8)
 		}
 	}
 }

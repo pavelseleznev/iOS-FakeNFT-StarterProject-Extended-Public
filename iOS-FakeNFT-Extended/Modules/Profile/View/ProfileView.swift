@@ -22,7 +22,7 @@ struct ProfileView: View {
 			HStack {
 				Spacer()
 				Button {
-					push(.aboutAuthor)
+//					push(.aboutAuthor)
 				} label: {
 					Image.edit
 						.foregroundStyle(.ypBlack)

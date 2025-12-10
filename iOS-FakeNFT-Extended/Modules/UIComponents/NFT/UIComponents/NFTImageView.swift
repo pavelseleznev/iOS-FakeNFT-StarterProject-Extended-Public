@@ -40,10 +40,6 @@ struct NFTImageView: View {
 					.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
 			}
 		}
-		.frame(
-			width: layout.imageWidth,
-			height: layout.imageHeight
-		)
 		.aspectRatio(1, contentMode: .fit)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 	}

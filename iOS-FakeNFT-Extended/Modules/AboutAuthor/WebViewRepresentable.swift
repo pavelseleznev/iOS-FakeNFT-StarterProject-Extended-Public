@@ -11,145 +11,109 @@ import SwiftUI
 
 struct WebViewRepresentable: UIViewRepresentable {
 	let url: URL
-	@Binding var isLoading: Bool
+	@Binding var loadingState: LoadingState
 	var colorScheme: ColorScheme
 	var onProgress: (Double) -> Void = { _ in }
-	
-	func makeUIView(context: Context) -> some UIView {
+
+	func makeUIView(context: Context) -> WKWebView {
 		let config = WKWebViewConfiguration()
 
-		let userScript = WKUserScript(source: helperJS, injectionTime: .atDocumentStart, forMainFrameOnly: true)
+		let userScript = WKUserScript(
+			source: helperJS,
+			injectionTime: .atDocumentStart,
+			forMainFrameOnly: true
+		)
 		config.userContentController.addUserScript(userScript)
-		
+
 		let webView = WKWebView(frame: .zero, configuration: config)
-		
 		webView.navigationDelegate = context.coordinator
 		context.coordinator.attach(to: webView)
-		
+
 		webView.load(URLRequest(url: url))
 		return webView
 	}
-	
-	func updateUIView(_ uiView: UIViewType, context: Context) {
-		if let webView = uiView as? WKWebView {
-			webView.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
-			let themeString = (colorScheme == .dark) ? "dark" : "light"
-			let js = "window.__applyNativeTheme && window.__applyNativeTheme('\(themeString)');"
-			webView.evaluateJavaScript(js, completionHandler: nil)
-		}
+
+	func updateUIView(_ uiView: WKWebView, context: Context) {
+		uiView.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
+		let themeString = (colorScheme == .dark) ? "dark" : "light"
+		let js = "window.__applyNativeTheme && window.__applyNativeTheme('\(themeString)');"
+		uiView.evaluateJavaScript(js, completionHandler: nil)
 	}
-	
+
 	func makeCoordinator() -> Coordinator {
 		Coordinator(
-			isLoading: $isLoading,
+			loadingState: $loadingState,
 			onProgress: onProgress
 		)
 	}
-	
+
+	// MARK: - Coordinator
+
 	class Coordinator: NSObject, WKNavigationDelegate {
-		@Binding var isLoading: Bool
+		@Binding var loadingState: LoadingState
 		let onProgress: (Double) -> Void
-		
+
 		weak var webView: WKWebView?
-		
-		private var isObservingProgress = false
-		
+
 		private var progressObservation: NSKeyValueObservation?
-		private let estimatedProgressKeyPath = "estimatedProgress"
-		
+		private let estimatedProgressTreshold: Double = 0.999
+
 		init(
-			isLoading: Binding<Bool>,
+			loadingState: Binding<LoadingState>,
 			onProgress: @escaping (Double) -> Void
 		) {
-			self._isLoading = isLoading
+			self._loadingState = loadingState
 			self.onProgress = onProgress
 		}
 
 		func attach(to webView: WKWebView) {
 			self.webView = webView
-			guard !isObservingProgress else { return }
-			webView.addObserver(
-				self,
-				forKeyPath: #keyPath(WKWebView.estimatedProgress),
-				options: .new,
-				context: nil
-			)
-			isObservingProgress = true
-		}
-		
-		@MainActor
-		@objc private func applyProgressNumber(_ number: NSNumber) {
-			let progress = number.doubleValue
-			onProgress(progress)
-			isLoading = progress < 0.999
-		}
-		
-		override func observeValue(
-			forKeyPath keyPath: String?,
-			of object: Any?,
-			change: [NSKeyValueChangeKey : Any]?,
-			context: UnsafeMutableRawPointer?
-		) {
-			guard
-				keyPath == estimatedProgressKeyPath
-			else {
-				super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-				return
+			guard progressObservation == nil else { return }
+
+			progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
+				guard let self, let value = change.newValue else { return }
+				DispatchQueue.main.async {
+					self.onProgress(value)
+					self.loadingState = value < self.estimatedProgressTreshold ? .idle : .fetching
+				}
 			}
-			
-			// --- берем значение из change, чтобы не читать @MainActor объект ---
-			let progress = (change?[.newKey] as? NSNumber)?.doubleValue ?? 0.0
-			
-			// --- главный поток без @Sendable ---
-			self.performSelector(
-				onMainThread: #selector(applyProgressNumber(_:)),
-				with: NSNumber(value: progress),
-				waitUntilDone: false
-			)
 		}
-		
+
 		deinit {
-			if
-				let webView,
-				isObservingProgress
-			{
-				webView
-					.removeObserver(
-						self,
-						forKeyPath: estimatedProgressKeyPath
-					)
-			}
-			isObservingProgress = false
+			progressObservation?.invalidate()
 		}
-		
-		// --- WKNavigationDelegate ---
+
+		// MARK: - WKNavigationDelegate
+
 		@MainActor
 		func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-			isLoading = true
+			loadingState = .fetching
 			onProgress(0.0)
 		}
-		
+
 		@MainActor
 		func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-			isLoading = true
+			loadingState = .fetching
 		}
-		
+
 		@MainActor
 		func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 			onProgress(1.0)
-			isLoading = false
+			loadingState = .idle
 		}
-		
+
 		@MainActor
 		func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-			isLoading = false
+			loadingState = .error
 		}
-		
+
 		@MainActor
 		func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-			isLoading = false
+			loadingState = .error
 		}
 	}
+
+	// MARK: - helperJS
 	
 	// window.__applyNativeTheme(theme)
 	private let helperJS = """
