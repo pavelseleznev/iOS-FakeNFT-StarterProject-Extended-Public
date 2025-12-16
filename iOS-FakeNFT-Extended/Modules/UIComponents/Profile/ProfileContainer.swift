@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileContainer<Link: View>: View {
 	let name: String
-	let image: Image
+	let imageURLString: String
 	let about: String
 	
 	let link: () -> Link
@@ -20,7 +20,7 @@ struct ProfileContainer<Link: View>: View {
 			VStack(alignment: .leading, spacing: 8) {
 				ProfileHeader(
 					name: name,
-					image: image,
+                    imageURLString: imageURLString,
 					about: about
 				)
 				
@@ -48,7 +48,7 @@ struct ProfileContainer<Link: View>: View {
 			
 			ProfileContainer(
 				name: "Joaquin Phoenix",
-				image: Image(.userPickMock),
+                imageURLString: "userPickMock",
 				about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
 			) {
 				Link("Joaquin Phienix.com", destination: .init(string: "https://google.com")!)
@@ -77,7 +77,7 @@ struct ProfileContainer<Link: View>: View {
 		
 		ProfileContainer(
 			name: "Joaquin Phoenix",
-			image: Image(.userPickMock),
+            imageURLString: "userPickMock",
 			about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
 		) {
 			Button(action: {}) {

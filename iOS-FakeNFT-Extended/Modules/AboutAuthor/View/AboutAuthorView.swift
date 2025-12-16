@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-struct AboutAuthorVIew: View {
+struct AboutAuthorView: View {
+    let websiteURLString: String
+    
 	@State private var isLoading = false
 	@Environment(\.colorScheme) private var theme
 	
@@ -25,7 +27,7 @@ struct AboutAuthorVIew: View {
 
 #Preview {
 	NavigationStack {
-		AboutAuthorVIew()
+		AboutAuthorView(websiteURLString: "https://practicum.yandex.ru")
 			.customNavigationBackButton(backAction: {})
 	}
 }

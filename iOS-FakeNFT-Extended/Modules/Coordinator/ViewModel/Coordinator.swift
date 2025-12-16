@@ -54,22 +54,37 @@ extension Coordinator {
 
 // --- internal view builders ---
 extension Coordinator {
-	@ViewBuilder
-	func build(_ page: Page) -> some View {
-		switch page {
-		case .tabView:
-			TabBarView(
-				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismissSheet,
-				pop: pop
-			)
-			
-		case .aboutAuthor:
-			AboutAuthorVIew()
-		}
-	}
+    @ViewBuilder
+    func build(_ page: Page) -> some View {
+        switch page {
+        case .tabView:
+            TabBarView(
+                appContainer: appContainer,
+                push: push,
+                present: present,
+                dismiss: dismissSheet,
+                pop: pop
+            )
+            
+        case let .aboutAuthor(urlString):
+            AboutAuthorView(websiteURLString: urlString)
+        case .statNFTCollection(nfts: let nfts):
+            EmptyView()
+        case .statProfile(profile: let profile):
+            EmptyView()
+        case .editProfile(let profile):
+            EditProfileView(
+                profile: profile,
+                onSave: { updated in
+                    //TODO: save to your profile service / storage
+                    self.pop()
+                },
+                onCancel: {
+                    self.pop()
+                }
+            )
+        }
+    }
 	
 	@ViewBuilder
 	func build(_ sheet: Sheet) -> some View {

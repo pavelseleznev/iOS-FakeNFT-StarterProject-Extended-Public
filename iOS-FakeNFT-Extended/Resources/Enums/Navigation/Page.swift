@@ -6,9 +6,24 @@
 //
 
 
-enum Page: Hashable, Identifiable {
+enum Page: Identifiable {
 	case tabView
-	case aboutAuthor
+    case aboutAuthor(urlString: String)
 	
-	var id: Self { self }
+    // statistics
+    case statNFTCollection(nfts: [NFTModel])
+    case statProfile(profile: UserListItemResponse)
+    case editProfile(ProfileModel)
+    
+    var id: String { .init(describing: self)}
+}
+
+extension Page: Hashable {
+    static func == (lhs: Page, rhs: Page) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
