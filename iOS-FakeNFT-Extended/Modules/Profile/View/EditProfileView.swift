@@ -54,7 +54,17 @@ struct EditProfileView: View {
                 
                 EditProfileFooter(
                     isVisible: viewModel.canSave,
-                    onSave: { viewModel.saveTapped(onSave: onSave) }
+                    onSave: {
+                        Task {
+                            do {
+                                let updatedProfile = try await viewModel.saveTapped()
+                                onSave(updatedProfile)
+                            } catch {
+                                // TODO: Handle error (alert, log, etc.)
+                                print(error)
+                            }
+                        }
+                    }
                 )
             }
             .edgesIgnoringSafeArea(.bottom)

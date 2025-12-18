@@ -64,23 +64,16 @@ final class EditProfileViewModel {
         avatarURL = placeholderAvatar
     }
     
-    func saveTapped(onSave: @escaping (ProfileModel) -> Void) {
+    func saveTapped() async throws -> ProfileModel {
         loadingState = .fetching
-        
-        Task { [weak self] in
-            guard let self else { return }
-            
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
-            let updated = ProfileModel(
-                name: self.name,
-                about: self.about,
-                website: self.website,
-                avatarURL: self.avatarURL
-            )
-            
-            onSave(updated)
-            self.loadingState = .idle
-        }
+        defer { loadingState = .idle }
+        try await Task.sleep(for: .seconds(3))
+        return ProfileModel(
+            name: name,
+            about: about,
+            website: website,
+            avatarURL: avatarURL
+        )
     }
     
     func photoURLSaved(_ url: String) {
