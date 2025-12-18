@@ -6,22 +6,36 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 struct ProfileHeader: View {
 	let name: String
-	let image: Image
+    let imageURLString: String
 	let about: String
+    
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
-				image
-					.resizable()
-					.scaledToFit()
-					.frame(width: 70)
-				Text(name)
-					.foregroundStyle(.ypBlack)
-					.font(.bold22)
+                Group {
+                    if let url = URL(string: imageURLString),
+                       let scheme = url.scheme,
+                       (scheme == "http" || scheme == "https") {
+                        KFImage(url)
+                            .resizable()
+                            .scaledToFit()
+                    } else {
+                        Image(imageURLString)
+                            .resizable()
+                            .scaledToFit()
+                    }
+                }
+                .clipShape(Circle())
+                .frame(width: 70)
 				
+                Text(name)
+                    .foregroundStyle(.ypBlack)
+                    .font(.bold22)
+                
 				Spacer()
 			}
 			

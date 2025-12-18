@@ -14,7 +14,8 @@ struct RemoveThisAnyDecodableDummy: Decodable {}
 final class ObservedNetworkClient {
 	private var loader = DataLoader()
 	private let api: NetworkClient
-	
+    static let mock = ObservedNetworkClient(api: DefaultNetworkClient())
+
 	@inlinable
 	var loadingState: LoadingState {
 		loader.loadingState

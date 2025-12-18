@@ -8,28 +8,62 @@
 import SwiftUI
 
 struct ProfileView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	
+    @State private var viewModel: ProfileViewModel
+    init(profile: ProfileModel, router: ProfileRouting) {
+        _viewModel = State(initialValue: ProfileViewModel(
+            profile: profile, router: router
+        ))
+    }
+    
 	var body: some View {
 		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			Text("Profile")
-				.font(.title)
-				.bold()
+            Color.ypWhite.ignoresSafeArea()
+            
+            ProfileContainer(
+                name: "Joaquin Phoenix",
+                imageURLString: "userPickMock",
+                about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
+            ) {
+                Button { viewModel.websiteTapped()
+                } label: {
+                    Text(viewModel.profile.website)
+                }
+            } actions: {
+                [
+                    ProfileActionCell(
+                        title: "Мои NFT (112)",
+                        action: {
+                            //TODO: push to "MyNFTs" page
+                        }
+                    ),
+                    ProfileActionCell(
+                        title: "Избранные NFT (11)",
+                        action: {
+                            //TODO: push to "favorites" page
+                        })
+                ]
+            }
+
 		}
 		.safeAreaInset(edge: .top) {
-			HStack {
-				Spacer()
-				Button {
-					push(.aboutAuthor)
-				} label: {
-					Image.edit
-						.foregroundStyle(.ypBlack)
-						.font(.editProfileIcon)
-				}
-				.padding(.trailing, 8)
-			}
+			editButton
 		}
 	}
+}
+
+private extension ProfileView {
+    var editButton: some View {
+        HStack {
+            Spacer()
+            
+            Button {
+                viewModel.editTapped()
+            } label: {
+                Image.edit
+                    .foregroundStyle(.ypBlack)
+                    .font(.editProfileIcon)
+            }
+            .padding(.trailing, 8)
+        }
+    }
 }

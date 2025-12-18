@@ -14,9 +14,14 @@ struct CoordinatorView: View {
 		NavigationStack(path: $coordinator.path) {
 			coordinator.build(.tabView)
 				.navigationDestination(for: Page.self) { page in
-					coordinator.build(page)
-						.customNavigationBackButton(backAction: coordinator.pop)
-						.overlay(content: loadingView)
+                    let built = coordinator.build(page).overlay(content: loadingView)
+                    switch page {
+                    case .editProfile:
+                        built
+                    default:
+                        built.customNavigationBackButton(backAction: coordinator.pop)
+                            .overlay(content: loadingView)
+                    }
 				}
 				.sheet(item: $coordinator.sheet) { sheet in
 					coordinator.build(sheet)
@@ -35,8 +40,9 @@ struct CoordinatorView: View {
 	init() {
 		let api = ObservedNetworkClient()
 		let nftStorage = NFTStorage()
+        let profileProvider: ProfileProvider = MockProfileProvider()
 		let nft = NFTService(api: api, storage: nftStorage)
-		let appContainer = AppContainer(nft: nft, api: api)
+		let appContainer = AppContainer(nft: nft, api: api, profileProvider: profileProvider)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 	}
 	
