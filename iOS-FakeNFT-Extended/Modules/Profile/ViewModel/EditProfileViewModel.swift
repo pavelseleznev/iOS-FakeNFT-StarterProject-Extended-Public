@@ -67,9 +67,10 @@ final class EditProfileViewModel {
     func saveTapped(onSave: @escaping (ProfileModel) -> Void) {
         loadingState = .fetching
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+        Task { [weak self] in
             guard let self else { return }
             
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
             let updated = ProfileModel(
                 name: self.name,
                 about: self.about,
