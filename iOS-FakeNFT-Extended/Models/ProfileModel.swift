@@ -8,8 +8,8 @@
 import Foundation
 
 struct ProfileModel {
-    var name: String
-    var about: String
-    var website: String
-    var avatarURL: String
+    let name: String
+    let about: String
+    let website: String
+    let avatarURL: String
 }

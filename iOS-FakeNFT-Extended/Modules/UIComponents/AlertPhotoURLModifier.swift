@@ -32,7 +32,7 @@ struct AlertPhotoURLModifier: ViewModifier {
                 VStack(spacing: 0) {
                     Text(title)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                         .multilineTextAlignment(.center)
                         .padding(.top, 14)
                         .padding(.horizontal, 16)
@@ -44,16 +44,15 @@ struct AlertPhotoURLModifier: ViewModifier {
                             .padding(.vertical, 10)
                             .padding(.horizontal, 12)
                             .background(Color(UIColor.secondarySystemBackground))
-                            .foregroundColor(.primary)
-                            .cornerRadius(8)
+                            .foregroundStyle(.primary)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .focused($textFieldFocused)
                             .onAppear {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { textFieldFocused = true }
                             }
                     }
-                    .padding(.horizontal, 16)
                     .padding(.top, 12)
-                    .padding(.bottom, 16)
+                    .padding([.horizontal, .bottom], 16)
 
                     Divider()
 
@@ -86,7 +85,7 @@ struct AlertPhotoURLModifier: ViewModifier {
                 }
                 .frame(maxWidth: 270)
                 .background(Color(UIColor.systemBackground))
-                .cornerRadius(13)
+                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
                 .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 8)
                 .padding(.horizontal, 40)
                 .transition(.scale.combined(with: .opacity))
@@ -96,5 +95,3 @@ struct AlertPhotoURLModifier: ViewModifier {
         .animation(.easeInOut(duration: 0.18), value: isPresented)
     }
 }
-
-

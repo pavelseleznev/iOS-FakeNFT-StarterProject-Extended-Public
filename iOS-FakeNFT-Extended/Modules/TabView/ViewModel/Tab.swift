@@ -46,8 +46,8 @@ enum Tab: String, CaseIterable, Identifiable {
 		switch self {
 		case .profile:
 			ProfileView(
-				appContainer: appContainer,
-				push: push
+                profile: appContainer.profileProvider.profile(),
+                router: TabProfileRouter(push: push)
 			)
 		case .catalog:
 			CatalogView(

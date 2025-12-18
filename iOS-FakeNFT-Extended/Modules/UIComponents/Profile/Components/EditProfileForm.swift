@@ -11,7 +11,7 @@ struct EditProfileForm: View {
     @Binding var name: String
     @Binding var about: String
     @Binding var website: String
-    @FocusState var focusedField: Field?
+    @FocusState var focusedField: EditProfileField?
 
     var body: some View {
         VStack(spacing: 24) {

@@ -9,7 +9,7 @@ import SwiftUI
 import Kingfisher
 
 struct EditProfileHeader: View {
-    let avatarURL: String
+    @Binding var avatarURL: String
     @Binding var isPhotoActionsPresented: Bool
     let didTapChangePhoto: () -> Void
     let didTapDeletePhoto: () -> Void

@@ -8,16 +8,11 @@
 import SwiftUI
 
 struct ProfileView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-    private let profileURLString = "https://example.com"
-    private var mockProfile: ProfileModel {
-        .init(
-            name: "Joaquin Phoenix",
-            about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям.",
-            website: "Joaquin Phoenix.com",
-            avatarURL: "userPickMockEdit"
-        )
+    @State private var viewModel: ProfileViewModel
+    init(profile: ProfileModel, router: ProfileRouting) {
+        _viewModel = State(initialValue: ProfileViewModel(
+            profile: profile, router: router
+        ))
     }
     
 	var body: some View {
@@ -29,8 +24,9 @@ struct ProfileView: View {
                 imageURLString: "userPickMock",
                 about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
             ) {
-                Button { push(.aboutAuthor(urlString: profileURLString)) } label: {
-                    Text("Joaquin Phoenix.com")
+                Button { viewModel.websiteTapped()
+                } label: {
+                    Text(viewModel.profile.website)
                 }
             } actions: {
                 [
@@ -50,17 +46,24 @@ struct ProfileView: View {
 
 		}
 		.safeAreaInset(edge: .top) {
-			HStack {
-				Spacer()
-				Button {
-					push(.editProfile(mockProfile))
-				} label: {
-					Image.edit
-						.foregroundStyle(.ypBlack)
-						.font(.editProfileIcon)
-				}
-				.padding(.trailing, 8)
-			}
+			editButton
 		}
 	}
+}
+
+private extension ProfileView {
+    var editButton: some View {
+        HStack {
+            Spacer()
+            
+            Button {
+                viewModel.editTapped()
+            } label: {
+                Image.edit
+                    .foregroundStyle(.ypBlack)
+                    .font(.editProfileIcon)
+            }
+            .padding(.trailing, 8)
+        }
+    }
 }

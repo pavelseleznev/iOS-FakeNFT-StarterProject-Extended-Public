@@ -9,4 +9,5 @@
 struct AppContainer {
 	let nft: NFTServiceProtocol
 	let api: ObservedNetworkClient
+    let profileProvider: ProfileProvider
 }

@@ -13,7 +13,7 @@ struct AlertPhotoButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: 17, weight: isPrimary ? .semibold : .regular))
-            .foregroundColor(isPrimary ? Color.accentColor : Color(UIColor.systemBlue))
+            .foregroundStyle(isPrimary ? Color.accentColor : Color(UIColor.systemBlue))
             .background(Color.clear)
             .opacity(configuration.isPressed ? 0.6 : 1.0)
     }

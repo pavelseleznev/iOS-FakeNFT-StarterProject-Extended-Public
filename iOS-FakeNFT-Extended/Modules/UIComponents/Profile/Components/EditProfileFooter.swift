@@ -17,12 +17,12 @@ struct EditProfileFooter: View {
             if isVisible {
                 Button(action: onSave) {
                     Text("Сохранить")
-                        .foregroundColor(.ypWhite)
+                        .foregroundStyle(.ypWhite)
                         .font(.bold17)
                         .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.ypBlack)
-                        .cornerRadius(16)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 34)
