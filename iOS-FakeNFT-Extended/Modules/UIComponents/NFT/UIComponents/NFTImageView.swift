@@ -16,14 +16,19 @@ struct NFTImageView: View {
 	
 	var body: some View {
 		Group {
-			if let imageURLString = model.imagesURLsStrings.first {
-				AsyncImage(url: URL(string: imageURLString)) { image in
+			if
+				let imageURLString = model.imagesURLsStrings.first,
+				let url = URL(string: imageURLString)
+			{
+				AsyncImage(url: url) { image in
 					image
 						.resizable()
-						.scaledToFit()
 				} placeholder: {
-					ProgressView()
-						.progressViewStyle(.circular)
+					ZStack {
+						Color.ypBackgroundUniversal
+						ProgressView()
+							.progressViewStyle(.circular)
+					}
 				}
 			} else {
 				ZStack {
@@ -34,6 +39,7 @@ struct NFTImageView: View {
 				}
 			}
 		}
+		.scaledToFit()
 		.overlay(alignment: .topTrailing) {
 			Button(action: likeAction) {
 				Image.heartFill
