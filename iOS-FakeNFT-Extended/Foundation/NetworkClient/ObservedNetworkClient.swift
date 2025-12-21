@@ -113,8 +113,8 @@ extension ObservedNetworkClient {
 
 // --- users ---
 extension ObservedNetworkClient {
-	func getUsers(page: Int) async throws -> [UserListItemResponse] {
-		let request = GetUsersRequest(page: page)
+	func getUsers(page: Int, sortOption: StatisticsSortActionsViewModifier.SortOption) async throws -> [UserListItemResponse] {
+		let request = GetUsersRequest(page: page, sortOption: sortOption)
 		return try await fetch(request)
 	}
 	
