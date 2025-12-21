@@ -66,7 +66,7 @@ private extension DefaultNetworkClient {
 			urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
 			urlRequest.httpBody = bodyString.data(using: .utf8)
 		}
-		
+
 		urlRequest.addValue(RequestConstants.token, forHTTPHeaderField: "X-Practicum-Mobile-Token")
 		return urlRequest
 	}
