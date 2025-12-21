@@ -8,15 +8,18 @@
 import SwiftUI
 
 struct StatisticsNFTCollectionView: View {
-	@State private var viewModel: StatisticsNFTCollectionViewModel
+	private let nftsIDs: [String]
+	private let nftService: NFTServiceProtocol
+	private let loadingState: LoadingState
 	
 	init(
-		nfts: [NFTModel],
-		api: ObservedNetworkClient,
+		nftsIDs: [String],
+		loadingState: LoadingState,
+		nftService: NFTServiceProtocol
 	) {
-		_viewModel = .init(
-			initialValue: .init(nfts: nfts, api: api)
-		)
+		self.nftsIDs = nftsIDs
+		self.loadingState = loadingState
+		self.nftService = nftService
 	}
 	
 	var body: some View {
@@ -24,9 +27,9 @@ struct StatisticsNFTCollectionView: View {
 			Color.ypWhite.ignoresSafeArea()
 			
 			NFTCollectionView(
-				nfts: viewModel.nfts,
-				likeActionOn: viewModel.didTapLikeButton,
-				cartActionOn: viewModel.didTapCartButton
+				nftsIDs: nftsIDs,
+				nftService: nftService,
+				errorIsPresented: loadingState == .error
 			)
 			.safeAreaPadding(.top)
 		}
@@ -36,6 +39,12 @@ struct StatisticsNFTCollectionView: View {
 					.foregroundStyle(.ypBlack)
 					.font(.bold17)
 			}
+			ToolbarItem(placement: .destructiveAction) {
+				if case .fetching = loadingState {
+					ProgressView()
+						.progressViewStyle(.circular)
+				}
+			}
 		}
 	}
 }
@@ -43,8 +52,16 @@ struct StatisticsNFTCollectionView: View {
 #if DEBUG
 #Preview {
 	StatisticsNFTCollectionView(
-		nfts: [.mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock],
-		api: .mock
+		nftsIDs: [
+			"d6a02bd1-1255-46cd-815b-656174c1d9c0",
+			"f380f245-0264-4b42-8e7e-c4486e237504",
+			"c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
+		],
+		loadingState: .idle,
+		nftService: NFTService(
+			api: .mock,
+			storage: NFTStorage()
+		)
 	)
 }
 #endif
