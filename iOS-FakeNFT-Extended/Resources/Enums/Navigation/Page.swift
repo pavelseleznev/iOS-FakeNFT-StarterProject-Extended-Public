@@ -11,7 +11,7 @@ enum Page: Identifiable {
 	case aboutAuthor(urlString: String)
 	
 	// statistics
-	case statNFTCollection(nfts: [NFTModel])
+	case statNFTCollection(nftsIDs: [String])
 	case statProfile(profile: UserListItemResponse)
 	
 	var id: String { .init(describing: self) }
