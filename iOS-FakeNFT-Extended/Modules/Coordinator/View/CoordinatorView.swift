@@ -16,7 +16,6 @@ struct CoordinatorView: View {
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
 						.customNavigationBackButton(backAction: coordinator.pop)
-						.overlay(content: loadingView)
 				}
 				.sheet(item: $coordinator.sheet) { sheet in
 					coordinator.build(sheet)
@@ -28,7 +27,19 @@ struct CoordinatorView: View {
 				}
 				.overlay(content: loadingView)
 				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
+				.applyRepeatableAlert(
+					isPresneted: .constant(coordinator.appContainer.api.loadingState == .error),
+					message: "Не удалось получить данные",
+					didTapRepeat: {
+						Task {
+							await coordinator.loadUserData()
+						}
+					}
+				)
 				.onAppear(perform: checkAuthState)
+				.task {
+					await coordinator.loadUserData()
+				}
 		}
 	}
 	
@@ -36,7 +47,7 @@ struct CoordinatorView: View {
 		let api = ObservedNetworkClient()
 		let nftStorage = NFTStorage()
 		let nft = NFTService(api: api, storage: nftStorage)
-		let appContainer = AppContainer(nft: nft, api: api)
+		let appContainer = AppContainer(nftService: nft, api: api)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 	}
 	
