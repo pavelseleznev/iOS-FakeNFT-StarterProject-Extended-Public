@@ -9,7 +9,8 @@ import SwiftUI
 
 struct NFTCartCellView: View {
 	
-	let model: NFTModel
+	let model: NFTResponse
+	let isFavourited: Bool
 	let likeAction: () -> Void
 	let cartAction: () -> Void
 	
@@ -19,13 +20,17 @@ struct NFTCartCellView: View {
 		HStack(spacing: 20) {
 			NFTImageView(
 				model: model,
+				isFavorited: isFavourited,
 				layout: layout,
 				likeAction: likeAction,
 			)
 			.frame(width: 108)
 			
 			VStack(spacing: 12) {
-				NFTNameRateAuthorView(model: model, layout: layout)
+				NFTNameRateAuthorView(
+					model: model,
+					layout: layout
+				)
 				NFTCostView(model: model, layout: layout)
 			}
 			
@@ -38,7 +43,7 @@ struct NFTCartCellView: View {
 	
 	private var cartButton: some View {
 		Button(action: cartAction) {
-			(model.isFavorite ? Image.removeFromCart : Image.addToCart)
+			(isFavourited ? Image.removeFromCart : Image.addToCart)
 				.resizable()
 				.foregroundStyle(.ypBlack)
 				.font(.cartIcon)
@@ -49,7 +54,7 @@ struct NFTCartCellView: View {
 
 #if DEBUG
 #Preview {
-	@Previewable @State var models: [NFTModel] = [
+	@Previewable @State var models: [NFTResponse] = [
 		.mock,
 		.mock,
 		.badImageURLMock,
@@ -65,6 +70,7 @@ struct NFTCartCellView: View {
 				ForEach(models) {
 					NFTCartCellView(
 						model: $0,
+						isFavourited: false,
 						likeAction: {},
 						cartAction: {}
 					)
