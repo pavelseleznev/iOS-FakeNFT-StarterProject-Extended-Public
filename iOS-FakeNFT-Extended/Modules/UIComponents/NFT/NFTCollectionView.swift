@@ -68,6 +68,7 @@ struct NFTCollectionView: View {
 		.task {
 			await asyncNFTs.fetchNFTs(using: Set(nftsIDs))
 		}
+		.onDisappear(perform: asyncNFTs.viewDidDissappear)
 		.applyRepeatableAlert(
 			isPresneted: .constant(errorIsPresented),
 			message: "Не удалось получить данные",
