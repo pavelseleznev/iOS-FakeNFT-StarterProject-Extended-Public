@@ -19,7 +19,7 @@ struct NFTCompactCellView: View {
 		HStack(spacing: 12) {
 			NFTImageView(
 				model: model,
-				isFavorited: isFavourited,
+				isFavourited: isFavourited,
 				layout: layout,
 				likeAction: likeAction,
 			)
