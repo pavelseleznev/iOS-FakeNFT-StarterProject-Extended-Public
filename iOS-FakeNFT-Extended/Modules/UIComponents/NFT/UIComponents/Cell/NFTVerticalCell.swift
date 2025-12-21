@@ -9,35 +9,40 @@ import SwiftUI
 
 struct NFTVerticalCell: View {
 	
-	let model: NFTModel
+	let model: NFTModelContainer
 	let likeAction: () -> Void
 	let cartAction: () -> Void
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			NFTImageView(
-				model: model,
+				model: model.nft,
+				isFavorited: model.isFavorite,
 				layout: .my,
 				likeAction: likeAction,
 			)
 			
-			RatingPreview(rating: model.rate)
+			RatingPreview(rating: model.nft.rating)
 			
 			HStack {
 				VStack(alignment: .leading, spacing: 4) {
-					Text(model.name)
+					Text(model.nft.name)
 						.foregroundStyle(.ypBlack)
 						.font(.bold17)
-						.lineLimit(5)
+						.lineLimit(2)
 						.truncationMode(.tail)
 					
-					Text(model.cost)
-						.foregroundStyle(.ypBlack)
-						.font(.medium10)
+					Text(
+						String(format: "%.2f", model.nft.price)
+							.replacingOccurrences(of: ".", with: ",")
+						+ " ETH"
+					)
+					.foregroundStyle(.ypBlack)
+					.font(.medium10)
 				}
 				Spacer()
 				Button(action: cartAction) {
-					Image.addToCart
+					(model.isInCart ? Image.removeFromCart : Image.addToCart)
 						.resizable()
 						.font(.cartIcon)
 						.foregroundStyle(.ypBlack)
