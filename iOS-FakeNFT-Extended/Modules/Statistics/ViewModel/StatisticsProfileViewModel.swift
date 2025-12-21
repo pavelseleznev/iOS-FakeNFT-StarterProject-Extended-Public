@@ -10,8 +10,8 @@ import Observation
 @MainActor
 @Observable
 final class StatisticsProfileViewModel {
+	let model: UserListItemResponse
 	private let api: ObservedNetworkClient
-	private let model: UserListItemResponse
 	private let push: (Page) -> Void
 	
 	init(
@@ -25,15 +25,9 @@ final class StatisticsProfileViewModel {
 	}
 	
 	func didTapProfileActionCell() {
-		#warning("TODO: replace later wuth fetching from API")
 		push(
 			.statNFTCollection(
-				nfts: [
-					.mock,
-					.mock,
-					.badImageURLMock,
-					.mock
-				]
+				nftsIDs: model.nftsIDs
 			)
 		)
 	}
