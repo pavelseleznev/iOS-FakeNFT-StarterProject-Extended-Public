@@ -17,7 +17,7 @@ struct NFTVerticalCell: View {
 		VStack(alignment: .leading, spacing: 8) {
 			NFTImageView(
 				model: model.nft,
-				isFavorited: model.isFavorite,
+				isFavourited: model.isFavorite,
 				layout: .my,
 				likeAction: likeAction,
 			)

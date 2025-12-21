@@ -6,20 +6,25 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct NFTImageView: View {
 	
-	let model: NFTModel
+	let model: NFTResponse
+	let isFavourited: Bool
 	let layout: NFTCellLayout
 	let likeAction: () -> Void
 	
 	var body: some View {
 		Group {
-			if let url = URL(string: model.imageURLString) {
-				KFImage(url)
-					.resizable()
-					.scaledToFit()
+			if let imageURLString = model.imagesURLsStrings.first {
+				AsyncImage(url: URL(string: imageURLString)) { image in
+					image
+						.resizable()
+						.scaledToFit()
+				} placeholder: {
+					ProgressView()
+						.progressViewStyle(.circular)
+				}
 			} else {
 				ZStack {
 					Color.ypBackgroundUniversal
@@ -35,7 +40,7 @@ struct NFTImageView: View {
 					.padding(.top, 10)
 					.padding(.trailing, 8)
 					.foregroundStyle(
-						model.isFavorite ? .ypRedUniversal : .ypWhiteUniversal
+						isFavourited ? .ypRedUniversal : .ypWhiteUniversal
 					)
 					.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
 			}
