@@ -52,9 +52,17 @@ struct NFTCollectionView: View {
 							asyncNFTs.didTapCartButton(for: model, at: index)
 						}
 					)
+					.transition(.scale)
+					.transition(.blurReplace)
+				}
+				.scrollTransition { content, phase in
+					content
+						.opacity(phase.isIdentity ? 1 : 0.25)
+						.blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
 				}
 			}
 		}
+		.animation(.easeInOut(duration: 0.15), value: asyncNFTs.nfts)
 		.padding(.horizontal, 16)
 		.scrollIndicators(.hidden)
 		.task {
