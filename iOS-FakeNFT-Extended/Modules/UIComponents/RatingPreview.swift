@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RatingPreview: View {
-	let rating: String
+	let rating: Int
 	
 	@Environment(\.colorScheme) private var theme
 	
@@ -16,7 +16,7 @@ struct RatingPreview: View {
 		HStack(spacing: 0) {
 			ForEach(0..<5) { index in
 				Image.starFill
-					.foregroundStyle(index < starsCount ? .ypYellowUniversal : .ypLightGrey)
+					.foregroundStyle(index < rating ? .ypYellowUniversal : .ypLightGrey)
 					.font(.startIcon)
 					.shadow(
 						color: shadowColor,
@@ -24,10 +24,6 @@ struct RatingPreview: View {
 					)
 			}
 		}
-	}
-	
-	private var starsCount: Int {
-		Int(Double(rating.split(separator: "/")[0]) ?? 0)
 	}
 	
 	private var shadowColor: Color {
@@ -41,7 +37,7 @@ struct RatingPreview: View {
 
 #if DEBUG
 #Preview {
-	RatingPreview(rating: "3.5/5")
+	RatingPreview(rating: 3)
 		.scaleEffect(5)
 }
 #endif
