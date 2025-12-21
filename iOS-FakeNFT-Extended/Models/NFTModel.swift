@@ -16,7 +16,9 @@ struct NFTModel: Identifiable, Hashable {
 	let isFavorite: Bool
 	
 	let id: String
-	
+}
+
+extension NFTModel {
 	static var mock: Self {
 		.init(
 			imageURLString: "https://public.bnbstatic.com/static/content/square/images/21ba7a4483794ab5a1bfb2cf9a3338ab.png",
