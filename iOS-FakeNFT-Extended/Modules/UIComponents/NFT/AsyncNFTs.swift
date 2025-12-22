@@ -9,8 +9,8 @@ import Foundation
 
 @MainActor
 final class AsyncNFTs: ObservableObject {
-	@Published private(set) var nfts = [NFTModelContainer]()
-	@Published private(set) var failedIDs = Set<String>()
+	@Published private var nfts = [NFTModelContainer]()
+	private var failedIDs = Set<String>()
 	
 	private var currentStream: AsyncStream<NFTResponse>?
 	private var continuation: AsyncStream<NFTResponse>.Continuation?
@@ -19,6 +19,13 @@ final class AsyncNFTs: ObservableObject {
 	private var viewDidDisappeared = false
 	
 	private let nftService: NFTServiceProtocol
+	
+	var visibleNFTs: [NFTModelContainer] {
+		nfts
+			.sorted {
+				$0.nft.id.localizedStandardCompare($1.nft.id) == .orderedAscending
+			}
+	}
 	
 	init(nftService: NFTServiceProtocol) {
 		self.nftService = nftService
@@ -63,13 +70,15 @@ extension AsyncNFTs {
 		nfts.reserveCapacity(ids.count)
 		
 		for await nft in makeNFTsStream(with: ids) {
-			nfts.append(
-				.init(
-					nft: nft,
-					isFavorite: await nftService.isFavourite(id: nft.id),
-					isInCart: await nftService.isInCart(id: nft.id)
+			if !nfts.map(\.id).contains(nft.id) {
+				nfts.append(
+					.init(
+						nft: nft,
+						isFavorite: await nftService.isFavourite(id: nft.id),
+						isInCart: await nftService.isInCart(id: nft.id)
+					)
 				)
-			)
+			}
 		}
 	}
 }

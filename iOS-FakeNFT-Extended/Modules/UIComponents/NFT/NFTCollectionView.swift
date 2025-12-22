@@ -40,7 +40,7 @@ struct NFTCollectionView: View {
 				spacing: 28
 			) {
 				ForEach(
-					Array(asyncNFTs.nfts.enumerated()),
+					Array(asyncNFTs.visibleNFTs.enumerated()),
 					id: \.offset
 				) { index, model in
 					NFTVerticalCell(
@@ -62,7 +62,7 @@ struct NFTCollectionView: View {
 				}
 			}
 		}
-		.animation(.easeInOut(duration: 0.15), value: asyncNFTs.nfts)
+		.animation(.easeInOut(duration: 0.15), value: asyncNFTs.visibleNFTs)
 		.padding(.horizontal, 16)
 		.scrollIndicators(.hidden)
 		.task {
