@@ -19,7 +19,7 @@ actor NFTStorage: NFTStorageProtocol {
 	private var cart = Set<String>()
 }
 
-// --- cart ---
+// MARK: - cart
 extension NFTStorage {
 	func addToCart(id: String) async {
 		cart.insert(id)
@@ -34,7 +34,7 @@ extension NFTStorage {
 	}
 }
 
-// --- favourite ---
+// MARK: - favourite
 extension NFTStorage {
 	func getFavourites() async -> Set<String> {
 		favourites
@@ -49,7 +49,7 @@ extension NFTStorage {
 	}
 }
 
-// --- purchase ---
+// MARK: - purchase
 extension NFTStorage {
 	func addToPurchased(id: String) async {
 		purchased.insert(id)
