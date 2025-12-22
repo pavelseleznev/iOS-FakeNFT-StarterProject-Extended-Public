@@ -29,7 +29,7 @@ struct CoordinatorView: View {
 				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
 				.applyRepeatableAlert(
 					isPresneted: .constant(coordinator.appContainer.api.loadingState == .error),
-					message: "Не удалось получить данные",
+					message: "Не удалось получить данные", // TODO: move to constants
 					didTapRepeat: {
 						Task {
 							await coordinator.loadUserData()
