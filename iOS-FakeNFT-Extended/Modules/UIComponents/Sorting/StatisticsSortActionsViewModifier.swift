@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StatisticsSortActionsViewModifier: ViewModifier {
-	enum SortOption {
+	enum SortOption: String {
 		case rate, name
 		var description: String {
 			switch self {

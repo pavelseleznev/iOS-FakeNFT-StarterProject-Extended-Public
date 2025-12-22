@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct StatisticsView: View {
+	private static let statisticsSortOptionKey: String = "statisticsSortOptionKey"
+	
 	@State private var viewModel: StatisticsViewModel
+	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .name
 	
 	init(
 		api: ObservedNetworkClient,
@@ -20,6 +23,8 @@ struct StatisticsView: View {
 				push: push
 			)
 		)
+		
+		viewModel.setSortOption(sortOption)
 	}
 	
 	var body: some View {
@@ -54,8 +59,9 @@ struct StatisticsView: View {
 		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
-			activeSortOption: $viewModel.currenctSortOption
+			activeSortOption: $sortOption
 		)
+		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
 	}
 }
 

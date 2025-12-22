@@ -11,12 +11,14 @@ import Observation
 @MainActor
 @Observable
 final class StatisticsViewModel {
+	typealias SortOption = StatisticsSortActionsViewModifier.SortOption
+	
 	private(set) var users = Set<UserListItemResponse>()
 	private let api: ObservedNetworkClient
 	private let push: (Page) -> Void
 	private var currentPage = 0
 	
-	var currenctSortOption: StatisticsSortActionsViewModifier.SortOption = .name
+	var currenctSortOption: SortOption = .name
 	
 	init(
 		api: ObservedNetworkClient,
@@ -51,6 +53,10 @@ extension StatisticsViewModel {
 		} catch {
 			print(error)
 		}
+	}
+	
+	func setSortOption(_ option: SortOption) {
+		currenctSortOption = option
 	}
 }
 
