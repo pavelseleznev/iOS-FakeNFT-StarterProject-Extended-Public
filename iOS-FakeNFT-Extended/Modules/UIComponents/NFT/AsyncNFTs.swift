@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 final class AsyncNFTs: ObservableObject {
-	@Published private var nfts = [NFTModelContainer]()
+	@Published private var nfts = [String : NFTModelContainer?]()
 	private var failedIDs = Set<String>()
 	
 	private var currentStream: AsyncStream<NFTResponse>?
@@ -20,11 +20,13 @@ final class AsyncNFTs: ObservableObject {
 	
 	private let nftService: NFTServiceProtocol
 	
-	var visibleNFTs: [NFTModelContainer] {
+	@inline(__always)
+	var visibleNFTs: [NFTModelContainer?] {
 		nfts
 			.sorted {
-				$0.nft.id.localizedStandardCompare($1.nft.id) == .orderedAscending
+				$0.key.localizedStandardCompare($1.key) == .orderedAscending
 			}
+			.map(\.value)
 	}
 	
 	init(nftService: NFTServiceProtocol) {
@@ -33,8 +35,10 @@ final class AsyncNFTs: ObservableObject {
 }
 
 extension AsyncNFTs {
-	func didTapLikeButton(for model: NFTModelContainer, at index: Int) {
-		switchLikeState(for: model, at: index)
+	func didTapLikeButton(for model: NFTModelContainer?) {
+		guard let model else { return }
+		
+		switchLikeState(for: model, key: model.id)
 		Task {
 			if await nftService.isFavourite(id: model.id) {
 				await nftService.removeFromFavourite(id: model.id)
@@ -44,8 +48,10 @@ extension AsyncNFTs {
 		}
 	}
 	
-	func didTapCartButton(for model: NFTModelContainer, at index: Int) {
-		switchCartState(for: model, at: index)
+	func didTapCartButton(for model: NFTModelContainer?) {
+		guard let model else { return }
+		
+		switchCartState(for: model, key: model.id)
 		Task {
 			if await nftService.isInCart(id: model.id) {
 				await nftService.removeFromCart(id: model.id)
@@ -68,17 +74,15 @@ extension AsyncNFTs {
 	
 	func fetchNFTs(using ids: Set<String>) async {
 		nfts.reserveCapacity(ids.count)
+		ids.forEach { nfts[$0, default: nil] = nil }
 		
 		for await nft in makeNFTsStream(with: ids) {
-			if !nfts.map(\.id).contains(nft.id) {
-				nfts.append(
-					.init(
-						nft: nft,
-						isFavorite: await nftService.isFavourite(id: nft.id),
-						isInCart: await nftService.isInCart(id: nft.id)
-					)
-				)
-			}
+			let nftContainer = NFTModelContainer(
+				nft: nft,
+				isFavorite: await nftService.isFavourite(id: nft.id),
+				isInCart: await nftService.isInCart(id: nft.id)
+			)
+			nfts[nft.id, default: nil] = nftContainer
 		}
 	}
 }
@@ -173,16 +177,16 @@ private extension AsyncNFTs {
 		}
 	}
 	
-	func switchLikeState(for model: NFTModelContainer, at index: Int) {
-		nfts[index] = .init(
+	func switchLikeState(for model: NFTModelContainer, key id: String) {
+		nfts[id] = .init(
 			nft: model.nft,
 			isFavorite: !model.isFavorite,
 			isInCart: model.isInCart
 		)
 	}
 	
-	func switchCartState(for model: NFTModelContainer, at index: Int) {
-		nfts[index] = .init(
+	func switchCartState(for model: NFTModelContainer, key id: String) {
+		nfts[id] = .init(
 			nft: model.nft,
 			isFavorite: model.isFavorite,
 			isInCart: !model.isInCart
