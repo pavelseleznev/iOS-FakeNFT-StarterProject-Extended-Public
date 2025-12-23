@@ -9,49 +9,56 @@ import SwiftUI
 
 struct NFTImageView: View {
 	
-	let model: NFTResponse
-	let isFavourited: Bool
+	let model: NFTResponse?
+	let isFavourited: Bool?
 	let layout: NFTCellLayout
 	let likeAction: () -> Void
 	
 	var body: some View {
 		Group {
-			if
-				let imageURLString = model.imagesURLsStrings.first,
-				let url = URL(string: imageURLString)
-			{
-				AsyncImage(url: url) { image in
+			if model != nil {
+				AsyncImage(url: imageURL) { image in
 					image
 						.resizable()
 				} placeholder: {
-					ZStack {
-						Color.ypBackgroundUniversal
-						ProgressView()
-							.progressViewStyle(.circular)
-					}
+					Color.ypBackgroundUniversal
+						.overlay {
+							ProgressView()
+								.progressViewStyle(.circular)
+						}
 				}
 			} else {
-				ZStack {
-					Color.ypBackgroundUniversal
-					Text("?")
-						.font(.bold22)
-						.foregroundStyle(.ypWhiteUniversal)
-				}
+				LoadingShimmerPlaceholderView()
 			}
 		}
 		.scaledToFit()
 		.overlay(alignment: .topTrailing) {
 			Button(action: likeAction) {
-				Image.heartFill
-					.padding(.top, 10)
-					.padding(.trailing, 8)
-					.foregroundStyle(
-						isFavourited ? .ypRedUniversal : .ypWhiteUniversal
-					)
-					.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
+				favouriteImage
 			}
 		}
 		.aspectRatio(1, contentMode: .fit)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
+	}
+	
+	private var imageURL: URL? {
+		URL(string: model?.imagesURLsStrings.first ?? "")
+	}
+	
+	private var favouriteImage: some View {
+		Group {
+			if let isFavourited {
+				Image.heartFill
+					.foregroundStyle(
+						isFavourited ? .ypRedUniversal : .ypWhiteUniversal
+					)
+			} else {
+				LoadingShimmerPlaceholderView()
+					.frame(width: 24, height: 24)
+			}
+		}
+		.padding(.top, 10)
+		.padding(.trailing, 8)
+		.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
 	}
 }

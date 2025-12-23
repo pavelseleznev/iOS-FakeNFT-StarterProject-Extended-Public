@@ -46,10 +46,10 @@ struct NFTCollectionView: View {
 					NFTVerticalCell(
 						model: model,
 						likeAction: {
-							asyncNFTs.didTapLikeButton(for: model, at: index)
+							asyncNFTs.didTapLikeButton(for: model)
 						},
 						cartAction: {
-							asyncNFTs.didTapCartButton(for: model, at: index)
+							asyncNFTs.didTapCartButton(for: model)
 						}
 					)
 					.transition(.scale)
@@ -83,7 +83,6 @@ struct NFTCollectionView: View {
 
 #if DEBUG
 #Preview {
-	
 	@Previewable let service = NFTService(
 		api: .init(api: DefaultNetworkClient()),
 			  storage: NFTStorage()
