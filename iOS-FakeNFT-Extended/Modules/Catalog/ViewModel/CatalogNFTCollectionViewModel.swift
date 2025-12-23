@@ -5,19 +5,32 @@
 //  Created by Nikita Khon on 23.12.2025.
 //
 
-import Foundation
+import Observation
 
 @MainActor
 @Observable
 final class CatalogNFTCollectionViewModel {
-    let nfts: [NFTModel]
+    private(set) var nfts: [NFTModel] = [
+        .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock,
+        .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock
+    ]
     
-    init(nfts: [NFTModel]) {
-        self.nfts = nfts
+    private let api: ObservedNetworkClient
+    private let push: (Page) -> Void
+    
+    init(
+        api: ObservedNetworkClient,
+        push: @escaping (Page) -> Void
+    ) {
+        self.api = api
+        self.push = push
     }
-}
-
-extension CatalogNFTCollectionViewModel {
-    func didTapLikeButton(for nft: NFTModel) {}
-    func didTapCartButton(for nft: NFTModel) {}
+    
+    func didTapLikeButton(for nft: NFTModel) {
+        //TODO: Добавить логику лайка
+    }
+    
+    func didTapCartButton(for nft: NFTModel) {
+        //TODO: Добавить логику добавления в корзину
+    }
 }

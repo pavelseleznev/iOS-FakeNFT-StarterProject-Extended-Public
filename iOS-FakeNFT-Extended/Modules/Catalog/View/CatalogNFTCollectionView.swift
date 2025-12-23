@@ -10,8 +10,16 @@ import SwiftUI
 struct CatalogNFTCollectionView: View {
     @State private var viewModel: CatalogNFTCollectionViewModel
     
-    init(nfts: [NFTModel]) {
-        _viewModel = .init(initialValue: .init(nfts: nfts))
+    init(
+        api: ObservedNetworkClient,
+        push: @escaping (Page) -> Void
+    ) {
+        _viewModel = .init(
+            initialValue: .init(
+                api: api,
+                push: push
+            )
+        )
     }
     
     var body: some View {
@@ -71,10 +79,13 @@ struct CatalogNFTCollectionView: View {
 }
 
 #Preview {
+    @Previewable let obsAPI: ObservedNetworkClient = {
+        let api = DefaultNetworkClient()
+        return .init(api: api)
+    }()
+    
     CatalogNFTCollectionView(
-        nfts: [
-            .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock,
-            .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock
-        ]
+        api: .mock,
+        push: { _ in }
     )
 }
