@@ -17,4 +17,12 @@ struct TabProfileRouter: ProfileRouting {
     func showEditProfile(profile: ProfileModel) {
         push(.editProfile(profile))
     }
+    
+    func showMyNFTs() {
+        push(.myNFTs)
+    }
+    
+    func showFavoriteNFTs() {
+        push(.favoriteNFTs)
+    }
 }

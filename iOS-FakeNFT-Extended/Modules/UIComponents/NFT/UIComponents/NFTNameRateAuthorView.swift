@@ -21,7 +21,7 @@ struct NFTNameRateAuthorView: View {
 			RatingPreview(rating: model.rate)
 			
 			if case .my = layout {
-				Text("от: " + model.author)
+				Text("от " + model.author)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
 			}

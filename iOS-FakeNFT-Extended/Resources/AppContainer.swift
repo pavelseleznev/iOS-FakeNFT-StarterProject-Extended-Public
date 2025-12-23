@@ -10,4 +10,6 @@ struct AppContainer {
 	let nft: NFTServiceProtocol
 	let api: ObservedNetworkClient
     let profileProvider: ProfileProvider
+    let profileService: ProfileService
+    let favoriteStore = FavoriteNFTViewModel(items: NFTModel.favoriteMocks)
 }

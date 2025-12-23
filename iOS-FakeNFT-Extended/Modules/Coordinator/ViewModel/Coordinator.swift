@@ -83,6 +83,10 @@ extension Coordinator {
                     self.pop()
                 }
             )
+        case .myNFTs:
+            MyNFTView()
+        case .favoriteNFTs:
+            FavoriteNFTView(favoriteStore: appContainer.favoriteStore)
         }
     }
 	

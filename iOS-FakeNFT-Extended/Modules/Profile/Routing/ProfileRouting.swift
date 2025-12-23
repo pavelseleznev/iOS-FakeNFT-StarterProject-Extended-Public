@@ -10,4 +10,6 @@ import Foundation
 protocol ProfileRouting {
     func showWebsite(url: String)
     func showEditProfile(profile: ProfileModel)
+    func showMyNFTs()
+    func showFavoriteNFTs()
 }
