@@ -24,6 +24,8 @@ struct CatalogView: View {
     
     var body: some View {
         ZStack {
+            Color.ypWhite.ignoresSafeArea()
+            
             List {
                 ForEach(viewModel.collections) { item in
                     NFTCollectionCell(model: item)
@@ -35,10 +37,11 @@ struct CatalogView: View {
                         .listRowBackground(Color.clear)
                 }
             }
+            .padding(.top, 20)
             .listRowSpacing(8)
             .listStyle(.plain)
         }
-        .padding(.top, 20)
+        .safeAreaTopBackground()
         .applyCatalogSort(
             placement: .safeAreaTop,
             didTapName: viewModel.applySortByName,
