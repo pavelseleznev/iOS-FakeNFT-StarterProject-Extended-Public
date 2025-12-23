@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StatisticsSortActionsViewModifier: ViewModifier {
-	private enum SortOption {
+	enum SortOption: String {
 		case rate, name
 		var description: String {
 			switch self {
@@ -18,13 +18,20 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 				"По имени"
 			}
 		}
+		
+		var parameter: String {
+			switch self {
+			case .rate:
+				"rating,asc"
+			case .name:
+				"name,asc"
+			}
+		}
 	}
 	
-	@State private var activeSortOption: SortOption = .name
+	@Binding var activeSortOption: SortOption
 	
 	let placement: BaseConfirmationDialogTriggerPlacement
-	let didTapRate: () -> Void
-	let didTapName: () -> Void
 	
 	func body(content: Content) -> some View {
 		content
@@ -36,11 +43,9 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 					actions: {
 						Group {
 							Button("По имени") {
-								didTapName()
 								activeSortOption = .name
 							}
 							Button("По рейтингу") {
-								didTapRate()
 								activeSortOption = .rate
 							}
 							Button("Закрыть", role: .cancel) {}

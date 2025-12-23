@@ -6,20 +6,25 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct ProfileHeader: View {
 	let name: String
 	let imageURLString: String
 	let about: String
+	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
 				Group {
 					if let url = URL(string: imageURLString) {
-						KFImage(url)
-							.resizable()
-							.scaledToFit()
+						AsyncImage(url: url) { image in
+							image
+								.resizable()
+								.scaledToFit()
+						} placeholder: {
+							ProgressView()
+								.progressViewStyle(.circular)
+						}
 					} else {
 						Image.profilePerson
 							.resizable()

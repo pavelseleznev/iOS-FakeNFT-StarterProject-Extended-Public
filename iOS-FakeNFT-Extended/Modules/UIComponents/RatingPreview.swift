@@ -8,26 +8,31 @@
 import SwiftUI
 
 struct RatingPreview: View {
-	let rating: String
+	let rating: Int?
 	
 	@Environment(\.colorScheme) private var theme
 	
 	var body: some View {
+		content
+			.overlay {
+				if rating == nil {
+					LoadingShimmerPlaceholderView()
+				}
+			}
+			.font(.startIcon)
+			.shadow(
+				color: shadowColor,
+				radius: 1
+			)
+	}
+	
+	private var content: some View {
 		HStack(spacing: 0) {
 			ForEach(0..<5) { index in
 				Image.starFill
-					.foregroundStyle(index < starsCount ? .ypYellowUniversal : .ypLightGrey)
-					.font(.startIcon)
-					.shadow(
-						color: shadowColor,
-						radius: 1
-					)
+					.foregroundStyle(index < (rating ?? 0) ? .ypYellowUniversal : .ypLightGrey)
 			}
 		}
-	}
-	
-	private var starsCount: Int {
-		Int(Double(rating.split(separator: "/")[0]) ?? 0)
 	}
 	
 	private var shadowColor: Color {
@@ -41,7 +46,7 @@ struct RatingPreview: View {
 
 #if DEBUG
 #Preview {
-	RatingPreview(rating: "3.5/5")
+	RatingPreview(rating: 3)
 		.scaleEffect(5)
 }
 #endif

@@ -27,15 +27,13 @@ extension View {
 	
 	func applyStatisticsSort(
 		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapName: @escaping () -> Void,
-		didTapRate: @escaping () -> Void
+		activeSortOption: Binding<StatisticsSortActionsViewModifier.SortOption>
 	) -> some View {
 		self
 			.modifier(
 				StatisticsSortActionsViewModifier(
-					placement: placement,
-					didTapRate: didTapRate,
-					didTapName: didTapName
+					activeSortOption: activeSortOption,
+					placement: placement
 				)
 			)
 	}
@@ -78,8 +76,7 @@ extension View {
 	}
 	.applyStatisticsSort(
 		placement: .safeAreaTop,
-		didTapName: {},
-		didTapRate: {}
+		activeSortOption: .constant(.name)
 	)
 }
 

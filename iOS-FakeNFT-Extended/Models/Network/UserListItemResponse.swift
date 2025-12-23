@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UserListItemResponse: Decodable, Identifiable {
+struct UserListItemResponse: Decodable, Identifiable, Hashable {
 	let name: String
 	let avatarURLString: String
 	let description: String?

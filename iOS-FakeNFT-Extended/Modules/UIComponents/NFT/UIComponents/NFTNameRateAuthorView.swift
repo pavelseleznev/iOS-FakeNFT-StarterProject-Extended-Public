@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NFTNameRateAuthorView: View {
 	
-	let model: NFTModel
+	let model: NFTResponse
 	let layout: NFTCellLayout
 	
 	var body: some View {
@@ -18,10 +18,10 @@ struct NFTNameRateAuthorView: View {
 				.foregroundStyle(.ypBlack)
 				.font(.bold17)
 			
-			RatingPreview(rating: model.rate)
+			RatingPreview(rating: model.rating)
 			
 			if case .my = layout {
-				Text("от: " + model.author)
+				Text("от " + model.authorName)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
 			}

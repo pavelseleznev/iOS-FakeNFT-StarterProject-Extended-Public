@@ -10,6 +10,7 @@
 		2D0DD8C22EE00CFD00EB1D66 /* ObservedNetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C12EE00CE100EB1D66 /* ObservedNetworkClient.swift */; };
 		2D0DD8C42EE01BBA00EB1D66 /* DataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C32EE01BBA00EB1D66 /* DataLoader.swift */; };
 		2D0DD8C62EE01C7100EB1D66 /* OrderRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C52EE01C7100EB1D66 /* OrderRequests.swift */; };
+		2D8D75E42EF7FFC500F2B0CB /* NFTModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D8D75E32EF7FFC500F2B0CB /* NFTModelContainer.swift */; };
 		2DC8CB192EE2F3DE005A7229 /* NFTModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB182EE2F3DE005A7229 /* NFTModel.swift */; };
 		2DC8CB2C2EE31BBA005A7229 /* NFTCollectionItemResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB2B2EE31BBA005A7229 /* NFTCollectionItemResponse.swift */; };
 		2DC8CB302EE31C1B005A7229 /* UserListItemResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB2F2EE31C1B005A7229 /* UserListItemResponse.swift */; };
@@ -57,6 +58,7 @@
 		2D0DD8C12EE00CE100EB1D66 /* ObservedNetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservedNetworkClient.swift; sourceTree = "<group>"; };
 		2D0DD8C32EE01BBA00EB1D66 /* DataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
 		2D0DD8C52EE01C7100EB1D66 /* OrderRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderRequests.swift; sourceTree = "<group>"; };
+		2D8D75E32EF7FFC500F2B0CB /* NFTModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTModelContainer.swift; sourceTree = "<group>"; };
 		2DC8CB182EE2F3DE005A7229 /* NFTModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTModel.swift; sourceTree = "<group>"; };
 		2DC8CB2B2EE31BBA005A7229 /* NFTCollectionItemResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTCollectionItemResponse.swift; sourceTree = "<group>"; };
 		2DC8CB2F2EE31C1B005A7229 /* UserListItemResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListItemResponse.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 		ABC5E19E2C31F6C1002B4068 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				2D8D75E32EF7FFC500F2B0CB /* NFTModelContainer.swift */,
 				2DC8CB182EE2F3DE005A7229 /* NFTModel.swift */,
 				ABC5E19F2C31F6CB002B4068 /* Network */,
 			);
@@ -434,6 +437,7 @@
 				2DC8CB2C2EE31BBA005A7229 /* NFTCollectionItemResponse.swift in Sources */,
 				2DC8CB192EE2F3DE005A7229 /* NFTModel.swift in Sources */,
 				2DC8CB462EE4878A005A7229 /* CurrenciesRequests.swift in Sources */,
+				2D8D75E42EF7FFC500F2B0CB /* NFTModelContainer.swift in Sources */,
 				2D0DD8C22EE00CFD00EB1D66 /* ObservedNetworkClient.swift in Sources */,
 				2D0DD8C62EE01C7100EB1D66 /* OrderRequests.swift in Sources */,
 				2DC8CB422EE4875A005A7229 /* CollectionRequests.swift in Sources */,
@@ -608,9 +612,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS-FakeNFT-Extended/Preview Content\"";
+				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS-FakeNFT-Extended/Info.plist";
@@ -626,8 +632,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Yandex-Practicum.iOS-FakeNFT-Extended";
+				PRODUCT_BUNDLE_IDENTIFIER = "Yandex-Practicum.iOS-FakeNFT-Extended-tg";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -644,9 +651,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"iOS-FakeNFT-Extended/Preview Content\"";
+				DEVELOPMENT_TEAM = 49VL494TXQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS-FakeNFT-Extended/Info.plist";
@@ -662,8 +671,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Yandex-Practicum.iOS-FakeNFT-Extended";
+				PRODUCT_BUNDLE_IDENTIFIER = "Yandex-Practicum.iOS-FakeNFT-Extended-tg";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;

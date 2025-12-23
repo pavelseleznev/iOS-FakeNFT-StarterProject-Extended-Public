@@ -9,7 +9,8 @@ import SwiftUI
 
 struct NFTCompactCellView: View {
 	
-	let model: NFTModel
+	let model: NFTResponse
+	let isFavourited: Bool
 	let likeAction: () -> Void
 	
 	private let layout: NFTCellLayout = .compact
@@ -18,12 +19,16 @@ struct NFTCompactCellView: View {
 		HStack(spacing: 12) {
 			NFTImageView(
 				model: model,
+				isFavourited: isFavourited,
 				layout: layout,
 				likeAction: likeAction,
 			)
 			
 			VStack(spacing: 8) {
-				NFTNameRateAuthorView(model: model, layout: layout)
+				NFTNameRateAuthorView(
+					model: model,
+					layout: layout
+				)
 				NFTCostView(model: model, layout: layout)
 			}
 		}
@@ -32,7 +37,7 @@ struct NFTCompactCellView: View {
 
 #if DEBUG
 #Preview {
-	@Previewable @State var models: [NFTModel] = [
+	@Previewable @State var models: [NFTResponse] = [
 		.mock,
 		.mock,
 		.badImageURLMock,
@@ -57,6 +62,7 @@ struct NFTCompactCellView: View {
 				ForEach(models) {
 					NFTCompactCellView(
 						model: $0,
+						isFavourited: false,
 						likeAction: {}
 					)
 				}

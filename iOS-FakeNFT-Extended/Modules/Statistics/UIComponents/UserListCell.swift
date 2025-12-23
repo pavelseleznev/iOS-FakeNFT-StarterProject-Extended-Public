@@ -6,19 +6,20 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct UserListCell: View {
 	let model: UserListItemResponse
 	let counter: Int
 	
 	var body: some View {
-		HStack(spacing: 16) {
+		HStack {
 			Text("\(counter + 1)")
 				.foregroundStyle(.ypBlack)
+				.frame(width: 35)
 				.font(.regular15)
+				.multilineTextAlignment(.leading)
 			
-			HStack(spacing: 8) {
+			HStack {
 				profileImage
 				
 				Group {
@@ -30,6 +31,7 @@ struct UserListCell: View {
 				}
 				.foregroundStyle(.ypBlack)
 				.font(.bold22)
+				.lineLimit(1)
 			}
 			.padding(.horizontal, 16)
 			.padding(.vertical, 26)
@@ -42,10 +44,18 @@ struct UserListCell: View {
 	
 	private var profileImage: some View {
 		Group {
-			if let url = URL(string: model.avatarURLString) {
-				KFImage(url)
-					.resizable()
-					.scaledToFit()
+			if
+				!model.avatarURLString.isEmpty,
+				let url = URL(string: model.avatarURLString)
+			{
+				AsyncImage(url: url) { image in
+					image
+						.resizable()
+						.scaledToFit()
+				} placeholder: {
+					ProgressView()
+						.progressViewStyle(.circular)
+				}
 			} else {
 				Image.profilePerson
 					.resizable()
@@ -53,7 +63,7 @@ struct UserListCell: View {
 			}
 		}
 		.frame(width: 28, height: 28)
-		.clipShape(Circle())
+		.clipShape(.circle)
 	}
 }
 
@@ -65,5 +75,6 @@ struct UserListCell: View {
 		UserListCell(model: .mock, counter: 2)
 		UserListCell(model: .mock, counter: 3)
 	}
+	.background(.ypWhite)
 }
 #endif

@@ -22,6 +22,25 @@ final class Coordinator {
 
 // MARK: - Coordinator Extensions
 
+// --- internal methods ---
+extension Coordinator {
+	func loadUserData() async {
+		do {
+			let profile = try await appContainer.api.getProfile()
+			let cart = try await appContainer.api.getOrder()
+			
+			await appContainer.nftService
+				.didLoadUserData(
+					likes: profile.likes,
+					purchased: profile.nfts,
+					cart: cart.nftsIDs
+				)
+		} catch {
+			print(error)
+		}
+	}
+}
+
 // --- private helpers ---
 private extension Coordinator {
 	func onLoadingStateFromWebsite(_ state: LoadingState) {
@@ -79,9 +98,11 @@ extension Coordinator {
 				onLoadingStateChange: onLoadingStateFromWebsite
 			)
 			
-		case .statNFTCollection(let nfts):
+		case .statNFTCollection(let nftsIDs):
 			StatisticsNFTCollectionView(
-				nfts: nfts, api: appContainer.api
+				nftsIDs: nftsIDs,
+				loadingState: appContainer.api.loadingState,
+				nftService: appContainer.nftService
 			)
 			
 		case .statProfile(profile: let profile):

@@ -7,8 +7,6 @@
 
 import Observation
 
-struct RemoveThisAnyDecodableDummy: Decodable {}
-
 @MainActor
 @Observable
 final class ObservedNetworkClient {
@@ -87,6 +85,7 @@ extension ObservedNetworkClient {
 
 // --- order ---
 extension ObservedNetworkClient {
+	@discardableResult
 	func putOrderAndPay(payload: OrderPayload) async throws -> OrderRepsonse {
 		let request = PutOrderAndPayRequest(payload: payload)
 		return try await fetch(request)
@@ -105,6 +104,7 @@ extension ObservedNetworkClient {
 		return try await fetch(request)
 	}
 	
+	@discardableResult
 	func updateProfile(payload: ProfilePayload) async throws -> ProfileResponse {
 		let request = UpdateProfileRequest(payload: payload)
 		return try await fetch(request)
@@ -113,8 +113,8 @@ extension ObservedNetworkClient {
 
 // --- users ---
 extension ObservedNetworkClient {
-	func getUsers() async throws -> [UserListItemResponse] {
-		let request = GetUsersRequest()
+	func getUsers(page: Int, sortOption: StatisticsSortActionsViewModifier.SortOption) async throws -> [UserListItemResponse] {
+		let request = GetUsersRequest(page: page, sortOption: sortOption)
 		return try await fetch(request)
 	}
 	

@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct StatisticsView: View {
+	private static let statisticsSortOptionKey: String = "statisticsSortOptionKey"
+	
 	@State private var viewModel: StatisticsViewModel
+	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .name
 	
 	init(
 		api: ObservedNetworkClient,
@@ -20,35 +23,45 @@ struct StatisticsView: View {
 				push: push
 			)
 		)
+		
+		viewModel.setSortOption(sortOption)
 	}
 	
 	var body: some View {
 		ZStack(alignment: .top) {
 			Color.ypWhite.ignoresSafeArea()
 			
-			List(Array(viewModel.users.enumerated()), id: \.offset) { counter, user in
+			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { counter, user in
 				UserListCell(model: user, counter: counter)
+					.task {
+						if user == viewModel.visibleUsers.last {
+							await viewModel.loadNextUsersPage()
+						}
+					}
 					.onTapGesture {
 						viewModel.didTapUserCell(for: user)
 					}
 					.listRowSeparator(.hidden)
 					.listRowInsets(.init())
 					.listRowBackground(Color.clear)
-					.padding(.trailing, 16)
-					.padding(.leading, 24)
+					.padding(.horizontal)
 			}
+			.scrollIndicators(.hidden)
 			.safeAreaPadding(.bottom)
 			.listRowSpacing(8)
 			.scrollContentBackground(.hidden)
 			.listStyle(.plain)
+			.animation(.easeInOut(duration: 0.15), value: viewModel.visibleUsers)
+		}
+		.task {
+			await viewModel.loadNextUsersPage(onAppear: true)
 		}
 		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
-			didTapName: viewModel.applySortByName,
-			didTapRate: viewModel.applySortByRate
+			activeSortOption: $sortOption
 		)
-		.onAppear(perform: viewModel.viewDidAppear)
+		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
 	}
 }
 

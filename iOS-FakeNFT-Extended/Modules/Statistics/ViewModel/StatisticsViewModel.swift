@@ -5,23 +5,20 @@
 //  Created by Superior Warden on 08.12.2025.
 //
 
+import Foundation
 import Observation
 
 @MainActor
 @Observable
 final class StatisticsViewModel {
-	private(set) var users: [UserListItemResponse] = [
-		.mock,
-		.mock,
-		.mock,
-		.mock,
-		.mock,
-		.mock,
-		.mock,
-		.mock
-	]
+	typealias SortOption = StatisticsSortActionsViewModifier.SortOption
+	
+	private(set) var users = Set<UserListItemResponse>()
 	private let api: ObservedNetworkClient
 	private let push: (Page) -> Void
+	private var currentPage = 0
+	
+	var currenctSortOption: SortOption = .name
 	
 	init(
 		api: ObservedNetworkClient,
@@ -30,15 +27,46 @@ final class StatisticsViewModel {
 		self.api = api
 		self.push = push
 	}
-	
-	func viewDidAppear() {}
 }
 
 extension StatisticsViewModel {
-	func applySortByName() {}
-	func applySortByRate() {}
+	@inline(__always)
+	var visibleUsers: [UserListItemResponse] {
+		users
+			.sorted(by: usersSortComparator)
+	}
 	
 	func didTapUserCell(for user: UserListItemResponse) {
 		push(.statProfile(profile: user))
+	}
+	
+	@Sendable
+	func loadNextUsersPage(onAppear: Bool = false) async {
+		guard (onAppear && currentPage == 0) || !onAppear else { return }
+		do {
+			try await api
+				.getUsers(page: currentPage, sortOption: currenctSortOption)
+				.forEach {
+					users.insert($0)
+				}
+			currentPage += 1
+		} catch {
+			print(error)
+		}
+	}
+	
+	func setSortOption(_ option: SortOption) {
+		currenctSortOption = option
+	}
+}
+
+private extension StatisticsViewModel {
+	func usersSortComparator(_ first: UserListItemResponse, _ second: UserListItemResponse) -> Bool {
+		switch currenctSortOption {
+		case .rate:
+			first.rating.localizedStandardCompare(second.rating) == .orderedAscending
+		case .name:
+			first.name.localizedStandardCompare(second.name) == .orderedAscending
+		}
 	}
 }

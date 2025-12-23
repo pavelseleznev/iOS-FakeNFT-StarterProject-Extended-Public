@@ -9,14 +9,12 @@ import SwiftUI
 
 struct StatisticsProfileView: View {
 	@State private var viewModel: StatisticsProfileViewModel
-	private let nftsCount: Int
 	
 	init(
 		api: ObservedNetworkClient,
 		push: @escaping (Page) -> Void,
 		model: UserListItemResponse
 	) {
-		self.nftsCount = model.nftsIDs.count
 		_viewModel = .init(initialValue: .init(api: api, model: model, push: push))
 	}
 	
@@ -25,7 +23,7 @@ struct StatisticsProfileView: View {
 			Color.ypWhite.ignoresSafeArea()
 			
 			ProfileContainer(
-				model: .mock,
+				model: viewModel.model,
 				link: {
 					Button("Перейти на сайт пользователя"){
 						viewModel.didTapAuthLinkButton()
@@ -34,7 +32,9 @@ struct StatisticsProfileView: View {
 				},
 				actions: {
 					[
-						ProfileActionCell(title: "Коллекция NFT (\(nftsCount))") {
+						ProfileActionCell(
+							title: "Коллекция NFT (\(viewModel.model.nftsIDs.count))"
+						) {
 							viewModel.didTapProfileActionCell()
 						}
 					]
