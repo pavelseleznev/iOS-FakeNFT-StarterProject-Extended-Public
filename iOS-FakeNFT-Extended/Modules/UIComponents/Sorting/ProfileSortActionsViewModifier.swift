@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileSortActionsViewModifier: ViewModifier {
-	private enum SortOption {
+    enum SortOption: String {
 		case cost, rate, name
 		var description: String {
 			switch self {
@@ -22,7 +22,7 @@ struct ProfileSortActionsViewModifier: ViewModifier {
 		}
 	}
 	
-	@State private var activeSortOption: SortOption = .name
+	@Binding var activeSortOption: SortOption
 	
 	let placement: BaseConfirmationDialogTriggerPlacement
 	let didTapCost: () -> Void

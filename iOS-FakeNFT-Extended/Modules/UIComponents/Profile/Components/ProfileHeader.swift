@@ -9,24 +9,23 @@ import SwiftUI
 import Kingfisher
 
 struct ProfileHeader: View {
-	let name: String
+    let name: String
     let imageURLString: String
-	let about: String
+    let about: String
     
-	var body: some View {
-		VStack(alignment: .leading, spacing: 20) {
-			HStack(spacing: 16) {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 16) {
                 Group {
-                    if let url = URL(string: imageURLString),
-                       let scheme = url.scheme,
-                       (scheme == "http" || scheme == "https") {
+                    let trimmed = imageURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let url = URL(string: trimmed),
+                       ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                         KFImage(url)
+                            .placeholder { placeholderAvatar }
                             .resizable()
                             .scaledToFit()
                     } else {
-                        Image(imageURLString)
-                            .resizable()
-                            .scaledToFit()
+                        placeholderAvatar
                     }
                 }
                 .clipShape(Circle())
@@ -46,4 +45,10 @@ struct ProfileHeader: View {
 		}
 		.padding(.horizontal, 16)
 	}
+    
+    private var placeholderAvatar: some View {
+        Image("userPickMock")
+            .resizable()
+            .scaledToFit()
+    }
 }

@@ -19,14 +19,17 @@ struct EditProfileHeader: View {
         ZStack(alignment: .bottomTrailing) {
             ZStack {
                 Group {
-                    if let url = URL(string: avatarURL),
-                       let scheme = url.scheme,
-                       (scheme == "http" || scheme == "https") {
+                    let trimmed = avatarURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if let url = URL(string: trimmed),
+                       ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                         KFImage(url)
-                            .resizable()
-                            .scaledToFit()
+                            .placeholder {
+                                Image.userPickMockEdit
+                                    .resizable()
+                                    .scaledToFit()
+                            }
                     } else {
-                        Image(avatarURL)
+                        Image.userPickMockEdit
                             .resizable()
                             .scaledToFit()
                     }

@@ -47,7 +47,9 @@ enum Tab: String, CaseIterable, Identifiable {
 		case .profile:
 			ProfileView(
                 profile: appContainer.profileProvider.profile(),
-                router: TabProfileRouter(push: push)
+                router: TabProfileRouter(push: push),
+                service: appContainer.profileService,
+                favoriteStore: appContainer.favoriteStore
 			)
 		case .catalog:
 			CatalogView(

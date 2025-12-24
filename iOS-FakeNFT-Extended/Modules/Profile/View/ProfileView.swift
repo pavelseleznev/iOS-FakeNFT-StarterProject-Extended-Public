@@ -9,9 +9,17 @@ import SwiftUI
 
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
-    init(profile: ProfileModel, router: ProfileRouting) {
-        _viewModel = State(initialValue: ProfileViewModel(
-            profile: profile, router: router
+    init(
+        profile: ProfileModel,
+        router: ProfileRouting,
+        service: ProfileService,
+        favoriteStore: FavoriteNFTViewModel) {
+        _viewModel = State(
+            initialValue: ProfileViewModel(
+            profile: profile,
+            router: router,
+            service: service,
+            favoriteStore: favoriteStore
         ))
     }
     
@@ -20,9 +28,9 @@ struct ProfileView: View {
             Color.ypWhite.ignoresSafeArea()
             
             ProfileContainer(
-                name: "Joaquin Phoenix",
-                imageURLString: "userPickMock",
-                about: "Дизайнер из Казани, люблю цифровое искусство и бейглы. В моей коллекции уже 100+ NFT, и еще больше — на моём сайте. Открыт к коллаборациям."
+                name: viewModel.profile.name,
+                imageURLString: viewModel.profile.avatarURL,
+                about: viewModel.profile.about
             ) {
                 Button { viewModel.websiteTapped()
                 } label: {
@@ -31,15 +39,15 @@ struct ProfileView: View {
             } actions: {
                 [
                     ProfileActionCell(
-                        title: "Мои NFT (112)",
+                        title: "Мои NFT (3)",
                         action: {
-                            //TODO: push to "MyNFTs" page
+                            viewModel.myNFTsTapped()
                         }
                     ),
                     ProfileActionCell(
-                        title: "Избранные NFT (11)",
+                        title: viewModel.favoriteTitle,
                         action: {
-                            //TODO: push to "favorites" page
+                            viewModel.favoriteNFTsTapped()
                         })
                 ]
             }
@@ -48,6 +56,12 @@ struct ProfileView: View {
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
+        .overlay {
+            LoadingView(loadingState: viewModel.loadingState)
+        }
+        .task {
+            await viewModel.load()
+        }
 	}
 }
 

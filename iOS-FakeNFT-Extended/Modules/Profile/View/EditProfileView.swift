@@ -9,7 +9,7 @@ import SwiftUI
 
 struct EditProfileView: View {
     
-    let onSave: (ProfileModel) -> Void
+    let onSave: @Sendable (ProfileModel) -> Void
     let onCancel: () -> Void
     
     @State private var viewModel: EditProfileViewModel
@@ -17,7 +17,7 @@ struct EditProfileView: View {
 
     init(
         profile: ProfileModel,
-        onSave: @escaping (ProfileModel) -> Void,
+        onSave: @Sendable @escaping (ProfileModel) -> Void,
         onCancel: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: EditProfileViewModel(profile: profile))
@@ -29,27 +29,25 @@ struct EditProfileView: View {
         ZStack {
             Color.ypWhite.ignoresSafeArea()
             ZStack {
-                VStack(spacing: 0) {
-                    ScrollView {
-                        VStack(spacing: 24) {
-                            EditProfileHeader(
-                                avatarURL: $viewModel.avatarURL,
-                                isPhotoActionsPresented: $viewModel.isPhotoActionsPresented,
-                                didTapChangePhoto: { viewModel.changePhotoTapped() },
-                                didTapDeletePhoto: { viewModel.deletePhotoTapped() }
-                            )
-                            
-                            EditProfileForm(
-                                name: $viewModel.name,
-                                about: $viewModel.about,
-                                website: $viewModel.website,
-                                focusedField: _focusedField
-                            )
-                            
-                            Spacer(minLength: 40)
-                        }
-                        .padding(.bottom, 20)
+                ScrollView {
+                    VStack(spacing: 24) {
+                        EditProfileHeader(
+                            avatarURL: $viewModel.avatarURL,
+                            isPhotoActionsPresented: $viewModel.isPhotoActionsPresented,
+                            didTapChangePhoto: { viewModel.changePhotoTapped() },
+                            didTapDeletePhoto: { viewModel.deletePhotoTapped() }
+                        )
+                        
+                        EditProfileForm(
+                            name: $viewModel.name,
+                            about: $viewModel.about,
+                            website: $viewModel.website,
+                            focusedField: _focusedField
+                        )
+                        
+                        Spacer(minLength: 40)
                     }
+                    .padding(.bottom, 20)
                 }
                 
                 EditProfileFooter(

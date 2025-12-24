@@ -16,18 +16,22 @@ struct NFTImageView: View {
 	
 	var body: some View {
 		Group {
-			if let url = URL(string: model.imageURLString) {
-				KFImage(url)
-					.resizable()
-					.scaledToFit()
-			} else {
-				ZStack {
-					Color.ypBackgroundUniversal
-					Text("?")
-						.font(.bold22)
-						.foregroundStyle(.ypWhiteUniversal)
-				}
-			}
+            let trimmed = model.imageURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let url = URL(string: trimmed),
+               ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
+                KFImage(url)
+                    .placeholder {
+                        placeholder
+                    }
+                    .resizable()
+                    .scaledToFit()
+            } else  if !trimmed.isEmpty {
+                Image(trimmed)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                placeholder
+            }
 		}
 		.overlay(alignment: .topTrailing) {
 			Button(action: likeAction) {
@@ -43,4 +47,13 @@ struct NFTImageView: View {
 		.aspectRatio(1, contentMode: .fit)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 	}
+    
+    private var placeholder: some View {
+        ZStack {
+            Color.ypBackgroundUniversal
+            Text("?")
+                .font(.bold22)
+                .foregroundStyle(.ypWhiteUniversal)
+        }
+    }
 }

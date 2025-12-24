@@ -22,7 +22,19 @@ struct NFTCostView: View {
 			
 			Text(model.cost)
 				.foregroundStyle(.ypBlack)
-				.font(.bold17)
+				.font(costFont)
 		}
 	}
+    
+    private var showsLabel: Bool {
+        layout == .my
+    }
+    
+    private var costFont: Font {
+        switch layout {
+        case .my: .bold17
+        case .compact: .regular15
+        case .cart: .bold17
+        }
+    }
 }

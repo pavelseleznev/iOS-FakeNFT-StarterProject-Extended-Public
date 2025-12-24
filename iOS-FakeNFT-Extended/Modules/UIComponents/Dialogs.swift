@@ -9,6 +9,7 @@ import SwiftUI
 
 extension View {
 	func applyProfileSort(
+        activeSortOption: Binding<ProfileSortActionsViewModifier.SortOption>,
 		placement: BaseConfirmationDialogTriggerPlacement,
 		didTapCost: @escaping () -> Void,
 		didTapRate: @escaping () -> Void,
@@ -17,6 +18,7 @@ extension View {
 		self
 			.modifier(
 				ProfileSortActionsViewModifier(
+                    activeSortOption: activeSortOption,
 					placement: placement,
 					didTapCost: didTapCost,
 					didTapRate: didTapRate,
@@ -84,10 +86,13 @@ extension View {
 }
 
 #Preview("Profile Sort") {
+    @Previewable @State var option: ProfileSortActionsViewModifier.SortOption = .name
+    
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 	}
 	.applyProfileSort(
+        activeSortOption: $option,
 		placement: .safeAreaTop,
 		didTapCost: {},
 		didTapRate: {},

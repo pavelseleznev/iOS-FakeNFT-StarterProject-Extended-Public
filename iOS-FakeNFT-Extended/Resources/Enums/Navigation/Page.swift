@@ -13,7 +13,11 @@ enum Page: Identifiable {
     // statistics
     case statNFTCollection(nfts: [NFTModel])
     case statProfile(profile: UserListItemResponse)
+    
+    // profile
     case editProfile(ProfileModel)
+    case myNFTs
+    case favoriteNFTs
     
     var id: String { .init(describing: self)}
 }
