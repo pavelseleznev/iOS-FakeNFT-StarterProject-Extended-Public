@@ -33,7 +33,6 @@ struct FavoriteNFTView: View {
                 ScrollView(.vertical) {
                     LazyVGrid(
                         columns: columns,
-                        alignment: .center,
                         spacing: 20
                     ) {
                         ForEach(favoriteStore.items, id: \.id) { nft in
@@ -47,8 +46,7 @@ struct FavoriteNFTView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                    .padding([.horizontal, .top], 16)
                 }
             }
         }
@@ -58,8 +56,6 @@ struct FavoriteNFTView: View {
                 if !favoriteStore.items.isEmpty {
                     Text("Избранные NFT")
                         .font(.headline)
-                } else {
-                    EmptyView()
                 }
             }
         }

@@ -7,8 +7,9 @@
 
 import Foundation
 
-final class MyNFTViewModel: ObservableObject {
-    @Published private(set) var items: [NFTModel]
+@Observable
+final class MyNFTViewModel {
+    var items: [NFTModel]
     
     init(items: [NFTModel]) {
         self.items = items

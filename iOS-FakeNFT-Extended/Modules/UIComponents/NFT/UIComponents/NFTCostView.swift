@@ -32,12 +32,9 @@ struct NFTCostView: View {
     
     private var costFont: Font {
         switch layout {
-        case .my:
-            return .bold17
-        case .compact:
-            return .regular15
-        case .cart:
-            return .bold17
+        case .my: .bold17
+        case .compact: .regular15
+        case .cart: .bold17
         }
     }
 }

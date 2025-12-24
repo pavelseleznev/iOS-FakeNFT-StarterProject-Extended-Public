@@ -14,10 +14,10 @@ struct MyNFTView: View {
     
     @AppStorage(myNFTSortOptionKey) private var sortOption: ProfileSortActionsViewModifier.SortOption = .name
     
-    @StateObject private var viewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])
+    @State private var viewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])
     
     init(viewModel: MyNFTViewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = State(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -44,25 +44,24 @@ struct MyNFTView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .if(!viewModel.items.isEmpty) { view in
-            view
-                .navigationTitle("Мои NFT")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Color.clear
-                            .modifier(
-                                ProfileSortActionsViewModifier(
-                                    activeSortOption: $sortOption,
-                                    placement: sortPlacement,
-                                    didTapCost: { viewModel.sort(by: .cost) },
-                                    didTapRate: { viewModel.sort(by: .rate) },
-                                    didTapName: { viewModel.sort(by: .name) }
-                                )
+        .navigationTitle(viewModel.items.isEmpty ? "" : "Мои NFT")
+        .toolbar {
+            if !viewModel.items.isEmpty {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Color.clear
+                        .modifier(
+                            ProfileSortActionsViewModifier(
+                                activeSortOption: $sortOption,
+                                placement: sortPlacement,
+                                didTapCost: { viewModel.sort(by: .cost) },
+                                didTapRate: { viewModel.sort(by: .rate) },
+                                didTapName: { viewModel.sort(by: .name) }
                             )
-                    }
+                        )
                 }
+            }
         }
-        .task {
+        .onAppear() {
             viewModel.sort(by: sortOption)
         }
         .onChange(of: sortOption) {
@@ -81,17 +80,6 @@ struct MyNFTView: View {
             .frame(height: 140)
         }
         .background(Color.ypWhite)
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
     }
 }
 

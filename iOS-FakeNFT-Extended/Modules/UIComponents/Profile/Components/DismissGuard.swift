@@ -9,7 +9,6 @@ import SwiftUI
 
 struct DismissGuard: ViewModifier {
     @Environment(\.dismiss) private var dismiss
-    
     let hasUnsavedChanges: Bool
     @Binding var showAlert: Bool
     let onConfirmDismiss: () -> Void
@@ -17,7 +16,6 @@ struct DismissGuard: ViewModifier {
     func body(content: Content) -> some View {
         content
             .navigationBarBackButtonHidden(true)
-        
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
@@ -34,9 +32,8 @@ struct DismissGuard: ViewModifier {
                     .tint(.ypBlack)
                 }
             }
-        
             .applyExitAlert(
-                        isPresented: $showAlert,
+                isPresented: $showAlert,
                 message: "Уверены, что хотите выйти?",
                 didTapExit: {
                     onConfirmDismiss()

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct EditProfileFooter: View {
     let isVisible: Bool
-    let onSave: () -> Void
+    let onSave: @Sendable () -> Void
 
     var body: some View {
         VStack {

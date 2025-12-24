@@ -24,12 +24,12 @@ struct EditProfileHeader: View {
                        ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                         KFImage(url)
                             .placeholder {
-                                Image("userPickMockEdit")
+                                Image.userPickMockEdit
                                     .resizable()
                                     .scaledToFit()
                             }
                     } else {
-                        Image(trimmed.isEmpty ? "userPickMockEdit" : trimmed)
+                        Image.userPickMockEdit
                             .resizable()
                             .scaledToFit()
                     }
