@@ -14,19 +14,33 @@ struct NFTImageView: View {
 	let layout: NFTCellLayout
 	let likeAction: () -> Void
 	
+	@State private var imageIndex: Int = 0
+	
 	var body: some View {
 		Group {
 			if model != nil {
-				AsyncImage(url: imageURL) { image in
-					image
-						.resizable()
-				} placeholder: {
-					Color.ypBackgroundUniversal
-						.overlay {
-							ProgressView()
-								.progressViewStyle(.circular)
+				Color.ypBackgroundUniversal
+					.overlay {
+						AsyncImage(
+							url: imageURL,
+							transaction: .init(animation: .easeInOut(duration: 0.15))
+						) { phase in
+							switch phase {
+							case .empty:
+								ProgressView()
+									.progressViewStyle(.circular)
+							case .success(let image):
+								image
+									.resizable()
+									.scaledToFit()
+							default:
+								Text("?")
+									.font(.bold22)
+									.foregroundStyle(.ypWhiteUniversal)
+									.onAppear(perform: tryNextImage)
+							}
 						}
-				}
+					}
 			} else {
 				LoadingShimmerPlaceholderView()
 			}
@@ -42,7 +56,22 @@ struct NFTImageView: View {
 	}
 	
 	private var imageURL: URL? {
-		URL(string: model?.imagesURLsStrings.first ?? "")
+		let urlString: String
+		if
+			let model,
+			model.imagesURLsStrings.indices.contains(imageIndex)
+		{
+			urlString = model.imagesURLsStrings[imageIndex]
+		} else {
+			imageIndex = 0
+			urlString = ""
+		}
+		
+		return URL(string: urlString)
+	}
+	
+	private func tryNextImage() {
+		imageIndex += 1
 	}
 	
 	private var favouriteImage: some View {
@@ -59,6 +88,9 @@ struct NFTImageView: View {
 		}
 		.padding(.top, 10)
 		.padding(.trailing, 8)
-		.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
+		.shadow(
+			color: .ypBlackUniversal,
+			radius: 8
+		)
 	}
 }
