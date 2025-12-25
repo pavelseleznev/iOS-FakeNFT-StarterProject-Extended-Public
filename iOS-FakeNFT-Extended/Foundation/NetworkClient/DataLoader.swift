@@ -29,13 +29,15 @@ final class DataLoader {
 			}
 			return try await operation()
 		} catch {
-			let isCancellation = error.localizedDescription.lowercased().contains("cancelled")
+			let isCancellation = error.localizedDescription.lowercased().contains("cancelled") || error is CancellationError
 
 			loadingState = isCancellation ? .idle : .error
-			if !isCancellation {
+			if isCancellation {
+				throw CancellationError()
+			} else {
 				print("[DataLoader] fetch error: \(error.localizedDescription)")
+				throw error
 			}
-			throw error
 		}
 	}
 	
