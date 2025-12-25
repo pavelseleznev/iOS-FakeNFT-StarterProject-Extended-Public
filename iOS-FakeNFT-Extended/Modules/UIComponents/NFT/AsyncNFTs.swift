@@ -39,7 +39,7 @@ extension AsyncNFTs {
 		guard let model else { return }
 		
 		switchLikeState(for: model, key: model.id)
-		Task {
+		Task(priority: .background) {
 			if await nftService.isFavourite(id: model.id) {
 				await nftService.removeFromFavourite(id: model.id)
 			} else {
@@ -52,7 +52,7 @@ extension AsyncNFTs {
 		guard let model else { return }
 		
 		switchCartState(for: model, key: model.id)
-		Task {
+		Task(priority: .background) {
 			if await nftService.isInCart(id: model.id) {
 				await nftService.removeFromCart(id: model.id)
 			} else {
