@@ -8,6 +8,7 @@ struct TabBarView: View {
 	let pop: () -> Void
 	
 	@State private var tab: Tab = .catalog
+	@State private var isVisible = false
 	
     var body: some View {
 		TabView(selection: $tab) {
@@ -30,5 +31,12 @@ struct TabBarView: View {
 				}
 			}
         }
+		.opacity(isVisible ? 1 : 0.6)
+		.blur(radius: isVisible ? 0 : 10)
+		.onAppear {
+			withAnimation(.easeInOut(duration: 0.3)) {
+				isVisible = true
+			}
+		}
     }
 }
