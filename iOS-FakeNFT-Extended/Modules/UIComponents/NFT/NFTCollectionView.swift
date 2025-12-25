@@ -57,8 +57,12 @@ struct NFTCollectionView: View {
 				}
 				.scrollTransition { content, phase in
 					content
-						.opacity(phase.isIdentity ? 1 : 0.25)
+						.opacity(phase.isIdentity ? 1 : 0.45)
 						.blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
+						.rotation3DEffect(
+							.degrees(phase.isIdentity ? 0 : 25 * phase.value),
+							axis: (x: phase.isIdentity ? 0 : 1, y: 0, z: 0)
+						)
 				}
 			}
 		}
@@ -71,7 +75,7 @@ struct NFTCollectionView: View {
 		.onDisappear(perform: asyncNFTs.viewDidDissappear)
 		.applyRepeatableAlert(
 			isPresneted: .constant(errorIsPresented),
-			message: "Не удалось получить данные", // TODO: move to constants
+			message: .cantGetNFTs,
 			didTapRepeat: {
 				Task {
 					await asyncNFTs.loadFailedNFTs()
