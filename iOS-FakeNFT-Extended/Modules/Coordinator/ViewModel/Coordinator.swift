@@ -11,9 +11,9 @@ import SwiftUI
 @MainActor
 final class Coordinator {
 	let appContainer: AppContainer
-	var path = NavigationPath()
+	var path = [Page]()
 	var sheet: Sheet?
-	var fullScreencover: FullScreenCover? = .splash
+	var fullScreencover: FullScreenCover?
 	
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
@@ -21,30 +21,18 @@ final class Coordinator {
 }
 
 // MARK: - Coordinator Extensions
-
-// --- internal methods ---
-extension Coordinator {
-	func loadUserData() async {
-		do {
-			let profile = try await appContainer.api.getProfile()
-			let cart = try await appContainer.api.getOrder()
-			
-			await appContainer.nftService
-				.didLoadUserData(
-					likes: profile.likes,
-					purchased: profile.nfts,
-					cart: cart.nftsIDs
-				)
-		} catch {
-			print(error)
-		}
-	}
-}
-
 // --- private helpers ---
 private extension Coordinator {
 	func onLoadingStateFromWebsite(_ state: LoadingState) {
 		appContainer.api.setLoadingStateFromWebsite(state)
+	}
+	
+	func onSplashComplete() {
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			push(.tabView)
+		}
 	}
 }
 
@@ -56,6 +44,10 @@ extension Coordinator {
 	
 	func pop() {
 		path.removeLast()
+	}
+	
+	func popToRoot() {
+		path.removeLast(path.count - 1)
 	}
 }
 
@@ -83,6 +75,12 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ page: Page) -> some View {
 		switch page {
+		case .splash:
+			SplashView(
+				appContainer: appContainer,
+				onComplete: onSplashComplete
+			)
+			
 		case .tabView:
 			TabBarView(
 				appContainer: appContainer,
@@ -111,6 +109,15 @@ extension Coordinator {
 				push: push,
 				model: profile
 			)
+			
+		case .paymentMethodChoose:
+			PaymentMethodChooseView(
+				appContainer: appContainer,
+				push: push
+			)
+			
+		case .successPayment:
+			SuccessPaymentView(backToCart: popToRoot)
 		}
 	}
 	
@@ -125,8 +132,8 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ fullScreenCover: FullScreenCover) -> some View {
 		switch fullScreenCover {
-		case .splash:
-			SplashView()
+		case .empty:
+			EmptyView()
 		}
 	}
 }
