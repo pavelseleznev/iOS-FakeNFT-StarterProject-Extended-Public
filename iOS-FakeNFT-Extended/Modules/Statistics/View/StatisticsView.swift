@@ -11,7 +11,7 @@ struct StatisticsView: View {
 	private static let statisticsSortOptionKey: String = "statisticsSortOptionKey"
 	
 	@State private var viewModel: StatisticsViewModel
-	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .name
+	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .rate
 	
 	init(
 		api: ObservedNetworkClient,
@@ -33,6 +33,7 @@ struct StatisticsView: View {
 			
 			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { counter, user in
 				UserListCell(model: user, counter: counter)
+					.id(user.id)
 					.task {
 						if user == viewModel.visibleUsers.last {
 							await viewModel.loadNextUsersPage()
@@ -62,6 +63,15 @@ struct StatisticsView: View {
 			activeSortOption: $sortOption
 		)
 		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+		.applyRepeatableAlert(
+			isPresneted: $viewModel.dataLoadingErrorIsPresented,
+			message: .cantGetUsersData,
+			didTapRepeat: {
+				Task {
+					await viewModel.loadNextUsersPage()
+				}
+			}
+		)
 	}
 }
 
