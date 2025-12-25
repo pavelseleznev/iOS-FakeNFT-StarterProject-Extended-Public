@@ -98,17 +98,17 @@ extension ObservedNetworkClientTests {
 			nftsToBuy.append(nfts[index].id)
 		}
 		
-		let firstEmptyRepsonse = try await sut.putOrderAndPay(
+		let firstEmptyRepsonse = try await sut.putOrder(
 			payload: .init(nfts: nil)
 		)
 		XCTAssertTrue(firstEmptyRepsonse.nftsIDs.isEmpty)
 		
-		let fullResponse = try await sut.putOrderAndPay(
+		let fullResponse = try await sut.putOrder(
 			payload: .init(nfts: nftsToBuy)
 		)
 		XCTAssertEqual(nftsToBuy, fullResponse.nftsIDs)
 		
-		let secondEmptyRepsonse = try await sut.putOrderAndPay(
+		let secondEmptyRepsonse = try await sut.putOrder(
 			payload: .init(nfts: nil)
 		)
 		XCTAssertTrue(secondEmptyRepsonse.nftsIDs.isEmpty)
