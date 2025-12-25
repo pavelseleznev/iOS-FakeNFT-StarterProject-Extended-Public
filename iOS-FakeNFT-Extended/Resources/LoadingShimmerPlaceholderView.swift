@@ -33,7 +33,7 @@ struct LoadingShimmerPlaceholderView: View {
 		GeometryReader {
 			let size = $0.size
 			
-			RoundedRectangle(cornerRadius: 8)
+			RoundedRectangle(cornerRadius: 4)
 				.fill(.ypBackgroundUniversal)
 				.overlay {
 					RoundedRectangle(cornerRadius: 8)
