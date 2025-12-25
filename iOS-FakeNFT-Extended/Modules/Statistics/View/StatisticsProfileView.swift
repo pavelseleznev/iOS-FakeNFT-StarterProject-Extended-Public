@@ -25,7 +25,7 @@ struct StatisticsProfileView: View {
 			ProfileContainer(
 				model: viewModel.model,
 				link: {
-					Button("Перейти на сайт пользователя"){
+					Button(.goToUserSite){
 						viewModel.didTapAuthLinkButton()
 					}
 					.nftButtonStyle(filled: false)
@@ -33,7 +33,7 @@ struct StatisticsProfileView: View {
 				actions: {
 					[
 						ProfileActionCell(
-							title: "Коллекция NFT (\(viewModel.model.nftsIDs.count))"
+							title: .nftCollection(count: viewModel.model.nftsIDs.count)
 						) {
 							viewModel.didTapProfileActionCell()
 						}
