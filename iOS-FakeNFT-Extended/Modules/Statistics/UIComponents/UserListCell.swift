@@ -43,20 +43,19 @@ struct UserListCell: View {
 	}
 	
 	private var profileImage: some View {
-		Group {
-			if
-				!model.avatarURLString.isEmpty,
-				let url = URL(string: model.avatarURLString)
-			{
-				AsyncImage(url: url) { image in
-					image
-						.resizable()
-						.scaledToFit()
-				} placeholder: {
-					ProgressView()
-						.progressViewStyle(.circular)
-				}
-			} else {
+		AsyncImage(
+			url: URL(string: model.avatarURLString),
+			transaction: .init(animation: .easeInOut(duration: 0.15))
+		) { phase in
+			switch phase {
+			case .empty:
+				ProgressView()
+					.progressViewStyle(.circular)
+			case .success(let image):
+				image
+					.resizable()
+					.scaledToFit()
+			default:
 				Image.profilePerson
 					.resizable()
 					.scaledToFit()
