@@ -15,8 +15,8 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	@State private var isPresented = false
 	
 	let placement: BaseConfirmationDialogTriggerPlacement
-	let title: String
-	let activeSortOption: String
+	let title: LocalizedStringResource
+	let activeSortOption: LocalizedStringResource
 	let actions: () -> Actions
 	
 	private let animation: Animation = .easeInOut(duration: 0.1)

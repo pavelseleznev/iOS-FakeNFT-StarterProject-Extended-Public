@@ -10,12 +10,12 @@ import SwiftUI
 struct StatisticsSortActionsViewModifier: ViewModifier {
 	enum SortOption: String {
 		case rate, name
-		var description: String {
+		var description: LocalizedStringResource {
 			switch self {
 			case .rate:
-				"По рейтингу"
+				.byRating
 			case .name:
-				"По имени"
+				.byName
 			}
 		}
 		
@@ -38,17 +38,17 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 			.modifier(
 				BaseConfirmationDialogViewModifier(
 					placement: placement,
-					title: "Сортировка",
+					title: .sorting,
 					activeSortOption: activeSortOption.description,
 					actions: {
 						Group {
-							Button("По имени") {
+							Button(.byName) {
 								activeSortOption = .name
 							}
-							Button("По рейтингу") {
+							Button(.byRating) {
 								activeSortOption = .rate
 							}
-							Button("Закрыть", role: .cancel) {}
+							Button(.close, role: .cancel) {}
 						}
 					}
 				)
