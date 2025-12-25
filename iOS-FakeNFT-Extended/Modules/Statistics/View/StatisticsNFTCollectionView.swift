@@ -35,7 +35,7 @@ struct StatisticsNFTCollectionView: View {
 		}
 		.toolbar {
 			ToolbarItem(placement: .title) {
-				Text("Коллекция NFT")
+				Text(.nftCollection)
 					.foregroundStyle(.ypBlack)
 					.font(.bold17)
 			}
