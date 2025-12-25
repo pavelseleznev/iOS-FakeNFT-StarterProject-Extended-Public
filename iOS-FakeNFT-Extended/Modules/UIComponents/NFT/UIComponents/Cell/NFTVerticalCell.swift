@@ -41,6 +41,7 @@ struct NFTVerticalCell: View {
 			.lineLimit(2)
 			.truncationMode(.tail)
 			.font(.bold17)
+			.opacity(model == nil ? 0 : 1)
 			.overlay {
 				if model == nil {
 					LoadingShimmerPlaceholderView()
@@ -56,6 +57,7 @@ struct NFTVerticalCell: View {
 		)
 		.foregroundStyle(.ypBlack)
 		.font(.medium10)
+		.opacity(model == nil ? 0 : 1)
 		.overlay {
 			if model == nil {
 				LoadingShimmerPlaceholderView()
@@ -71,6 +73,7 @@ struct NFTVerticalCell: View {
 				.foregroundStyle(.ypBlack)
 				.frame(width: 40, height: 40)
 		}
+		.opacity(model == nil ? 0 : 1)
 		.overlay {
 			if model == nil {
 				LoadingShimmerPlaceholderView()
