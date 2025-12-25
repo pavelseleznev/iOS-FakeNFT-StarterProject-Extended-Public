@@ -7,12 +7,17 @@
 
 
 enum Page: Identifiable {
+	case splash
 	case tabView
 	case aboutAuthor(urlString: String)
 	
 	// statistics
 	case statNFTCollection(nftsIDs: [String])
 	case statProfile(profile: UserListItemResponse)
+	
+	// cart
+	case paymentMethodChoose
+	case successPayment
 	
 	var id: String { .init(describing: self) }
 }
