@@ -12,10 +12,13 @@ struct CoordinatorView: View {
 	
 	var body: some View {
 		NavigationStack(path: $coordinator.path) {
-			coordinator.build(.tabView)
+			coordinator.build(.splash)
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
-						.customNavigationBackButton(backAction: coordinator.pop)
+						.customNavigationBackButton(
+							isTabView: coordinator.path.last == .tabView,
+							backAction: coordinator.pop
+						)
 				}
 				.sheet(item: $coordinator.sheet) { sheet in
 					coordinator.build(sheet)
@@ -24,21 +27,6 @@ struct CoordinatorView: View {
 					item: $coordinator.fullScreencover
 				) { fullScreenCover in
 					coordinator.build(fullScreenCover)
-				}
-				.overlay(content: loadingView)
-				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
-				.applyRepeatableAlert(
-					isPresneted: .constant(coordinator.appContainer.api.loadingState == .error),
-					message: "Не удалось получить данные", // TODO: move to constants
-					didTapRepeat: {
-						Task {
-							await coordinator.loadUserData()
-						}
-					}
-				)
-				.onAppear(perform: checkAuthState)
-				.task {
-					await coordinator.loadUserData()
 				}
 		}
 	}
@@ -50,14 +38,6 @@ struct CoordinatorView: View {
 		let appContainer = AppContainer(nftService: nft, api: api)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 	}
-	
-	private func loadingView() -> some View {
-		LoadingView(loadingState: coordinator.appContainer.api.loadingState)
-	}
-	
-	private func checkAuthState() {
-		coordinator.dismissFullScreenCover()
-	}
 }
 
 #Preview {
@@ -65,16 +45,21 @@ struct CoordinatorView: View {
 }
 
 extension View {
-	func customNavigationBackButton(backAction: @escaping () -> Void) -> some View {
+	func customNavigationBackButton(
+		isTabView: Bool,
+		backAction: @escaping () -> Void
+	) -> some View {
 		self
 			.navigationBarBackButtonHidden()
 			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button(action: backAction) {
-						Image.chevronLeft
-							.font(.chevronLeftIcon)
+				if !isTabView {
+					ToolbarItem(placement: .cancellationAction) {
+						Button(action: backAction) {
+							Image.chevronLeft
+								.font(.chevronLeftIcon)
+						}
+						.tint(.ypBlack)
 					}
-					.tint(.ypBlack)
 				}
 			}
 	}
