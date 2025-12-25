@@ -5,18 +5,20 @@
 //  Created by Superior Warden on 08.12.2025.
 //
 
-import Foundation
-import Observation
+import SwiftUI
 
 @MainActor
 @Observable
 final class StatisticsViewModel {
 	typealias SortOption = StatisticsSortActionsViewModifier.SortOption
 	
-	private(set) var users = Set<UserListItemResponse>()
 	private let api: ObservedNetworkClient
 	private let push: (Page) -> Void
+	
+	private(set) var users = Set<UserListItemResponse>()
+	
 	private var currentPage = 0
+	var dataLoadingErrorIsPresented = false
 	
 	var currenctSortOption: SortOption = .name
 	
@@ -51,7 +53,10 @@ extension StatisticsViewModel {
 				}
 			currentPage += 1
 		} catch {
-			print(error)
+			guard !(error is CancellationError) else { return }
+			withAnimation(.easeInOut(duration: 0.15)) {
+				dataLoadingErrorIsPresented = true
+			}
 		}
 	}
 	
