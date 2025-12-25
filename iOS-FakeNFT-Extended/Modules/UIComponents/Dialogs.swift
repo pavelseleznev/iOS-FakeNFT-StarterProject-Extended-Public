@@ -25,6 +25,19 @@ extension View {
 			)
 	}
 	
+	func applyCartSort(
+		placement: BaseConfirmationDialogTriggerPlacement,
+		activeSortOption: Binding<CartSortActionsViewModifier.SortOption>
+	) -> some View {
+		self
+			.modifier(
+				CartSortActionsViewModifier(
+					activeSortOption: activeSortOption,
+					placement: placement
+				)
+			)
+	}
+	
 	func applyStatisticsSort(
 		placement: BaseConfirmationDialogTriggerPlacement,
 		activeSortOption: Binding<StatisticsSortActionsViewModifier.SortOption>
