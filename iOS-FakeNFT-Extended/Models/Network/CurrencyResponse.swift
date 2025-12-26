@@ -17,8 +17,8 @@ struct CurrencyResponse: Decodable, Equatable {
 		.init(
 			title: "Bitcoin",
 			name: "BTC",
-			image: "",
-			id: UUID().uuidString
+			image: "https://code.s3.yandex.net/Mobile/iOS/Currencies/Bitcoin_(BTC).png",
+			id: "BTC"
 		)
 	}
 }
