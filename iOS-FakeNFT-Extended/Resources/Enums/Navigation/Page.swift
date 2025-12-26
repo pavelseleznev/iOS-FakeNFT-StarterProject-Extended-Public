@@ -7,12 +7,22 @@
 
 
 enum Page: Identifiable {
+	case nftDetail(
+		model: NFTModelContainer,
+		authorID: String,
+		authorWebsiteURLString: String
+	)
+	
 	case splash
 	case tabView
 	case aboutAuthor(urlString: String)
 	
 	// statistics
-	case statNFTCollection(nftsIDs: [String])
+	case statNFTCollection(
+		nftsIDs: [String],
+		authorID: String,
+		authorWebsiteURLString: String
+	)
 	case statProfile(profile: UserListItemResponse)
 	
 	// cart
