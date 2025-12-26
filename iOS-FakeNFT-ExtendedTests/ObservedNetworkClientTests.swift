@@ -76,12 +76,12 @@ extension ObservedNetworkClientTests {
 
 extension ObservedNetworkClientTests {
 	func testGetUsers() async throws {
-		let users = try await sut.getUsers()
+		let users = try await sut.getUsers(page: 0, sortOption: .name)
 		XCTAssertFalse(users.isEmpty)
 	}
 	
 	func testGetUserByID() async throws {
-		if let user = try await sut.getUsers().first {
+		if let user = try await sut.getUsers(page: 0, sortOption: .name).first {
 			let _ = try await sut.getUser(by: user.id)
 		} else {
 			XCTFail("Users must not be empty")
