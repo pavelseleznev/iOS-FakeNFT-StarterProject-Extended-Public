@@ -80,11 +80,16 @@ extension NFTService {
 extension NFTService {
 	func clearCart() async {
 		await storage.clearCart()
-		try? await api.putOrder(payload: .init(nfts: nil))
+		do {
+			try await api.putOrder(payload: .init(nfts: nil))
+		} catch {
+			guard !(error is CancellationError) else { return }
+			print(error.localizedDescription)
+		}
 	}
 	
 	func didPurchase(ids: [String]) {
-		Task {
+		Task(priority: .background) {
 			for id in ids {
 				await storage.addToPurchased(id: id)
 			}
@@ -92,7 +97,7 @@ extension NFTService {
 	}
 	
 	func addToCart(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.addToCart(id: id)
 			
 			let cart = await storage.getCart()
@@ -101,7 +106,7 @@ extension NFTService {
 	}
 	
 	func removeFromCart(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.removeFromCart(id: id)
 			
 			let cart = await storage.getCart()
@@ -117,7 +122,7 @@ extension NFTService {
 // MARK: - favourite
 extension NFTService {
 	func addToFavourite(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.addToFavourites(id: id)
 			
 			var likes = try await api.getProfile().likes
@@ -127,7 +132,7 @@ extension NFTService {
 	}
 	
 	func removeFromFavourite(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.removeFromFavourites(id: id)
 			
 			var likes = try await api.getProfile().likes
