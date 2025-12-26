@@ -85,15 +85,13 @@ extension CartViewModel {
 						continue
 					}
 					
-					await MainActor.run {
-						diff.onlyInFirst.forEach {
-							nfts.removeValue(forKey: $0)
-						}
-						
-						nfts.reserveCapacity(nfts.count + diff.onlyInSecond.count)
-						diff.onlyInSecond.forEach {
-							nfts[$0, default: nil] = nil
-						}
+					diff.onlyInFirst.forEach {
+						nfts.removeValue(forKey: $0)
+					}
+					
+					nfts.reserveCapacity(nfts.count + diff.onlyInSecond.count)
+					diff.onlyInSecond.forEach {
+						nfts[$0, default: nil] = nil
 					}
 					
 					try await waitPolling()
@@ -137,13 +135,13 @@ extension CartViewModel {
 	}
 	
 	func reloadCart() {
-		Task {
+		Task(priority: .high) {
 			if idsUpdateTask == nil {
 				await updateIDs()
 			}
 		}
 		
-		Task {
+		Task(priority: .high) {
 			if nftsLoadTask == nil {
 				await loadNilNFTs()
 			}
@@ -238,7 +236,7 @@ extension CartViewModel {
 	func removeNFTFromCart() {
 		guard let modelForRemoval else { return }
 		
-		Task { @Sendable in
+		Task(priority: .high) { @Sendable in
 			await nftService.removeFromCart(id: modelForRemoval.id)
 			nfts.removeValue(forKey: modelForRemoval.id)
 		}
