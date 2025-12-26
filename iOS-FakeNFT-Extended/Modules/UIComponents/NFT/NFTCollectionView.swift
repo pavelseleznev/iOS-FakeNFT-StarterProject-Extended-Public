@@ -10,19 +10,17 @@ import SwiftUI
 struct NFTCollectionView: View {
 	
 	@StateObject private var asyncNFTs: AsyncNFTs
-	private let nftsIDs: [String]
-	private let errorIsPresented: Bool
+	private let didTapDetail: (NFTModelContainer) -> Void
 	
 	init(
 		nftsIDs: [String],
 		nftService: NFTServiceProtocol,
-		errorIsPresented: Bool
+		didTapDetail: @escaping (NFTModelContainer) -> Void
 	) {
-		self.nftsIDs = nftsIDs
-		self.errorIsPresented = errorIsPresented
+		self.didTapDetail = didTapDetail
 		
 		_asyncNFTs = .init(
-			wrappedValue: .init(nftService: nftService)
+			wrappedValue: .init(nftService: nftService, ids: Set(nftsIDs))
 		)
 	}
 	
@@ -45,6 +43,7 @@ struct NFTCollectionView: View {
 				) { index, model in
 					NFTVerticalCell(
 						model: model,
+						didTapDetail: didTapDetail,
 						likeAction: {
 							asyncNFTs.didTapLikeButton(for: model)
 						},
@@ -69,19 +68,22 @@ struct NFTCollectionView: View {
 		.animation(.easeInOut(duration: 0.15), value: asyncNFTs.visibleNFTs)
 		.padding(.horizontal, 16)
 		.scrollIndicators(.hidden)
-		.task {
-			await asyncNFTs.fetchNFTs(using: Set(nftsIDs))
-		}
+		.onDisappear(perform: asyncNFTs.clearAllATasks)
+		.onAppear(perform: asyncNFTs.startBackgroundUnloadedLoadPolling)
 		.onDisappear(perform: asyncNFTs.viewDidDissappear)
 		.applyRepeatableAlert(
-			isPresneted: .constant(errorIsPresented),
+			isPresneted: $asyncNFTs.errorIsPresented,
 			message: .cantGetNFTs,
-			didTapRepeat: {
-				Task {
-					await asyncNFTs.loadFailedNFTs()
-				}
-			}
+			didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
 		)
+		.overlay(alignment: .center, content: emptyNFTsView)
+	}
+	
+	@ViewBuilder
+	private func emptyNFTsView() -> some View {
+		if asyncNFTs.visibleNFTs.isEmpty {
+			EmptyContentView(type: .nfts)
+		}
 	}
 }
 
@@ -113,7 +115,7 @@ struct NFTCollectionView: View {
 				"82570704-14ac-4679-9436-050f4a32a8a0"
 			],
 			nftService: service,
-			errorIsPresented: false
+			didTapDetail: {_ in}
 		)
 	}
 }
