@@ -10,6 +10,7 @@ import SwiftUI
 struct NFTVerticalCell: View {
 	
 	let model: NFTModelContainer?
+	let didTapDetail: (NFTModelContainer) -> Void
 	let likeAction: () -> Void
 	let cartAction: () -> Void
 	
@@ -33,6 +34,11 @@ struct NFTVerticalCell: View {
 				cartButton
 			}
 		}
+		.onTapGesture {
+			if let model {
+				didTapDetail(model)
+			}
+		}
 	}
 	
 	private var nameLabel: some View {
@@ -41,12 +47,7 @@ struct NFTVerticalCell: View {
 			.lineLimit(2)
 			.truncationMode(.tail)
 			.font(.bold17)
-			.opacity(model == nil ? 0 : 1)
-			.overlay {
-				if model == nil {
-					LoadingShimmerPlaceholderView()
-				}
-			}
+			.applySkeleton(model)
 	}
 	
 	private var costLabel: some View {
@@ -57,12 +58,7 @@ struct NFTVerticalCell: View {
 		)
 		.foregroundStyle(.ypBlack)
 		.font(.medium10)
-		.opacity(model == nil ? 0 : 1)
-		.overlay {
-			if model == nil {
-				LoadingShimmerPlaceholderView()
-			}
-		}
+		.applySkeleton(model)
 	}
 	
 	private var cartButton: some View {
@@ -73,13 +69,8 @@ struct NFTVerticalCell: View {
 				.foregroundStyle(.ypBlack)
 				.frame(width: 40, height: 40)
 		}
-		.opacity(model == nil ? 0 : 1)
-		.overlay {
-			if model == nil {
-				LoadingShimmerPlaceholderView()
-			}
-		}
 		.disabled(model == nil)
+		.applySkeleton(model)
 	}
 }
 
@@ -100,6 +91,7 @@ struct NFTVerticalCell: View {
 			ForEach(0..<10) { _ in
 				NFTVerticalCell(
 					model: .badImageURLMock,
+					didTapDetail: {_ in},
 					likeAction: {},
 					cartAction: {}
 				)
