@@ -17,6 +17,7 @@ enum LoadingState: Equatable {
 @Observable
 final class DataLoader {
 	private(set) var loadingState: LoadingState = .idle
+	private let cancelErrorsDscr = ["отменено", "cancelled"]
 	
 	func fetchData<T: Decodable>(
 		_ operation: @escaping @Sendable () async throws -> T
@@ -29,7 +30,9 @@ final class DataLoader {
 			}
 			return try await operation()
 		} catch {
-			let isCancellation = error.localizedDescription.lowercased().contains("cancelled") || error is CancellationError
+			let isCancellation =
+			cancelErrorsDscr.contains(error.localizedDescription.lowercased()) ||
+			error is CancellationError
 
 			loadingState = isCancellation ? .idle : .error
 			if isCancellation {
