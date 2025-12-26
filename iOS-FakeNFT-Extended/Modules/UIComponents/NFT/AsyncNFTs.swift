@@ -5,20 +5,23 @@
 //  Created by Superior Warden on 18.12.2025.
 //
 
-import Foundation
+import SwiftUI
 
 @MainActor
 final class AsyncNFTs: ObservableObject {
 	@Published private var nfts = [String : NFTModelContainer?]()
-	private var failedIDs = Set<String>()
+	private let ids: Set<String>
+	var errorIsPresented = false
 	
-	private var currentStream: AsyncStream<NFTResponse>?
-	private var continuation: AsyncStream<NFTResponse>.Continuation?
-	private var fetchingTask: Task<Void, Never>?
+	private var currentStream: AsyncThrowingStream<NFTResponse, Error>?
+	private var continuation: AsyncThrowingStream<NFTResponse, Error>.Continuation?
+	private var pollingTask: Task<Void, Never>?
+	private var fetchingTask: Task<Void, Error>?
 	
 	private var viewDidDisappeared = false
 	
 	private let nftService: NFTServiceProtocol
+	private let pollingInterval: Duration = .seconds(1)
 	
 	@inline(__always)
 	var visibleNFTs: [NFTModelContainer?] {
@@ -29,8 +32,12 @@ final class AsyncNFTs: ObservableObject {
 			.map(\.value)
 	}
 	
-	init(nftService: NFTServiceProtocol) {
+	init(
+		nftService: NFTServiceProtocol,
+		ids: Set<String>
+	) {
 		self.nftService = nftService
+		self.ids = ids
 	}
 }
 
@@ -68,15 +75,60 @@ extension AsyncNFTs {
 }
 
 extension AsyncNFTs {
-	func loadFailedNFTs() async {
-		await fetchNFTs(using: failedIDs)
+	func startBackgroundUnloadedLoadPolling() {
+		guard pollingTask == nil else { return }
+		
+		pollingTask = Task(priority: .background) {
+			do {
+				repeat {
+					updateIDs()
+					try await loadUnloadedNFTsIfNeeded()
+					try await Task.sleep(for: pollingInterval)
+				} while !Task.isCancelled
+			} catch {
+				guard !(error is CancellationError) else { return }
+				withAnimation(.easeInOut(duration: 0.15)) {
+					errorIsPresented = true
+				}
+			}
+		}
 	}
 	
-	func fetchNFTs(using ids: Set<String>) async {
+	func clearAllATasks() {
+		cancelFetchingTask()
+		
+		pollingTask?.cancel()
+		pollingTask = nil
+	}
+}
+
+private extension AsyncNFTs {
+	func updateIDs() {
+		let oldIDs = Set(nfts.keys)
+		let newIDs = ids
+		
+		let idsToAdd = newIDs.subtracting(oldIDs)
+		let idsToRemove = oldIDs.subtracting(newIDs)
+		
+		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
+		nfts.reserveCapacity(newCapacity)
+		
+		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
+		idsToAdd.forEach { nfts[$0, default: nil] = nil }
+	}
+	
+	func loadUnloadedNFTsIfNeeded() async throws {
+		let unloadedNFTs = nfts.filter(\.value.isNil)
+		guard !unloadedNFTs.isEmpty else { return }
+		
+		try await loadNFTs(by: unloadedNFTs.map(\.key))
+	}
+	
+	func loadNFTs(by ids: [String]) async throws {
 		nfts.reserveCapacity(ids.count)
 		ids.forEach { nfts[$0, default: nil] = nil }
 		
-		for await nft in makeNFTsStream(with: ids) {
+		for try await nft in makeNFTsStream(with: ids) {
 			let nftContainer = NFTModelContainer(
 				nft: nft,
 				isFavorite: await nftService.isFavourite(id: nft.id),
@@ -85,9 +137,7 @@ extension AsyncNFTs {
 			nfts[nft.id, default: nil] = nftContainer
 		}
 	}
-}
-
-private extension AsyncNFTs {
+	
 	func cancelFetchingTask() {
 		fetchingTask?.cancel()
 		fetchingTask = nil
@@ -97,35 +147,30 @@ private extension AsyncNFTs {
 		currentStream = nil
 	}
 	
-	func makeNFTsStream(with ids: Set<String>) -> AsyncStream<NFTResponse> {
+	func makeNFTsStream(with ids: [String]) -> AsyncThrowingStream<NFTResponse, Error> {
 		if let currentStream {
 			return currentStream
 		} else {
-			let stream = AsyncStream<NFTResponse> { continuation in
+			let stream = AsyncThrowingStream<NFTResponse, Error> { continuation in
 				cancelFetchingTask()
 				
 				self.continuation = continuation
 				
-				fetchingTask = Task {
+				fetchingTask = Task(priority: .background) {
 					for id in ids {
 						if viewDidDisappeared {
 							cancelFetchingTask()
 						}
 						
-						do {
-							let nft = try await performWithTimeout(
-								timeout: Duration.seconds(3),
-								operation: { [weak self] in
-									guard let self else { throw NSError(domain: "Self is deallocated", code: 0) }
-									return try await nftService.loadNFT(id: id)
-								}
-							)
-							
-							failedIDs.remove(id)
-							continuation.yield(nft)
-						} catch {
-							failedIDs.insert(id)
-						}
+						let nft = try await performWithTimeout(
+							timeout: Duration.seconds(3),
+							operation: { [weak self] in
+								guard let self else { throw NSError(domain: "Self is deallocated", code: 0) }
+								return try await nftService.loadNFT(id: id)
+							}
+						)
+						
+						continuation.yield(nft)
 					}
 					continuation.finish()
 				}
@@ -147,7 +192,7 @@ private extension AsyncNFTs {
 		operation: @escaping @Sendable () async throws -> T
 	) async throws -> T {
 		try await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
-			group.addTask {
+			group.addTask(priority: .high) {
 				do {
 					let result = try await operation()
 					return .success(result)
@@ -156,7 +201,7 @@ private extension AsyncNFTs {
 				}
 			}
 			
-			group.addTask {
+			group.addTask(priority: .high) {
 				try await Task.sleep(for: timeout)
 				return .failure(NSError(domain: "Timeout", code: 0, userInfo: nil))
 			}
