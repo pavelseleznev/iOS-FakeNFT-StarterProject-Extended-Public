@@ -85,6 +85,12 @@ extension Font {
 		design: design
 	)
 	
+	static let starIcon = Font.system(
+		size: 20,
+		weight: .semibold,
+		design: design
+	)
+	
 	static let cartIcon = Font.system(
 		size: 18.5,
 		weight: .bold,
