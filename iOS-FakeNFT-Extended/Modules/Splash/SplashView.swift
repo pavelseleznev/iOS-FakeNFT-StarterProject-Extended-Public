@@ -29,14 +29,14 @@ struct SplashView: View {
 				}
 		}
 		.animation(animation, value: appContainer.api.loadingState)
-		.task(priority: .high) {
+		.task(priority: .userInitiated) {
 			await loadUserData()
 		}
 		.applyRepeatableAlert(
 			isPresneted: $dataLoadingErrorIsPresented,
 			message: .cantGetProfileData,
 			didTapRepeat: {
-				Task(priority: .high) { await loadUserData() }
+				Task(priority: .userInitiated) { await loadUserData() }
 			}
 		)
 		.transition(.opacity)
