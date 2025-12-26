@@ -14,6 +14,7 @@ final class Coordinator {
 	var path = [Page]()
 	var sheet: Sheet?
 	var fullScreencover: FullScreenCover?
+	var ratingViewIsPresented = false
 	
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
