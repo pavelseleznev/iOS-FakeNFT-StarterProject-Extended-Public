@@ -34,6 +34,20 @@ private extension Coordinator {
 			push(.tabView)
 		}
 	}
+	
+	func didTapDetail(
+		model: NFTModelContainer,
+		authorID: String,
+		authorWebsiteURLString: String
+	) {
+		push(
+			.nftDetail(
+				model: model,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString
+			)
+		)
+	}
 }
 
 // --- internal navigation ---
@@ -96,11 +110,22 @@ extension Coordinator {
 				onLoadingStateChange: onLoadingStateFromWebsite
 			)
 			
-		case .statNFTCollection(let nftsIDs):
+		case .statNFTCollection(
+			let nftsIDs,
+			let authorID,
+			let authorWebsiteURLString
+		):
 			StatisticsNFTCollectionView(
 				nftsIDs: nftsIDs,
 				loadingState: appContainer.api.loadingState,
-				nftService: appContainer.nftService
+				nftService: appContainer.nftService,
+				didTapDetail: { [weak self] in
+					self?.didTapDetail(
+						model: $0,
+						authorID: authorID,
+						authorWebsiteURLString: authorWebsiteURLString
+					)
+				}
 			)
 			
 		case .statProfile(profile: let profile):
@@ -118,14 +143,24 @@ extension Coordinator {
 			
 		case .successPayment:
 			SuccessPaymentView(backToCart: popToRoot)
+			
+		case let .nftDetail(nft, authorID, authorWebsiteURLString):
+			NFTDetailView(
+				model: nft,
+				appContainer: appContainer,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString,
+				push: push,
+				pop: pop
+			)
 		}
 	}
 	
 	@ViewBuilder
 	func build(_ sheet: Sheet) -> some View {
 		switch sheet {
-		case let .nftDetail(nft):
-			NFTDetailView(nft: nft)
+		case .empty:
+			EmptyView()
 		}
 	}
 	
