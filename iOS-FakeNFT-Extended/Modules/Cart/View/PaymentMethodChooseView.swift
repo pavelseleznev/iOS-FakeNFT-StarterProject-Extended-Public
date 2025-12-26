@@ -77,7 +77,7 @@ struct PaymentMethodChooseView: View {
 					}
 				}
 			}
-			.task {
+			.task(priority: .high) {
 				await viewModel.loadPaymentMethods()
 			}
 			.padding(.horizontal)
