@@ -11,15 +11,18 @@ struct StatisticsNFTCollectionView: View {
 	private let nftsIDs: [String]
 	private let nftService: NFTServiceProtocol
 	private let loadingState: LoadingState
+	private let didTapDetail: (NFTModelContainer) -> Void
 	
 	init(
 		nftsIDs: [String],
 		loadingState: LoadingState,
-		nftService: NFTServiceProtocol
+		nftService: NFTServiceProtocol,
+		didTapDetail: @escaping (NFTModelContainer) -> Void
 	) {
 		self.nftsIDs = nftsIDs
 		self.loadingState = loadingState
 		self.nftService = nftService
+		self.didTapDetail = didTapDetail
 	}
 	
 	var body: some View {
@@ -29,7 +32,7 @@ struct StatisticsNFTCollectionView: View {
 			NFTCollectionView(
 				nftsIDs: nftsIDs,
 				nftService: nftService,
-				errorIsPresented: loadingState == .error
+				didTapDetail: didTapDetail
 			)
 			.safeAreaPadding(.top)
 		}
@@ -61,7 +64,8 @@ struct StatisticsNFTCollectionView: View {
 		nftService: NFTService(
 			api: .mock,
 			storage: NFTStorage()
-		)
+		),
+		didTapDetail: {_ in}
 	)
 }
 #endif
