@@ -33,6 +33,11 @@ final class StatisticsViewModel {
 
 extension StatisticsViewModel {
 	@inline(__always)
+	var loadingState: LoadingState {
+		api.loadingState
+	}
+	
+	@inline(__always)
 	var visibleUsers: [UserListItemResponse] {
 		users
 			.sorted(by: usersSortComparator)

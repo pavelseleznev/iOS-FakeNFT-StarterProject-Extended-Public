@@ -34,7 +34,7 @@ struct StatisticsView: View {
 			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { counter, user in
 				UserListCell(model: user, counter: counter)
 					.id(user.id)
-					.task {
+					.task(priority: .userInitiated) {
 						if user == viewModel.visibleUsers.last {
 							await viewModel.loadNextUsersPage()
 						}
@@ -53,8 +53,9 @@ struct StatisticsView: View {
 			.scrollContentBackground(.hidden)
 			.listStyle(.plain)
 			.animation(.easeInOut(duration: 0.15), value: viewModel.visibleUsers)
+			.overlay(content: loadingView)
 		}
-		.task {
+		.task(priority: .userInitiated) {
 			await viewModel.loadNextUsersPage(onAppear: true)
 		}
 		.safeAreaTopBackground()
@@ -67,11 +68,15 @@ struct StatisticsView: View {
 			isPresneted: $viewModel.dataLoadingErrorIsPresented,
 			message: .cantGetUsersData,
 			didTapRepeat: {
-				Task {
+				Task(priority: .userInitiated) {
 					await viewModel.loadNextUsersPage()
 				}
 			}
 		)
+	}
+	
+	private func loadingView() -> some View {
+		LoadingView(loadingState: viewModel.loadingState)
 	}
 }
 
