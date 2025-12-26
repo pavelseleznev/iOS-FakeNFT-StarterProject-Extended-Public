@@ -22,12 +22,7 @@ struct NFTCostView: View {
 			Text(String(format: "%.2f", model?.price ?? 99.99) + " ETH")
 				.foregroundStyle(.ypBlack)
 				.font(.bold17)
-				.opacity(model == nil ? 0 : 1)
-				.overlay {
-					if model == nil {
-						LoadingShimmerPlaceholderView()
-					}
-				}
+				.applySkeleton(model)
 		}
 	}
 }

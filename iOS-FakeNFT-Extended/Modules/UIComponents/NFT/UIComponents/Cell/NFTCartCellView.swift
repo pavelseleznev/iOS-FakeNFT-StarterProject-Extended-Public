@@ -43,13 +43,9 @@ struct NFTCartCellView: View {
 				.foregroundStyle(.ypBlack)
 				.font(.cartIcon)
 				.frame(width: 40, height: 40)
-				.opacity(model == nil ? 0 : 1)
-				.overlay {
-					if model == nil {
-						LoadingShimmerPlaceholderView()
-					}
-				}
+				.applySkeleton(model)
 		}
+		.buttonStyle(.plain)
 		.disabled(model == nil)
 	}
 }

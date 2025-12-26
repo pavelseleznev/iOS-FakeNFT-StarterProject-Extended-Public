@@ -16,12 +16,7 @@ struct NFTNameRateAuthorView: View {
 			Text(model?.name ?? "Jhon Doe")
 				.foregroundStyle(.ypBlack)
 				.font(.bold17)
-				.opacity(model == nil ? 0 : 1)
-				.overlay {
-					if model == nil {
-						LoadingShimmerPlaceholderView()
-					}
-				}
+				.applySkeleton(model)
 			
 			RatingPreview(rating: model?.rating)
 			
@@ -29,12 +24,7 @@ struct NFTNameRateAuthorView: View {
 				Text("от " + (model?.authorName ?? "Jhon Doe"))
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
-					.opacity(model == nil ? 0 : 1)
-					.overlay {
-						if model == nil {
-							LoadingShimmerPlaceholderView()
-						}
-					}
+					.applySkeleton(model)
 			}
 		}
 	}
