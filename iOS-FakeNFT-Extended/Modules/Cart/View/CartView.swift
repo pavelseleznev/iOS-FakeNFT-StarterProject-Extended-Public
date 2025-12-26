@@ -93,7 +93,7 @@ struct CartView: View {
 	@ViewBuilder
 	private func emptyCartView() -> some View {
 		if viewModel.nftCount == 0 {
-			EmptyCartView()
+			EmptyContentView(type: .cart)
 		}
 	}
 	
@@ -116,12 +116,12 @@ struct CartView: View {
 		nftService: NFTService(api: api, storage: storage),
 		push: {_ in}
 	)
-	.onAppear {
-		Task {
-			try? await api.getOrder().nftsIDs.forEach {
-				storage.addToCart(id: $0)
+	.task(priority: .userInitiated) {
+		do {
+			for id in try await api.getOrder().nftsIDs {
+				await storage.addToCart(id: id)
 			}
-		}
+		} catch { print(error.localizedDescription) }
 	}
 }
 #endif
