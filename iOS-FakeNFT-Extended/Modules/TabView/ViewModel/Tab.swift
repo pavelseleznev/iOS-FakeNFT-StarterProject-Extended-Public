@@ -51,8 +51,8 @@ enum Tab: String, CaseIterable, Identifiable {
             )
 		case .catalog:
 			CatalogView(
-				appContainer: appContainer,
-				push: push
+                api: appContainer.api,
+                push: push
 			)
 		case .statistics:
 			StatisticsView(

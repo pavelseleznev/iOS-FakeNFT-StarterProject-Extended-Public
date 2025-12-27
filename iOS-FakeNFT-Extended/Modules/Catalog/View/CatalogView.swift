@@ -8,24 +8,56 @@
 import SwiftUI
 
 struct CatalogView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	
-	var body: some View {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			Button {
-                push(.aboutAuthor(urlString: "https://practicum.yandex.ru"))
-			} label: {
-				Text("Catalog")
-					.font(.title)
-					.bold()
-			}
-		}
-		.applyCatalogSort(
-			placement: .safeAreaTop,
-			didTapName: {
-			},
-			didTapNFTCount: {})
-	}
+    @State private var viewModel: CatalogViewModel
+    
+    init(
+        api: ObservedNetworkClient,
+        push: @escaping (Page) -> Void
+    ) {
+        _viewModel = .init(
+            initialValue: .init(
+                api: api,
+                push: push
+            )
+        )
+    }
+    
+    var body: some View {
+        ZStack {
+            Color.ypWhite.ignoresSafeArea()
+            
+            List {
+                ForEach(viewModel.collections) { item in
+                    NFTCollectionCell(model: item)
+                        .onTapGesture {
+                            viewModel.didSelectItem(item)
+                        }
+                        .listRowInsets(.init())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+            }
+            .padding(.top, 20)
+            .listRowSpacing(8)
+            .listStyle(.plain)
+        }
+        .safeAreaTopBackground()
+        .applyCatalogSort(
+            placement: .safeAreaTop,
+            didTapName: viewModel.applySortByName,
+            didTapNFTCount: viewModel.applySortByNFTCount
+        )
+    }
+}
+
+#Preview {
+    @Previewable let obsAPI: ObservedNetworkClient = {
+        let api = DefaultNetworkClient()
+        return .init(api: api)
+    }()
+    
+    CatalogView(
+        api: .mock,
+        push: { _ in }
+    )
 }
