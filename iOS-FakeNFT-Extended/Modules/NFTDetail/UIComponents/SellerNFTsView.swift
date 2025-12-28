@@ -7,11 +7,12 @@
 
 import SwiftUI
 
+fileprivate let nftWidth: CGFloat = 108
+
 struct SellerNFTsView: View {
 	@State private var viewModel: SellerNFTsViewModel
 	
 	private let didTapDetail: (NFTModelContainer) -> Void
-	private let nftWidth: CGFloat = 108
 	
 	init(
 		authorID: String,
@@ -47,20 +48,12 @@ struct SellerNFTsView: View {
 					)
 					.id((model?.id ?? UUID().uuidString) + viewModel.modelUpdateTriggerID.uuidString)
 					.frame(width: nftWidth)
-					.scrollTransition { content, phase in
-						content
-							.rotation3DEffect(
-								.degrees(phase.isIdentity ? 0 : 35 * -phase.value),
-								axis: (x: 0, y: phase.isIdentity ? 1 : 0, z: 0)
-							)
-							.opacity(phase.isIdentity ? 1 : 0.7)
-							.blur(radius: phase.isIdentity ? 0 : 2)
-					}
+					.cellModifiers()
 				}
 			}
 			.padding(.horizontal)
 		}
-		.animation(.easeInOut(duration: 0.15), value: viewModel.visibleNFTs)
+		.animation(Constants.defaultAnimation, value: viewModel.visibleNFTs)
 		.scrollIndicators(.hidden)
 		.applyRepeatableAlert(
 			isPresneted: $viewModel.showAuthorLoadingError,
@@ -75,17 +68,35 @@ struct SellerNFTsView: View {
 		.onAppear(perform: viewModel.startPolling)
 		.onDisappear(perform: viewModel.clearAllTasks)
 		.overlay(alignment: .top, content: noNFTsView)
-		.safeAreaPadding(.bottom)
+		.contentMargins(.vertical, 24)
 	}
 	
 	@ViewBuilder
 	private func noNFTsView() -> some View {
 		if viewModel.visibleNFTs.isEmpty {
 			EmptyContentView(type: .nfts)
+				.transition(.scale.combined(with: .opacity))
 		}
 	}
 }
 
+// MARK: - View helper
+fileprivate extension View {
+	func cellModifiers() -> some View {
+		self
+			.scrollTransition { content, phase in
+				content
+					.rotation3DEffect(
+						.degrees(phase.isIdentity ? 0 : 35 * -phase.value),
+						axis: (x: 0, y: phase.isIdentity ? 1 : 0, z: 0)
+					)
+					.opacity(phase.isIdentity ? 1 : 0.7)
+					.blur(radius: phase.isIdentity ? 0 : 2)
+			}
+	}
+}
+
+// MARK: - Preview
 #if DEBUG
 #Preview {
 	@Previewable let api = ObservedNetworkClient()

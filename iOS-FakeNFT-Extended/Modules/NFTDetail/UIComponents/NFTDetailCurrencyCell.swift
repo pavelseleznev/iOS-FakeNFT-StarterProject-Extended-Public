@@ -7,11 +7,12 @@
 
 import SwiftUI
 
+fileprivate let imageSize: CGFloat = 32
+fileprivate let currencyPair_ETH_UDS_ratio: Float = 2957.66
+
 struct NFTDetailCurrencyCell: View {
 	let model: CurrencyContainer?
 	let cost: Float
-	private let imageSize: CGFloat = 32
-	private let currencyPair_ETH_UDS_ratio: Float = 2957.66
 	
 	var body: some View {
 		HStack(spacing: 10) {
@@ -41,14 +42,13 @@ struct NFTDetailCurrencyCell: View {
 		VStack(alignment: .leading, spacing: 2) {
 			Text("\(model?.currency.title ?? "Bitcoin") (\(model?.currency.id ?? "BTC"))")
 				.font(.regular13)
-				.foregroundStyle(.ypBlack)
 				.applySkeleton(model)
 			
 			Text("$\(costLabel)")
 				.font(.regular15)
-				.foregroundStyle(.ypBlack)
 				.applySkeleton(model)
 		}
+		.foregroundStyle(.ypBlack)
 	}
 	
 	private var image: some View {
@@ -56,7 +56,7 @@ struct NFTDetailCurrencyCell: View {
 			.overlay {
 				AsyncImage(
 					url: URL(string: model?.currency.image ?? ""),
-					transaction: .init(animation: .easeInOut(duration: 0.15))
+					transaction: .init(animation: Constants.defaultAnimation)
 				) { phase in
 					switch phase {
 					case .empty:

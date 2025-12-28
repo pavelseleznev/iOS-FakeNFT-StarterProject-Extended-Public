@@ -11,7 +11,6 @@ import SwiftUI
 @MainActor
 final class NFTDetailViewModel {
 	private let push: (Page) -> Void
-	let pop: () -> Void
 	let appContainer: AppContainer
 	let authorID: String
 	let authorWebsiteURLString: String
@@ -40,12 +39,10 @@ final class NFTDetailViewModel {
 		model: NFTModelContainer,
 		authorID: String,
 		authorWebsiteURLString: String,
-		push: @escaping (Page) -> Void,
-		pop: @escaping () -> Void
+		push: @escaping (Page) -> Void
 	) {
 		self.appContainer = appContainer
 		self.push = push
-		self.pop = pop
 		self.authorID = authorID
 		self.authorWebsiteURLString = authorWebsiteURLString
 		self.model = model
@@ -53,22 +50,9 @@ final class NFTDetailViewModel {
 }
 
 // MARK: - NFTDetailViewModel Extensions
-// --- internal methods ---
+
+// --- internal helpers ---
 extension NFTDetailViewModel {
-	func didTapDetail(model: NFTModelContainer) {
-		push(
-			.nftDetail(
-				model: model,
-				authorID: authorID,
-				authorWebsiteURLString: authorWebsiteURLString
-			)
-		)
-	}
-	
-	func didTapGoToSellerSite() {
-		push(.aboutAuthor(urlString: authorWebsiteURLString))
-	}
-	
 	func loadCurrencies() async {
 		do {
 			let _currencies = try await appContainer.api.getCurrencies()
@@ -85,13 +69,35 @@ extension NFTDetailViewModel {
 			}
 		} catch {
 			guard !(error is CancellationError) else { return }
-			withAnimation(.easeInOut(duration: 0.15)) {
+			withAnimation(Constants.defaultAnimation) {
 				currenciesLoadErrorIsPresented = true
 			}
 		}
 	}
 	
-	func cartAction() {
+	func clearAllTasks() {
+		clearCartActionTask()
+		clearLikeActionTask()
+	}
+}
+
+// --- internal actions ---
+extension NFTDetailViewModel {
+	func didTapDetail(model: NFTModelContainer) {
+		push(
+			.nftDetail(
+				model: model,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString
+			)
+		)
+	}
+	
+	func didTapGoToSellerSite() {
+		push(.aboutAuthor(urlString: authorWebsiteURLString))
+	}
+	
+	func didTapCartButton() {
 		cartActionTask = changeModelState(
 			updateTask: cartActionTask,
 			clear: clearCartActionTask,
@@ -122,23 +128,21 @@ extension NFTDetailViewModel {
 			}
 		)
 	}
-	
-	func clearAllTasks() {
-		clearCartActionTask()
-		clearLikeActionTask()
-	}
-	
-	private func clearCartActionTask() {
+}
+
+// --- private helpers ---
+private extension NFTDetailViewModel {
+	func clearCartActionTask() {
 		cartActionTask?.cancel()
 		cartActionTask = nil
 	}
 	
-	private func clearLikeActionTask() {
+	func clearLikeActionTask() {
 		likeActionTask?.cancel()
 		likeActionTask = nil
 	}
 	
-	private func changeModelState(
+	func changeModelState(
 		updateTask: Task<Void, Never>?,
 		clear: @escaping () -> Void,
 		invertFavouriteState: Bool = false,

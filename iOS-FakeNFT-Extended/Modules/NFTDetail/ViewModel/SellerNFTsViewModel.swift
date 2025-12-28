@@ -168,14 +168,14 @@ private extension SellerNFTsViewModel {
 	
 	func onNFTsError(_ error: Error) {
 		guard !(error is CancellationError) else { return }
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			showNFTsLoadingError = true
 		}
 	}
 	
 	func onAuthorError(_ error: Error) {
 		guard !(error is CancellationError) else { return }
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			showAuthorLoadingError = true
 		}
 	}

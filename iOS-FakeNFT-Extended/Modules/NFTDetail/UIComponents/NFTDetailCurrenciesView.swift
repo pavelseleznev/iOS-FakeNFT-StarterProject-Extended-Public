@@ -16,8 +16,7 @@ struct NFTDetailCurrenciesView: View {
 			if currencies.isEmpty {
 				LoadingView(loadingState: .fetching)
 					.padding(.vertical)
-					.transition(.scale)
-					.transition(.opacity)
+					.transition(.scale.combined(with: .opacity))
 			}
 			
 			ForEach(
@@ -34,7 +33,7 @@ struct NFTDetailCurrenciesView: View {
 		.background(.ypLightGrey)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.padding(.horizontal)
-		.animation(.easeInOut(duration: 0.15), value: currencies)
+		.animation(Constants.defaultAnimation, value: currencies)
 	}
 }
 
