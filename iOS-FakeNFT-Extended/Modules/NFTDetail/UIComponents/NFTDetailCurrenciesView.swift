@@ -33,6 +33,7 @@ struct NFTDetailCurrenciesView: View {
 		.background(.ypLightGrey)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.padding(.horizontal)
+		.shadow(color: .ypBlackUniversal.opacity(0.3), radius: 10)
 		.animation(Constants.defaultAnimation, value: currencies)
 	}
 }
