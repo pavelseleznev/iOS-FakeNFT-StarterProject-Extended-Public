@@ -64,13 +64,14 @@ fileprivate enum Selection: String, CaseIterable, Identifiable {
 }
 
 // MARK: - Local constants
-fileprivate let autoRollInterval: TimeInterval = 4
+fileprivate let autoRollInterval: TimeInterval = 0.05
 
 // MARK: - View
 struct OnboardingView: View {
 	let onComplete: () -> Void
 	
 	@State private var selection: Selection = .explore
+	@State private var autoscrollProgress: CGFloat = 0
 	@State private var cancellable: Cancellable?
 	
 	var body: some View {
@@ -85,7 +86,7 @@ struct OnboardingView: View {
 			.tabViewStyle(.page(indexDisplayMode: .never))
 			.safeAreaInset(edge: .top, content: topToolbar)
 			.safeAreaInset(edge: .bottom, content: completeButton)
-			.animation(.easeInOut(duration: 0.45), value: selection)
+			.animation(.default, value: selection)
 			.onAppear(perform: rollNext)
 			.onDisappear(perform: clearCancellable)
 			.onChange(of: selection, performSelectionChange)
@@ -103,15 +104,21 @@ fileprivate extension OnboardingView {
 			.autoconnect()
 			.sink { _ in
 				guard !selection.isLast else {
-					cancellable?.cancel()
+					clearCancellable()
 					return
 				}
-				selection = selection.next
+				
+				autoscrollProgress += autoRollInterval / 4
+				
+				if autoscrollProgress >= 1 {
+					selection = selection.next
+				}
 			}
 	}
 	
 	func performSelectionChange(_ oldValue: Selection, _ newValue: Selection) {
-		cancellable?.cancel()
+		clearCancellable()
+		autoscrollProgress = 0
 		rollNext()
 	}
 	
@@ -173,7 +180,9 @@ fileprivate extension OnboardingView {
 		VStack(alignment: .trailing, spacing: 12) {
 			TabIndicatorsView(
 				items: Selection.allCases,
-				selection: selection
+				selection: selection,
+				autoscrollProgress: autoscrollProgress,
+				isConstantAppearance: true
 			)
 			.padding(.horizontal)
 			

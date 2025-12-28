@@ -8,20 +8,46 @@
 import SwiftUI
 
 struct TabIndicatorsView<Items: RandomAccessCollection>: View where Items.Element: Hashable {
-	let items: Items
-	let selection: Items.Element
+	private let items: Items
+	private let selection: Items.Element
+	private let autoscrollProgress: CGFloat
+	private let isConstantAppearance: Bool
+	
+	init(
+		items: Items,
+		selection: Items.Element,
+		autoscrollProgress: CGFloat = 0,
+		isConstantAppearance: Bool = false
+	) {
+		self.items = items
+		self.selection = selection
+		self.autoscrollProgress = autoscrollProgress
+		self.isConstantAppearance = isConstantAppearance
+	}
+	
 	var body: some View {
 		HStack(spacing: 8) {
 			ForEach(
 				items,
 				id: \.self
 			) { item in
-				RoundedRectangle(cornerRadius: Constants.tabIndicatorHeight / 2)
-					.fill(selection == item ? .ypBlack : .ypBlack.opacity(0.2))
+				Capsule()
+					.fill(isConstantAppearance ? .ypWhiteUniversal : .ypBlack)
+					.opacity(selection == item ? 1 : 0.2)
 					.frame(height: Constants.tabIndicatorHeight)
+					.overlay { progressView(item) }
 			}
 		}
 		.animation(Constants.defaultAnimation, value: selection)
+	}
+	
+	@ViewBuilder
+	private func progressView(_ item: Items.Element) -> some View {
+		if selection == item {
+			Color.ypGrayUniversal
+				.opacity(0.4)
+				.scaleEffect(x: autoscrollProgress, anchor: .leading)
+		}
 	}
 }
 
