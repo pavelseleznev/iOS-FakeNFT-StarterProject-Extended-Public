@@ -49,7 +49,7 @@ extension CartViewModel {
 	
 	private func onError(_ error: Error) {
 		guard !(error is CancellationError) else { return }
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			dataLoadingErrorIsPresented = true
 		}
 	}
@@ -220,14 +220,14 @@ extension CartViewModel {
 // --- nft removal actions ---
 extension CartViewModel {
 	func setNFTForRemoval(_ nft: NFTModelContainer?) {
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			modelForRemoval = nft
 			removalApproveAlertIsPresented = true
 		}
 	}
 	
 	func nftDismissAction() {
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			modelForRemoval = nil
 			removalApproveAlertIsPresented = false
 		}

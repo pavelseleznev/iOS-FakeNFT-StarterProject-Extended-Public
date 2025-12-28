@@ -26,8 +26,6 @@ struct EmptyContentView: View {
 			Text(type.title)
 				.font(.bold17)
 				.foregroundStyle(.ypBlack)
-				.transition(.scale)
-				.transition(.opacity)
 			
 			HStack(spacing: 8) {
 				ProgressView()
@@ -41,8 +39,7 @@ struct EmptyContentView: View {
 					}
 			}
 		}
-		.transition(.scale)
-		.transition(.opacity)
+		.transition(.scale.combined(with: .opacity))
 	}
 	
 	private var textView: some View {

@@ -70,8 +70,8 @@ struct PaymentMethodChooseBottomBar: View {
 					radius: 10
 				)
 		)
-		.animation(.easeInOut(duration: 0.15), value: isLoaded)
-		.animation(.easeInOut(duration: 0.15), value: paymentInProgress)
+		.animation(Constants.defaultAnimation, value: isLoaded)
+		.animation(Constants.defaultAnimation, value: paymentInProgress)
 	}
 }
 

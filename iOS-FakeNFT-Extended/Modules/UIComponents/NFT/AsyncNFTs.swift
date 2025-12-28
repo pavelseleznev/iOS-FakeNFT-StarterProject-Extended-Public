@@ -87,7 +87,7 @@ extension AsyncNFTs {
 				} while !Task.isCancelled
 			} catch {
 				guard !(error is CancellationError) else { return }
-				withAnimation(.easeInOut(duration: 0.15)) {
+				withAnimation(Constants.defaultAnimation) {
 					errorIsPresented = true
 				}
 			}

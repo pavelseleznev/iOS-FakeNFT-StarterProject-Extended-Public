@@ -12,7 +12,8 @@ struct AppRateView: View {
 	let didRateCalled: (Int) -> Void
 	
 	@State private var ratedStars: Int = 0
-	private let maxStars: Int = 5
+	
+	@Environment(\.colorScheme) private var theme
 	
 	var body: some View {
 		GeometryReader { geo in
@@ -30,15 +31,32 @@ struct AppRateView: View {
 			.multilineTextAlignment(.center)
 			.frame(width: geo.size.width * 0.6)
 			.padding()
-			.background(.regularMaterial)
-			.clipShape(RoundedRectangle(cornerRadius: 16))
+			.background(
+				RoundedRectangle(cornerRadius: 16)
+					.fill(theme == .dark ? .bar : .regular)
+					.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 10)
+					.background(
+						LinearGradient(
+							colors: [
+								.purple,
+								.ypRedUniversal,
+								.ypYellowUniversal
+							],
+							startPoint: .topLeading,
+							endPoint: .bottomTrailing
+						)
+						.blur(radius: 30)
+						.opacity(theme == .dark ? 0.2 : 0.4)
+					)
+			)
 			.position(
 				x: geo.frame(in: .local).midX,
 				y: geo.frame(in: .local).midY
 			)
 		}
-		.animation(.easeInOut(duration: 0.15), value: isPresented)
-		.animation(.easeInOut(duration: 0.15), value: ratedStars)
+		.animation(Constants.defaultAnimation, value: isPresented)
+		.animation(Constants.defaultAnimation, value: ratedStars)
+		.transition(.scale.combined(with: .opacity))
 	}
 	
 	private func close() {
@@ -75,7 +93,7 @@ struct AppRateView: View {
 	
 	private var starsView: some View {
 		HStack(spacing: 15) {
-			ForEach(0..<maxStars, id: \.self) { id in
+			ForEach(0..<Constants.maxRatingStars, id: \.self) { id in
 				(id < ratedStars ? Image.starFill : Image.star)
 					.font(.starIcon)
 					.foregroundStyle(.accent)
@@ -93,7 +111,8 @@ extension View {
 		didRateCalled: @escaping (Int) -> Void
 	) -> some View {
 		self
-			.opacity(isPresented.wrappedValue ? 0.5 : 1)
+			.blur(radius: isPresented.wrappedValue ? 2 : 0)
+			.opacity(isPresented.wrappedValue ? 0.7 : 1)
 			.allowsHitTesting(!isPresented.wrappedValue)
 			.overlay {
 				if isPresented.wrappedValue {
@@ -101,8 +120,6 @@ extension View {
 						isPresented: isPresented,
 						didRateCalled: didRateCalled
 					)
-					.transition(.blurReplace)
-					.transition(.opacity)
 				}
 			}
 	}
@@ -113,9 +130,7 @@ extension View {
 	@Previewable @State var isPresented = false
 	
 	ZStack {
-		Image(.big)
-			.resizable()
-			.scaledToFill()
+		Color.ypWhite
 			.ignoresSafeArea()
 			.applyAppRatingView(
 				isPresented: $isPresented,
@@ -123,7 +138,7 @@ extension View {
 			)
 	}
 	.onAppear {
-		withAnimation(.easeInOut(duration: 0.15).delay(1)) {
+		withAnimation(Constants.defaultAnimation.delay(1)) {
 			isPresented = true
 		}
 	}

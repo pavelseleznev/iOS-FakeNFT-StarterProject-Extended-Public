@@ -52,7 +52,7 @@ struct StatisticsView: View {
 			.listRowSpacing(8)
 			.scrollContentBackground(.hidden)
 			.listStyle(.plain)
-			.animation(.easeInOut(duration: 0.15), value: viewModel.visibleUsers)
+			.animation(Constants.defaultAnimation, value: viewModel.visibleUsers)
 			.overlay(content: loadingView)
 		}
 		.task(priority: .userInitiated) {

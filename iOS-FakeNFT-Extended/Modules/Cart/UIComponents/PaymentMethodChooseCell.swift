@@ -15,7 +15,7 @@ struct PaymentMethodChooseCell: View {
 		HStack {
 			AsyncImage(
 				url: URL(string: currnecy?.image ?? ""),
-				transaction: .init(animation: .easeInOut(duration: 0.15))
+				transaction: .init(animation: Constants.defaultAnimation)
 			) { phase in
 				switch phase {
 				case .empty:

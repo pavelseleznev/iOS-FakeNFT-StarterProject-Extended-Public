@@ -31,7 +31,7 @@ struct UserListCell: View {
 				}
 				.foregroundStyle(.ypBlack)
 				.font(.bold22)
-				.lineLimit(1)
+				.lineLimit(Constants.authorNameLineLimit)
 			}
 			.padding(.horizontal, 16)
 			.padding(.vertical, 26)
@@ -45,7 +45,7 @@ struct UserListCell: View {
 	private var profileImage: some View {
 		AsyncImage(
 			url: URL(string: model.avatarURLString),
-			transaction: .init(animation: .easeInOut(duration: 0.15))
+			transaction: .init(animation: Constants.defaultAnimation)
 		) { phase in
 			switch phase {
 			case .empty:

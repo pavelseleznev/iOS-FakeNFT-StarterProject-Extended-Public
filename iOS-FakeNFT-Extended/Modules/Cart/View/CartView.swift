@@ -59,7 +59,7 @@ struct CartView: View {
 		.onAppear {
 			viewModel.setSortOption(sortOption)
 		}
-		.animation(.easeInOut(duration: 0.15), value: viewModel.visibleNfts)
+		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
 		.safeAreaTopBackground()
 		.applyCartSort(
 			placement: .safeAreaTop,
@@ -78,8 +78,7 @@ struct CartView: View {
 					},
 					dismissAction: viewModel.nftDismissAction
 				)
-				.transition(.scale)
-				.transition(.opacity)
+				.transition(.scale.combined(with: .opacity))
 			}
 		}
 		.toolbar(.hidden)

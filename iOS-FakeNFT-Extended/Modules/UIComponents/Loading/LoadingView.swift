@@ -22,7 +22,7 @@ struct LoadingView: View {
 			.shadow(color: .ypBlackUniversal.opacity(0.8), radius: 80)
 			.scaleEffect(loadingState == .fetching ? 1 : 0)
 			.opacity(loadingState == .fetching ? 1 : 0)
-			.animation(.easeInOut(duration: 0.15), value: loadingState)
+			.animation(Constants.defaultAnimation, value: loadingState)
 	}
 }
 

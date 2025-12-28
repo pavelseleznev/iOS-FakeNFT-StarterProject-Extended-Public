@@ -39,6 +39,6 @@ struct AboutAuthorView: View {
 			websiteURLString: "https://www.google.com",
 			onLoadingStateChange: {_ in}
 		)
-		.customNavigationBackButton(isTabView: false, backAction: {})
+		.customNavigationBackButton(hasBackButton: true, backAction: {})
 	}
 }

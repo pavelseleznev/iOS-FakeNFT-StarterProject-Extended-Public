@@ -20,7 +20,7 @@ struct ProfileHeader: View {
 				Group {
 					AsyncImage(
 						url: URL(string: imageURLString),
-						transaction: .init(animation: .easeInOut(duration: 0.15))
+						transaction: .init(animation: Constants.defaultAnimation)
 					) { phase in
 						switch phase {
 						case .empty:

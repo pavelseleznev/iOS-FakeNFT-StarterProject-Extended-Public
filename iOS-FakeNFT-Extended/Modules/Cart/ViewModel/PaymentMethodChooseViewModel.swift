@@ -34,7 +34,7 @@ extension PaymentMethodChooseViewModel {
 		paymentInProgress = false
 		
 		guard !(error is CancellationError) else { return }
-		withAnimation(.easeInOut(duration: 0.15)) {
+		withAnimation(Constants.defaultAnimation) {
 			alertIsPresented = true
 		}
 	}

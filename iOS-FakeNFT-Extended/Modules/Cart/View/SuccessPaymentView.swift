@@ -52,7 +52,7 @@ struct SuccessPaymentView: View {
 #Preview {
 	NavigationStack {
 		SuccessPaymentView(backToCart: {})
-			.customNavigationBackButton(isTabView: false, backAction: {})
+			.customNavigationBackButton(hasBackButton: true, backAction: {})
 	}
 }
 #endif
