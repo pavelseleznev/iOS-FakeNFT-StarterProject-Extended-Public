@@ -101,6 +101,7 @@
 		2D0DD9D22EE19B3D00EB1D66 /* Profile */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Profile; sourceTree = "<group>"; };
 		2D0DD9D62EE19B4800EB1D66 /* Statistics */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Statistics; sourceTree = "<group>"; };
 		2D0DD9E02EE1A5FF00EB1D66 /* Splash */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Splash; sourceTree = "<group>"; };
+		2D433B5A2EFF2C3300397AEC /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		2D8D779E2EFB35A700F2B0CB /* Cart */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cart; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -270,6 +271,7 @@
 		ABC5E1B32C31FC03002B4068 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				2D433B5A2EFF2C3300397AEC /* Onboarding */,
 				2D8D779E2EFB35A700F2B0CB /* Cart */,
 				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
 				2D0DD9D62EE19B4800EB1D66 /* Statistics */,
@@ -312,6 +314,7 @@
 				2D0DD9D22EE19B3D00EB1D66 /* Profile */,
 				2D0DD9D62EE19B4800EB1D66 /* Statistics */,
 				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
+				2D433B5A2EFF2C3300397AEC /* Onboarding */,
 				2D8D779E2EFB35A700F2B0CB /* Cart */,
 			);
 			name = "iOS-FakeNFT-Extended";
