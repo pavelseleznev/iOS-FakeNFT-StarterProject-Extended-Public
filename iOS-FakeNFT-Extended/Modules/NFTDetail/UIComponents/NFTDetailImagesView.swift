@@ -91,9 +91,11 @@ private extension NFTDetailImagesView {
 				case .success(let image):
 					loadedImageView(image, isSelected: selection == imageURLString)
 				default:
-					Text(.loadingError)
-						.font(.bold22)
-						.foregroundStyle(.ypBlack)
+					ZStack {
+						Text(.loadingError)
+							.font(.bold22)
+							.foregroundStyle(.ypBlack)
+					}
 				}
 			}
 			.tag(imageURLString)
