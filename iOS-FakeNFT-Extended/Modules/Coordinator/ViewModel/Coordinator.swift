@@ -10,18 +10,80 @@ import SwiftUI
 @Observable
 @MainActor
 final class Coordinator {
-	let appContainer: AppContainer
-	var path = [Page]()
-	var sheet: Sheet?
-	var fullScreencover: FullScreenCover?
-	var ratingViewIsPresented = false
+	private let appContainer: AppContainer
+	private var path = [Page]()
+	private var sheet: Sheet?
+	private var fullScreenCover: FullScreenCover?
+	private var ratingViewIsPresented = false
 	
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
 	}
+	
+	let rootPage: Page = {
+		if UserDefaults.standard.bool(forKey: Constants.isOnboardingCompleteKey) {
+			.splash
+		} else {
+			.onboarding
+		}
+	}()
 }
 
 // MARK: - Coordinator Extensions
+// --- internal bindings ---
+extension Coordinator {
+	var bindingPath: Binding<[Page]> {
+		.init(
+			get: { self.path },
+			set: { [weak self] in self?.updatePath($0) }
+		)
+	}
+	
+	var bindingRatingViewIsPresented: Binding<Bool> {
+		.init(
+			get: { self.ratingViewIsPresented },
+			set: { [weak self] in self?.updateRatingViewIsPresented($0) }
+		)
+	}
+	
+	var bindingSheet: Binding<Sheet?> {
+		.init(
+			get: { self.sheet },
+			set: { [weak self] in self?.updateSheet($0) }
+		)
+	}
+	
+	var bindingsFullScreencover: Binding<FullScreenCover?> {
+		.init(
+			get: { self.fullScreenCover },
+			set: { [weak self] in self?.updateFullScreencover($0) }
+		)
+	}
+}
+
+// --- private updaters ---
+private extension Coordinator {
+	func updatePath(_ newValue: [Page]) {
+		print("Navigation path updated to: \(newValue)")
+		path = newValue
+	}
+
+	func updateRatingViewIsPresented(_ newValue: Bool) {
+		print("ratingViewIsPresented is updated to: \(newValue)")
+		ratingViewIsPresented = newValue
+	}
+	
+	func updateSheet(_ newValue: Sheet?) {
+		print("sheet is updated to: \(String(describing: newValue))")
+		sheet = newValue
+	}
+	
+	func updateFullScreencover(_ newValue: FullScreenCover?) {
+		print("fullScreenCover is updated to: \(String(describing: newValue))")
+		fullScreenCover = newValue
+	}
+}
+
 // --- private helpers ---
 private extension Coordinator {
 	func onLoadingStateFromWebsite(_ state: LoadingState) {
@@ -48,6 +110,15 @@ private extension Coordinator {
 				authorWebsiteURLString: authorWebsiteURLString
 			)
 		)
+	}
+	
+	func onOnboardingComplete() {
+		UserDefaults.standard.set(true, forKey: Constants.isOnboardingCompleteKey)
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			push(.splash)
+		}
 	}
 }
 
@@ -77,11 +148,11 @@ extension Coordinator {
 	}
 	
 	func present(_ fullScreenCover: FullScreenCover) {
-		self.fullScreencover = fullScreenCover
+		self.fullScreenCover = fullScreenCover
 	}
 	
 	func dismissFullScreenCover() {
-		self.fullScreencover = nil
+		self.fullScreenCover = nil
 	}
 }
 
@@ -90,6 +161,9 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ page: Page) -> some View {
 		switch page {
+		case .onboarding:
+			OnboardingView(onComplete: onOnboardingComplete)
+			
 		case .splash:
 			SplashView(
 				appContainer: appContainer,
@@ -101,8 +175,7 @@ extension Coordinator {
 				appContainer: appContainer,
 				push: push,
 				present: present,
-				dismiss: dismissSheet,
-				pop: pop
+				dismiss: dismissSheet
 			)
 			
 		case .aboutAuthor(let websiteURLString):
@@ -152,7 +225,7 @@ extension Coordinator {
 				authorID: authorID,
 				authorWebsiteURLString: authorWebsiteURLString,
 				push: push,
-				pop: pop
+				backAction: pop
 			)
 		}
 	}

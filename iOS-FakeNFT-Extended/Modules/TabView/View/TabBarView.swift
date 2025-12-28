@@ -5,7 +5,6 @@ struct TabBarView: View {
 	let push: (Page) -> Void
 	let present: (Sheet) -> Void
 	let dismiss: () -> Void
-	let pop: () -> Void
 	
 	@State private var tab: Tab = .catalog
 	@State private var isVisible = false

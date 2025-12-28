@@ -8,30 +8,29 @@
 import SwiftUI
 
 struct CoordinatorView: View {
-	@AppStorage("appLaunchCount") var launchCount = 0
+	@AppStorage(Constants.appLaunchCountKey) private var launchCount = 0
+	@AppStorage(Constants.ratingIsAlreadyPresentedThisLaunchKey) private var ratingIsAlreadyPresentedThisLaunch = false
 	@State private var coordinator: Coordinator
 	
 	var body: some View {
-		NavigationStack(path: $coordinator.path) {
-			coordinator.build(.splash)
+		NavigationStack(path: coordinator.bindingPath) {
+			coordinator.build(coordinator.rootPage)
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
 						.customNavigationBackButton(
-							isTabView: coordinator.path.last == .tabView,
+							hasBackButton: coordinator.bindingPath.wrappedValue.last?.hasNotBackButton ?? false,
 							backAction: coordinator.pop
 						)
 						.onAppear(perform: performLaunchAction)
 						.applyAppRatingView(
-							isPresented: $coordinator.ratingViewIsPresented,
+							isPresented: coordinator.bindingRatingViewIsPresented,
 							didRateCalled: didRate
 						)
 				}
-				.sheet(item: $coordinator.sheet) { sheet in
+				.sheet(item: coordinator.bindingSheet) { sheet in
 					coordinator.build(sheet)
 				}
-				.fullScreenCover(
-					item: $coordinator.fullScreencover
-				) { fullScreenCover in
+				.fullScreenCover(item: coordinator.bindingsFullScreencover) { fullScreenCover in
 					coordinator.build(fullScreenCover)
 				}
 		}
@@ -43,19 +42,28 @@ struct CoordinatorView: View {
 		let nft = NFTService(api: api, storage: nftStorage)
 		let appContainer = AppContainer(nftService: nft, api: api)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
+		
+		launchCount += 1
+		ratingIsAlreadyPresentedThisLaunch = false
 	}
 	
 	private func performLaunchAction() {
-		launchCount += 1
-		if ratePresentConditionIsTrue {
-			withAnimation(.easeInOut(duration: 0.15).delay(0.5)) {
-				coordinator.ratingViewIsPresented = true
-			}
+		guard
+			coordinator.bindingPath.wrappedValue.last == .tabView,
+			!ratingIsAlreadyPresentedThisLaunch,
+			ratePresentConditionIsTrue
+		else { return }
+		
+		withAnimation(Constants.defaultAnimation.delay(0.5)) {
+			ratingIsAlreadyPresentedThisLaunch = true
+			coordinator.bindingRatingViewIsPresented.wrappedValue = true
 		}
 	}
 	
 	private var ratePresentConditionIsTrue: Bool {
-		launchCount % 5 == 0
+		withAnimation(Constants.defaultAnimation) {
+			launchCount % 5 == 0
+		}
 	}
 	
 	private func didRate(rating: Int) {
@@ -65,25 +73,4 @@ struct CoordinatorView: View {
 
 #Preview {
 	CoordinatorView()
-}
-
-extension View {
-	func customNavigationBackButton(
-		isTabView: Bool,
-		backAction: @escaping () -> Void
-	) -> some View {
-		self
-			.navigationBarBackButtonHidden()
-			.toolbar {
-				if !isTabView {
-					ToolbarItem(placement: .cancellationAction) {
-						Button(action: backAction) {
-							Image.chevronLeft
-								.font(.chevronLeftIcon)
-						}
-						.tint(.ypBlack)
-					}
-				}
-			}
-	}
 }
