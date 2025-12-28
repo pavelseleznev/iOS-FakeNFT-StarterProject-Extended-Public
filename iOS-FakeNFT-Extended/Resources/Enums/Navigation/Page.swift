@@ -13,6 +13,7 @@ enum Page: Identifiable {
 		authorWebsiteURLString: String
 	)
 	
+	case onboarding
 	case splash
 	case tabView
 	case aboutAuthor(urlString: String)
@@ -30,6 +31,15 @@ enum Page: Identifiable {
 	case successPayment
 	
 	var id: String { .init(describing: self) }
+	
+	var hasNotBackButton: Bool {
+		switch self {
+		case .splash, .tabView, .successPayment, .onboarding:
+			true
+		default:
+			false
+		}
+	}
 }
 
 extension Page: Hashable {
