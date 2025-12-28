@@ -47,6 +47,9 @@ struct CatalogView: View {
             didTapName: viewModel.applySortByName,
             didTapNFTCount: viewModel.applySortByNFTCount
         )
+        .task {
+            await viewModel.loadCollections()
+        }
     }
 }
 

@@ -44,4 +44,13 @@ final class CatalogViewModel {
     func didSelectItem(_ item: NFTCollectionItemResponse) {
         push(.catalogDetails)
     }
+    
+    @Sendable
+    func loadCollections() async {
+        do {
+            _ = try await api.getCollections()
+        } catch {
+            print(error)
+        }
+    }
 }
