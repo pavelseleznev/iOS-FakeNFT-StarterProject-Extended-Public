@@ -42,6 +42,6 @@ final class CatalogViewModel {
     }
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        //TODO: Добавить логику навигации
+        push(.catalogDetails)
     }
 }
