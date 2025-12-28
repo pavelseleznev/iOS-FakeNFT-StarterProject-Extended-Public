@@ -23,6 +23,12 @@ extension Font {
 		weight: .bold,
 		design: design
 	)
+	
+	static let bold32 = Font.system(
+		size: 32,
+		weight: .bold,
+		design: design
+	)
 
 	static let regular13 = Font.system(
 		size: 13,
