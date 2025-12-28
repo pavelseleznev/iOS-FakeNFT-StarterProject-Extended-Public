@@ -8,17 +8,8 @@
 import SwiftUI
 
 extension View {
-	func stretchy(isImageFullScreen: Bool) -> some View {
-		visualEffect { effect, proxy in
-			guard !isImageFullScreen else {
-				return effect
-					.scaleEffect(
-						x: 1,
-						y: 1,
-						anchor: .bottom
-					)
-			}
-			
+	func stretchy() -> some View {
+		visualEffect { effect, proxy in			
 			let currentHeight = proxy.size.height
 			let scrollOffset = proxy.frame(in: .scrollView).minY
 			let positiveOffset = max(0, scrollOffset)
