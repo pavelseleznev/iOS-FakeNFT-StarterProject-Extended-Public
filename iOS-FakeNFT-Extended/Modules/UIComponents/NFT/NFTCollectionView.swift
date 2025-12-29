@@ -76,6 +76,10 @@ struct NFTCollectionView: View {
 			didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
 		)
 		.overlay(alignment: .center, content: emptyNFTsView)
+		.onReceive(
+			NotificationCenter.default.publisher(for: .nftDidChange),
+			perform: asyncNFTs.handleNFTChangeNotification
+		)
 	}
 	
 	@ViewBuilder

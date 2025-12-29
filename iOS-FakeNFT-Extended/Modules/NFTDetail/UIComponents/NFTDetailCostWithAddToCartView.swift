@@ -17,10 +17,10 @@ struct NFTDetailCostWithAddToCartView: View {
 			NFTCostView(model: model.nft, layout: .cart)
 			
 			Button(action: cartAction) {
-				Text(
-					model.isInCart ? .removeFromCartText : .addToCartText)
+				Text(model.isInCart ? .removeFromCartText : .addToCartText)
 					.font(.bold17)
 					.foregroundStyle(.ypWhite)
+					.contentTransition(.numericText())
 			}
 			.nftButtonStyle(filled: true)
 			.offset(y: -10)

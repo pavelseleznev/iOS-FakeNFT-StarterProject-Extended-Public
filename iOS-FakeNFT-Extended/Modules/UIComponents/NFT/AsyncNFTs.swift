@@ -41,6 +41,9 @@ final class AsyncNFTs: ObservableObject {
 	}
 }
 
+// MARK: - AsyncNFTs extensions
+
+// --- internal helpers ---
 extension AsyncNFTs {
 	func didTapLikeButton(for model: NFTModelContainer?) {
 		guard let model else { return }
@@ -74,70 +77,63 @@ extension AsyncNFTs {
 	}
 }
 
+// --- private helpers ---
 extension AsyncNFTs {
-	func startBackgroundUnloadedLoadPolling() {
-		guard pollingTask == nil else { return }
-		
-		pollingTask = Task(priority: .background) {
-			do {
-				repeat {
-					updateIDs()
-					try await loadUnloadedNFTsIfNeeded()
-					try await Task.sleep(for: pollingInterval)
-				} while !Task.isCancelled
-			} catch {
-				guard !(error is CancellationError) else { return }
-				withAnimation(Constants.defaultAnimation) {
-					errorIsPresented = true
-				}
+	func handleNFTChangeNotification(notification: Notification) {
+		if
+			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
+			payload.hasChanges,
+			let model = nfts[payload.id],
+			let model
+		{
+			if payload.isCartChanged {
+				didTapCartButton(for: model)
+			}
+			
+			if payload.isFavoriteChanged {
+				didTapLikeButton(for: model)
 			}
 		}
 	}
 	
-	func clearAllATasks() {
-		cancelFetchingTask()
-		
-		pollingTask?.cancel()
-		pollingTask = nil
+	func performWithTimeout<T: Sendable>(
+		timeout: Duration,
+		operation: @escaping @Sendable () async throws -> T
+	) async throws -> T {
+		try await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
+			group.addTask(priority: .high) {
+				do {
+					let result = try await operation()
+					return .success(result)
+				} catch {
+					return .failure(error)
+				}
+			}
+			
+			group.addTask(priority: .high) {
+				try await Task.sleep(for: timeout)
+				return .failure(NSError(domain: "Timeout", code: 0, userInfo: nil))
+			}
+			
+			if let firstResult = try await group.next() {
+				group.cancelAll()
+				
+				switch firstResult {
+				case .success(let value):
+					return value
+				case .failure(let error):
+					throw error
+				}
+			}
+			
+			group.cancelAll()
+			throw NSError(domain: "No value received", code: 0, userInfo: nil)
+		}
 	}
 }
 
+// --- stream lifecycle ---
 private extension AsyncNFTs {
-	func updateIDs() {
-		let oldIDs = Set(nfts.keys)
-		let newIDs = ids
-		
-		let idsToAdd = newIDs.subtracting(oldIDs)
-		let idsToRemove = oldIDs.subtracting(newIDs)
-		
-		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
-		nfts.reserveCapacity(newCapacity)
-		
-		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
-		idsToAdd.forEach { nfts[$0, default: nil] = nil }
-	}
-	
-	func loadUnloadedNFTsIfNeeded() async throws {
-		let unloadedNFTs = nfts.filter(\.value.isNil)
-		guard !unloadedNFTs.isEmpty else { return }
-		
-		try await loadNFTs(by: unloadedNFTs.map(\.key))
-	}
-	
-	func loadNFTs(by ids: [String]) async throws {
-		nfts.reserveCapacity(ids.count)
-		ids.forEach { nfts[$0, default: nil] = nil }
-		
-		for try await nft in makeNFTsStream(with: ids) {
-			let nftContainer = NFTModelContainer(
-				nft: nft,
-				isFavorite: await nftService.isFavourite(id: nft.id),
-				isInCart: await nftService.isInCart(id: nft.id)
-			)
-			nfts[nft.id, default: nil] = nftContainer
-		}
-	}
-	
 	func cancelFetchingTask() {
 		fetchingTask?.cancel()
 		fetchingTask = nil
@@ -186,42 +182,10 @@ private extension AsyncNFTs {
 			return stream
 		}
 	}
-	
-	func performWithTimeout<T: Sendable>(
-		timeout: Duration,
-		operation: @escaping @Sendable () async throws -> T
-	) async throws -> T {
-		try await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
-			group.addTask(priority: .high) {
-				do {
-					let result = try await operation()
-					return .success(result)
-				} catch {
-					return .failure(error)
-				}
-			}
-			
-			group.addTask(priority: .high) {
-				try await Task.sleep(for: timeout)
-				return .failure(NSError(domain: "Timeout", code: 0, userInfo: nil))
-			}
-			
-			if let firstResult = try await group.next() {
-				group.cancelAll()
-				
-				switch firstResult {
-				case .success(let value):
-					return value
-				case .failure(let error):
-					throw error
-				}
-			}
-			
-			group.cancelAll()
-			throw NSError(domain: "No value received", code: 0, userInfo: nil)
-		}
-	}
-	
+}
+
+// --- updaters ---
+private extension AsyncNFTs {
 	func switchLikeState(for model: NFTModelContainer, key id: String) {
 		nfts[id] = .init(
 			nft: model.nft,
@@ -236,5 +200,72 @@ private extension AsyncNFTs {
 			isFavorite: model.isFavorite,
 			isInCart: !model.isInCart
 		)
+	}
+	
+	func updateIDs() {
+		let oldIDs = Set(nfts.keys)
+		let newIDs = ids
+		
+		let idsToAdd = newIDs.subtracting(oldIDs)
+		let idsToRemove = oldIDs.subtracting(newIDs)
+		
+		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
+		nfts.reserveCapacity(newCapacity)
+		
+		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
+		idsToAdd.forEach { nfts[$0, default: nil] = nil }
+	}
+}
+
+// --- loaders ---
+private extension AsyncNFTs {
+	func loadUnloadedNFTsIfNeeded() async throws {
+		let unloadedNFTs = nfts.filter(\.value.isNil)
+		guard !unloadedNFTs.isEmpty else { return }
+		
+		try await loadNFTs(by: unloadedNFTs.map(\.key))
+	}
+	
+	func loadNFTs(by ids: [String]) async throws {
+		nfts.reserveCapacity(ids.count)
+		ids.forEach { nfts[$0, default: nil] = nil }
+		
+		for try await nft in makeNFTsStream(with: ids) {
+			let nftContainer = NFTModelContainer(
+				nft: nft,
+				isFavorite: await nftService.isFavourite(id: nft.id),
+				isInCart: await nftService.isInCart(id: nft.id)
+			)
+			nfts[nft.id, default: nil] = nftContainer
+		}
+	}
+}
+
+// --- polling lifecycle ---
+extension AsyncNFTs {
+	func startBackgroundUnloadedLoadPolling() {
+		guard pollingTask == nil else { return }
+		
+		pollingTask = Task(priority: .background) {
+			do {
+				repeat {
+					updateIDs()
+					try await loadUnloadedNFTsIfNeeded()
+					try await Task.sleep(for: pollingInterval)
+				} while !Task.isCancelled
+			} catch {
+				guard !(error is CancellationError) else { return }
+				withAnimation(Constants.defaultAnimation) {
+					errorIsPresented = true
+				}
+			}
+		}
+	}
+	
+	func clearAllATasks() {
+		cancelFetchingTask()
+		
+		pollingTask?.cancel()
+		pollingTask = nil
 	}
 }

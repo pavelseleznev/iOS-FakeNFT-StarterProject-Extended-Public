@@ -24,8 +24,6 @@ final class SellerNFTsViewModel {
 	
 	@ObservationIgnored private var authorUpdateTask: Task<Void, Never>?
 	@ObservationIgnored private var nftsUpdateTask: Task<Void, Never>?
-	@ObservationIgnored private var cartActionTask: Task<Void, Never>?
-	@ObservationIgnored private var likeActionTask: Task<Void, Never>?
 	
 	private(set) var modelUpdateTriggerID = UUID()
 	private var nfts = [String : NFTModelContainer?]()
@@ -64,173 +62,80 @@ extension SellerNFTsViewModel {
 	func clearAllTasks() {
 		clearNFTsUpdateTask()
 		clearAuthorUpdateTask()
-		clearCartActionTask()
-		clearLikeActionTask()
 	}
 	
 	func didTapCartButton(for model: NFTModelContainer?) {
 		guard let model else { return }
-		
-		cartActionTask = changeModelState(
-			model: model,
-			updateTask: cartActionTask,
-			clear: clearCartActionTask,
-			invertInCartState: true,
-			action: { @Sendable [weak self] in
-				guard let self else { return }
-				if model.isInCart {
-					await nftService.removeFromCart(id: model.id)
-				} else {
-					await nftService.addToCart(id: model.id)
-				}
-			}
-		)
+		changeModelState(model: model, isCartChanged: true)
 	}
 	
 	func didTapLikeButton(for model: NFTModelContainer?) {
 		guard let model else { return }
-		
-		likeActionTask = changeModelState(
-			model: model,
-			updateTask: likeActionTask,
-			clear: clearLikeActionTask,
-			invertFavouriteState: true,
-			action: { @Sendable [weak self] in
-				guard let self else { return }
-				if model.isFavorite {
-					await nftService.addToFavourite(id: model.id)
-				} else {
-					await nftService.removeFromFavourite(id: model.id)
-				}
+		changeModelState(model: model, isFavoriteChanged: true)
+	}
+	
+	func handleNFTChangeNotification(notification: Notification) {
+		if
+			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
+			payload.fromObject != .sellerNFTs,
+			payload.hasChanges,
+			let model = nfts[payload.id]
+		{
+			
+			if payload.isCartChanged {
+				didTapCartButton(for: model)
 			}
-		)
+			
+			if payload.isFavoriteChanged {
+				didTapLikeButton(for: model)
+			}
+		}
 	}
 }
 
 // --- private methods ---
 private extension SellerNFTsViewModel {
-	func clearCartActionTask() {
-		cartActionTask?.cancel()
-		cartActionTask = nil
-	}
-	
-	func clearLikeActionTask() {
-		likeActionTask?.cancel()
-		likeActionTask = nil
-	}
-	
 	func changeModelState(
 		model: NFTModelContainer,
-		updateTask: Task<Void, Never>?,
-		clear: @escaping () -> Void,
-		invertFavouriteState: Bool = false,
-		invertInCartState: Bool = false,
-		action: @escaping () async -> Void
-	) -> Task<Void, Never>? {
-		guard updateTask == nil else { return updateTask }
+		isFavoriteChanged: Bool = false,
+		isCartChanged: Bool = false
+	) {
+		nfts[model.id] = .init(
+			nft: model.nft,
+			isFavorite: isFavoriteChanged ? !model.isFavorite : model.isFavorite,
+			isInCart: isCartChanged ? !model.isInCart : model.isInCart
+		)
 		
-		let task = Task(priority: .userInitiated) {
-			defer { clear() }
-			
-			await action()
-			
-			guard let id = nfts.first(where: { $0.value == model })?.key else { return }
-			
-			nfts[id, default: nil] = .init(
-				nft: model.nft,
-				isFavorite: invertFavouriteState ? !model.isFavorite : model.isFavorite,
-				isInCart: invertInCartState ? !model.isInCart : model.isInCart
+		withAnimation(Constants.defaultAnimation) {
+			modelUpdateTriggerID = .init()
+		}
+		
+		sendUpdateNotification(
+			nftID: model.id,
+			isCartChanged: isCartChanged,
+			isFavoriteChanged: isFavoriteChanged
+		)
+	}
+	
+	func sendUpdateNotification(
+		nftID: String,
+		isCartChanged: Bool,
+		isFavoriteChanged: Bool
+	) {
+		let payload = NFTUpdatePayload(
+			id: nftID,
+			isCartChanged: isCartChanged,
+			isFavoriteChanged: isFavoriteChanged,
+			fromObject: .sellerNFTs
+		)
+		
+		NotificationCenter
+			.default
+			.post(
+				name: .nftDidChange,
+				object: nil,
+				userInfo: [Constants.nftChangePayloadKey : payload]
 			)
-			
-			withAnimation(.easeInOut(duration: 0.25)) {
-				modelUpdateTriggerID = .init()
-			}
-		}
-		
-		return task
-	}
-	
-	func switchLikeState(for model: NFTModelContainer, key id: String) {
-		nfts[id] = .init(
-			nft: model.nft,
-			isFavorite: !model.isFavorite,
-			isInCart: model.isInCart
-		)
-	}
-	
-	func switchCartState(for model: NFTModelContainer, key id: String) {
-		nfts[id] = .init(
-			nft: model.nft,
-			isFavorite: model.isFavorite,
-			isInCart: !model.isInCart
-		)
-	}
-	
-	func onNFTsError(_ error: Error) {
-		guard !(error is CancellationError) else { return }
-		withAnimation(Constants.defaultAnimation) {
-			showNFTsLoadingError = true
-		}
-	}
-	
-	func onAuthorError(_ error: Error) {
-		guard !(error is CancellationError) else { return }
-		withAnimation(Constants.defaultAnimation) {
-			showAuthorLoadingError = true
-		}
-	}
-	
-	func clearNFTsUpdateTask() {
-		nftsUpdateTask?.cancel()
-		nftsUpdateTask = nil
-	}
-	
-	func clearAuthorUpdateTask() {
-		authorUpdateTask?.cancel()
-		authorUpdateTask = nil
-	}
-	
-	func startSafeTaskPolling(
-		pollingTask: Task<Void, Never>?,
-		operation: @escaping () async throws -> Void,
-		clear: @escaping () -> Void,
-		onError: @escaping (Error) -> Void
-	) -> Task<Void, Never> {
-		if let pollingTask, !pollingTask.isCancelled {
-			return pollingTask
-		}
-		
-		let task = Task(priority: .background) {
-			defer { clear() }
-			repeat {
-				do {
-					try await operation()
-					try await Task.sleep(for: pollingInterval)
-				} catch {
-					onError(error)
-				}
-			} while !Task.isCancelled
-		}
-		
-		return task
-	}
-	
-	func startAuthorUpdatePolling() {
-		authorUpdateTask = startSafeTaskPolling(
-			pollingTask: authorUpdateTask,
-			operation: updateAuthor,
-			clear: clearAuthorUpdateTask,
-			onError: onAuthorError
-		)
-	}
-	
-	func startNFTsUpdatePolling()  {
-		nftsUpdateTask = startSafeTaskPolling(
-			pollingTask: nftsUpdateTask,
-			operation: loadNFTs,
-			clear: clearNFTsUpdateTask,
-			onError: onNFTsError
-		)
 	}
 	
 	func loadNFTs() async throws {
@@ -271,5 +176,78 @@ private extension SellerNFTsViewModel {
 		idsToRemove.forEach {
 			nfts.removeValue(forKey: $0)
 		}
+	}
+}
+
+// --- errors handlers ---
+private extension SellerNFTsViewModel {
+	func onNFTsError(_ error: Error) {
+		guard !(error is CancellationError) else { return }
+		withAnimation(Constants.defaultAnimation) {
+			showNFTsLoadingError = true
+		}
+	}
+	
+	func onAuthorError(_ error: Error) {
+		guard !(error is CancellationError) else { return }
+		withAnimation(Constants.defaultAnimation) {
+			showAuthorLoadingError = true
+		}
+	}
+}
+
+// --- polling lifecycle ---
+private extension SellerNFTsViewModel {
+	func startAuthorUpdatePolling() {
+		authorUpdateTask = startSafeTaskPolling(
+			pollingTask: authorUpdateTask,
+			operation: updateAuthor,
+			clear: clearAuthorUpdateTask,
+			onError: onAuthorError
+		)
+	}
+	
+	func startNFTsUpdatePolling()  {
+		nftsUpdateTask = startSafeTaskPolling(
+			pollingTask: nftsUpdateTask,
+			operation: loadNFTs,
+			clear: clearNFTsUpdateTask,
+			onError: onNFTsError
+		)
+	}
+	
+	func clearNFTsUpdateTask() {
+		nftsUpdateTask?.cancel()
+		nftsUpdateTask = nil
+	}
+	
+	func clearAuthorUpdateTask() {
+		authorUpdateTask?.cancel()
+		authorUpdateTask = nil
+	}
+	
+	func startSafeTaskPolling(
+		pollingTask: Task<Void, Never>?,
+		operation: @escaping () async throws -> Void,
+		clear: @escaping () -> Void,
+		onError: @escaping (Error) -> Void
+	) -> Task<Void, Never> {
+		if let pollingTask, !pollingTask.isCancelled {
+			return pollingTask
+		}
+		
+		let task = Task(priority: .background) {
+			defer { clear() }
+			repeat {
+				do {
+					try await operation()
+					try await Task.sleep(for: pollingInterval)
+				} catch {
+					onError(error)
+				}
+			} while !Task.isCancelled
+		}
+		
+		return task
 	}
 }

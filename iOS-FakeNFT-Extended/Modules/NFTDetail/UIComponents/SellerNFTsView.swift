@@ -69,6 +69,10 @@ struct SellerNFTsView: View {
 		.onDisappear(perform: viewModel.clearAllTasks)
 		.overlay(alignment: .top, content: noNFTsView)
 		.contentMargins(.vertical, 24)
+		.onReceive(
+			NotificationCenter.default.publisher(for: .nftDidChange),
+			perform: viewModel.handleNFTChangeNotification
+		)
 	}
 	
 	@ViewBuilder

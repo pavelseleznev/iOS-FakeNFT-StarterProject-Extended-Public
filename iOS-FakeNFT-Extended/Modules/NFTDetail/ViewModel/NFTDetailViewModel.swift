@@ -15,11 +15,6 @@ final class NFTDetailViewModel {
 	let authorID: String
 	let authorWebsiteURLString: String
 	
-	@ObservationIgnored
-	private var cartActionTask: Task<Void, Never>?
-	@ObservationIgnored
-	private var likeActionTask: Task<Void, Never>?
-	
 	private(set) var model: NFTModelContainer
 	private(set) var modelUpdateTriggerID = UUID()
 	private var currencies = [String : CurrencyContainer?]()
@@ -74,11 +69,6 @@ extension NFTDetailViewModel {
 			}
 		}
 	}
-	
-	func clearAllTasks() {
-		clearCartActionTask()
-		clearLikeActionTask()
-	}
 }
 
 // --- internal actions ---
@@ -98,75 +88,55 @@ extension NFTDetailViewModel {
 	}
 	
 	func didTapCartButton() {
-		cartActionTask = changeModelState(
-			updateTask: cartActionTask,
-			clear: clearCartActionTask,
-			invertInCartState: true,
-			action: { @Sendable [weak self] in
-				guard let self else { return }
-				if await model.isInCart {
-					await appContainer.nftService.removeFromCart(id: model.id)
-				} else {
-					await appContainer.nftService.addToCart(id: model.id)
-				}
-			}
-		)
+		changeModelState(isCartChanged: true)
 	}
 	
 	func didTapLikeButton() {
-		likeActionTask = changeModelState(
-			updateTask: likeActionTask,
-			clear: clearLikeActionTask,
-			invertFavouriteState: true,
-			action: { @Sendable [weak self] in
-				guard let self else { return }
-				if await model.isFavorite {
-					await appContainer.nftService.addToFavourite(id: model.id)
-				} else {
-					await appContainer.nftService.removeFromFavourite(id: model.id)
-				}
-			}
-		)
+		changeModelState(isFavoriteChanged: true)
 	}
 }
 
 // --- private helpers ---
 private extension NFTDetailViewModel {
-	func clearCartActionTask() {
-		cartActionTask?.cancel()
-		cartActionTask = nil
-	}
-	
-	func clearLikeActionTask() {
-		likeActionTask?.cancel()
-		likeActionTask = nil
-	}
-	
 	func changeModelState(
-		updateTask: Task<Void, Never>?,
-		clear: @escaping () -> Void,
-		invertFavouriteState: Bool = false,
-		invertInCartState: Bool = false,
-		action: @escaping () async -> Void
-	) -> Task<Void, Never>? {
-		guard updateTask == nil else { return updateTask }
+		isFavoriteChanged: Bool = false,
+		isCartChanged: Bool = false
+	) {
+		model = .init(
+			nft: model.nft,
+			isFavorite: isFavoriteChanged ? !model.isFavorite : model.isFavorite,
+			isInCart: isCartChanged ? !model.isInCart : model.isInCart
+		)
 		
-		let task = Task(priority: .userInitiated) {
-			defer { clear() }
-			
-			await action()
-			
-			model = .init(
-				nft: model.nft,
-				isFavorite: invertFavouriteState ? !model.isFavorite : model.isFavorite,
-				isInCart: invertInCartState ? !model.isInCart : model.isInCart
-			)
-			
-			withAnimation(Constants.defaultAnimation) {
-				modelUpdateTriggerID = .init()
-			}
+		withAnimation(Constants.defaultAnimation) {
+			modelUpdateTriggerID = .init()
 		}
 		
-		return task
+		sendUpdateNotification(
+			nftID: model.id,
+			isCartChanged: isCartChanged,
+			isFavoriteChanged: isFavoriteChanged
+		)
+	}
+	
+	func sendUpdateNotification(
+		nftID: String,
+		isCartChanged: Bool = false,
+		isFavoriteChanged: Bool = false
+	) {
+		let payload = NFTUpdatePayload(
+			id: nftID,
+			isCartChanged: isCartChanged,
+			isFavoriteChanged: isFavoriteChanged,
+			fromObject: .nftDetail
+		)
+		
+		NotificationCenter
+			.default
+			.post(
+				name: .nftDidChange,
+				object: nil,
+				userInfo: [Constants.nftChangePayloadKey : payload]
+			)
 	}
 }

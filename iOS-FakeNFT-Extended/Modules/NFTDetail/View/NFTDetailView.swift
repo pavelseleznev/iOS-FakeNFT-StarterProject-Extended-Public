@@ -115,7 +115,6 @@ struct NFTDetailView: View {
 			}
 		}
 		.toolbar(.hidden)
-		.onDisappear(perform: viewModel.clearAllTasks)
 		.task(priority: .userInitiated) {
 			await viewModel.loadCurrencies()
 		}

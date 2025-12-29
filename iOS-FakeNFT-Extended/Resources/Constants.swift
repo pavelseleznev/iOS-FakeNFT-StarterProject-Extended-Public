@@ -8,6 +8,8 @@
 import SwiftUI
 
 enum Constants {
+	static let nftChangePayloadKey = "nftChangePayloadKey"
+	
 	static let isOnboardingCompleteKey = "isOnboardingCompleteKey"
 	static let appLaunchCountKey = "appLaunchCountKey"
 	static let ratingIsAlreadyPresentedThisLaunchKey = "ratingIsAlreadyPresentedThisLaunchKey"
