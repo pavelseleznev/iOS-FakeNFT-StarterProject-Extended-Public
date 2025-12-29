@@ -10,20 +10,18 @@ import Observation
 @MainActor
 @Observable
 final class CatalogViewModel {
-    private(set) var collections: [NFTCollectionItemResponse] = [
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock
+    typealias SortOption = CatalogSortActionsViewModifier.SortOption
+    
+    private var collections: [NFTCollectionItemResponse] = [
+        .mock1,
+        .mock2,
+        .mock3
     ]
     
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
+    
+    var currentSortOption: SortOption = .name
     
     init(
         api: ObservedNetworkClient,
@@ -32,13 +30,12 @@ final class CatalogViewModel {
         self.api = api
         self.push = push
     }
+}
+
+extension CatalogViewModel {
     
-    func applySortByName() {
-        //TODO: Добавить логику сортировки
-    }
-    
-    func applySortByNFTCount() {
-        //TODO: Добавить логику сортировки
+    var visibleCollections: [NFTCollectionItemResponse] {
+        collections.sorted(by: collectionsSortComparator)
     }
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
@@ -51,6 +48,25 @@ final class CatalogViewModel {
             _ = try await api.getCollections()
         } catch {
             print(error)
+        }
+    }
+    
+    func setSortOption(_ option: SortOption) {
+        currentSortOption = option
+    }
+}
+
+private extension CatalogViewModel {
+    
+    func collectionsSortComparator(
+        _ first: NFTCollectionItemResponse,
+        _ second: NFTCollectionItemResponse
+    ) -> Bool {
+        switch currentSortOption {
+        case .name:
+            first.name.localizedStandardCompare(second.name) == .orderedAscending
+        case .nftCount:
+            first.nftsIDs.count > second.nftsIDs.count
         }
     }
 }

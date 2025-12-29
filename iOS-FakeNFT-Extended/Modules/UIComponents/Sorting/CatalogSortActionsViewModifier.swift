@@ -8,45 +8,40 @@
 import SwiftUI
 
 struct CatalogSortActionsViewModifier: ViewModifier {
-	private enum SortOption {
-		case name, nftCount
-		var description: String {
-			switch self {
-			case .name:
-				"По названию"
-			case .nftCount:
-				"По кол-ву NFT"
-			}
-		}
-	}
-	
-	@State private var activeSortOption: SortOption = .name
-	
-	let placement: BaseConfirmationDialogTriggerPlacement
-	let didTapName: () -> Void
-	let didTapNFTCount: () -> Void
-	
-	func body(content: Content) -> some View {
-		content
-			.modifier(
-				BaseConfirmationDialogViewModifier(
-					placement: placement,
-					title: "Сортировка",
-					activeSortOption: activeSortOption.description,
-					actions: {
-						Group {
-							Button("По названию") {
-								didTapName()
-								activeSortOption = .name
-							}
-							Button("По количеству NFT") {
-								didTapNFTCount()
-								activeSortOption = .nftCount
-							}
-							Button("Закрыть", role: .cancel) {}
-						}
-					}
-				)
-			)
-	}
+    enum SortOption: String {
+        case name, nftCount
+        var description: String {
+            switch self {
+            case .name:
+                "По названию"
+            case .nftCount:
+                "По кол-ву NFT"
+            }
+        }
+    }
+    
+    let placement: BaseConfirmationDialogTriggerPlacement
+    @Binding var activeSortOption: SortOption
+    
+    func body(content: Content) -> some View {
+        content
+            .modifier(
+                BaseConfirmationDialogViewModifier(
+                    placement: placement,
+                    title: "Сортировка",
+                    activeSortOption: activeSortOption.description,
+                    actions: {
+                        Group {
+                            Button("По названию") {
+                                activeSortOption = .name
+                            }
+                            Button("По количеству NFT") {
+                                activeSortOption = .nftCount
+                            }
+                            Button("Закрыть", role: .cancel) {}
+                        }
+                    }
+                )
+            )
+    }
 }

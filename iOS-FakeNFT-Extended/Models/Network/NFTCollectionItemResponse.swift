@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct NFTCollectionItemResponse: Decodable, Identifiable {
+struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
     let createdAt: String
     let name: String
     let coverImageURLString: String
@@ -22,12 +22,45 @@ struct NFTCollectionItemResponse: Decodable, Identifiable {
         case nftsIDs = "nfts"
     }
     
-    static var mock: Self {
+    static var mock1: Self {
         .init(
             createdAt: "createdAt",
-            name: "Peach",
+            name: "Apple",
             coverImageURLString: "coverImageURLString",
-            nftsIDs: [],
+            nftsIDs: [
+                "123"
+            ],
+            description: "description",
+            author: "author",
+            id: UUID().uuidString
+        )
+    }
+    
+    static var mock2: Self {
+        .init(
+            createdAt: "createdAt",
+            name: "Banana",
+            coverImageURLString: "coverImageURLString",
+            nftsIDs: [
+                "123",
+                "123"
+            ],
+            description: "description",
+            author: "author",
+            id: UUID().uuidString
+        )
+    }
+    
+    static var mock3: Self {
+        .init(
+            createdAt: "createdAt",
+            name: "Cherry",
+            coverImageURLString: "coverImageURLString",
+            nftsIDs: [
+                "123",
+                "123",
+                "123"
+            ],
             description: "description",
             author: "author",
             id: UUID().uuidString
