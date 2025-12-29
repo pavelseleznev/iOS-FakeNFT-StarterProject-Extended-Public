@@ -39,8 +39,9 @@ struct NFTDetailToolbarView: View {
 						Image.chevronLeft
 							.resizable()
 							.font(.chevronLeftIcon)
-							.foregroundStyle(.ypBlack)
-							.frame(width: 9, height: 16)
+							.foregroundStyle(.cyan)
+							.blendMode(.difference)
+							.frame(width: 12, height: 20)
 							.buttonDefaultFrame()
 					}
 					Spacer()
@@ -48,28 +49,33 @@ struct NFTDetailToolbarView: View {
 						Image.heartFill
 							.resizable()
 							.foregroundStyle(model.isFavorite ? .ypRedUniversal : .secondary)
+							.shadow(
+								color: isImageDissapeared ? .clear : .ypBlackUniversal,
+								radius: 10
+							)
 							.frame(width: 21, height: 18)
 							.buttonDefaultFrame()
-							.id(modelUpdateTriggerID)
+							.animation(Constants.defaultAnimation, value: model.isFavorite)
 					}
 				}
 			}
-			.shadow(
-				color: isImageDissapeared ? .clear : .ypWhite,
-				radius: 10
-			)
 			.offset(y: 8)
 		}
 		.padding(.horizontal, 8)
 		.padding(.trailing, 4)
 		.padding(.bottom)
-		.background(
-			RoundedRectangle(cornerRadius: isImageDissapeared ? 0 : 0)
+		.background(backgroundView)
+	}
+	
+	@ViewBuilder
+	private var backgroundView: some View {
+		if isImageDissapeared {
+			RoundedRectangle(cornerRadius: 0)
 				.fill(.ultraThinMaterial)
 				.shadow(color: .ypBlackUniversal.opacity(0.3), radius: 10)
-				.opacity(isImageDissapeared ? 1 : 0)
 				.ignoresSafeArea(edges: .top)
-		)
+				.transition(.opacity.animation(Constants.defaultAnimation))
+		}
 	}
 }
 
@@ -84,13 +90,25 @@ private extension View {
 // MARK: - Preview
 #if DEBUG
 #Preview {
-	NFTDetailToolbarView(
-		model: .mock,
-		isImageFullScreen: .constant(false),
-		isImageDissapeared: false,
-		backAction: {},
-		didTapLikeButton: {},
-		modelUpdateTriggerID: .init()
-	)
+	GeometryReader { geo in
+		ZStack(alignment: .top) {
+			Color.cyan.ignoresSafeArea()
+			
+			NFTDetailToolbarView(
+				model: .mock,
+				isImageFullScreen: .constant(false),
+				isImageDissapeared: false,
+				backAction: {},
+				didTapLikeButton: {},
+				modelUpdateTriggerID: .init()
+			)
+			.offset(y: geo.safeAreaInsets.top)
+		}
+		.frame(
+			width: geo.size.width,
+			height: geo.size.height + geo.safeAreaInsets.top
+		)
+		.ignoresSafeArea()
+	}
 }
 #endif

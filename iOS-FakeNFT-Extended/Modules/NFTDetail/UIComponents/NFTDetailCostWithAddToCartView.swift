@@ -24,7 +24,7 @@ struct NFTDetailCostWithAddToCartView: View {
 			}
 			.nftButtonStyle(filled: true)
 			.offset(y: -10)
-			.id(modelUpdateTriggerID)
+			.animation(Constants.defaultAnimation, value: model.isInCart)
 		}
 		.padding(.horizontal)
 	}
