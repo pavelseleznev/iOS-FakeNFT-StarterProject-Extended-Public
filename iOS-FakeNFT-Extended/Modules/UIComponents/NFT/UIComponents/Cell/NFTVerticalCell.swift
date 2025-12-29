@@ -51,14 +51,10 @@ struct NFTVerticalCell: View {
 	}
 	
 	private var costLabel: some View {
-		Text(
-			String(format: "%.2f", model?.nft.price ?? "99.99")
-				.replacingOccurrences(of: ".", with: ",")
-			+ " ETH"
-		)
-		.foregroundStyle(.ypBlack)
-		.font(.medium10)
-		.applySkeleton(model)
+		Text(formatterPriceString)
+			.foregroundStyle(.ypBlack)
+			.font(.medium10)
+			.applySkeleton(model)
 	}
 	
 	private var cartButton: some View {
@@ -71,6 +67,17 @@ struct NFTVerticalCell: View {
 		}
 		.disabled(model == nil)
 		.applySkeleton(model)
+	}
+	
+	private var formatterPriceString: String {
+		let string = "\(model?.nft.price ?? 99.99)"
+		if let double = Double(string) {
+			return String(format: "%.2f", double)
+				.replacingOccurrences(of: ".", with: ",")
+			+ " ETH"
+		} else {
+			return "0,0 ETH"
+		}
 	}
 }
 

@@ -24,11 +24,20 @@ struct NFTDetailCurrencyCell: View {
 	}
 	
 	private var cryptoCostLabel: String {
-		String(format: "%.1f", cost).replacingOccurrences(of: ".", with: ",")
+		getString(from: cost, format: "%.1f")
 	}
 	
 	private var costLabel: String {
-		String(format: "%.2f", cost * currencyPair_ETH_UDS_ratio)
+		getString(from: cost * currencyPair_ETH_UDS_ratio, format: "%.2f")
+	}
+	
+	private func getString(from value: Float, format: String) -> String {
+		let string = "\(value)"
+		if let double = Double(string) {
+			return String(format: "%.1f", double).replacingOccurrences(of: ".", with: ",")
+		} else {
+			return "0,0"
+		}
 	}
 	
 	private var cryptoCost: some View {
