@@ -18,6 +18,8 @@ final class AsyncNFTs: ObservableObject {
 	private var pollingTask: Task<Void, Never>?
 	private var fetchingTask: Task<Void, Error>?
 	
+	var activeTokens = [FilterToken]()
+	private var searchText: String = ""
 	private var viewDidDisappeared = false
 	
 	private let nftService: NFTServiceProtocol
@@ -30,6 +32,28 @@ final class AsyncNFTs: ObservableObject {
 				$0.key.localizedStandardCompare($1.key) == .orderedAscending
 			}
 			.map(\.value)
+			.filter { model in
+				guard let model else { return true }
+				
+				let matchesText = searchText.isEmpty ||
+					model.nft.name.localizedCaseInsensitiveContains(searchText)
+				
+				let matchesTokens = activeTokens.allSatisfy { token in
+					switch token {
+					case .isFavourite:
+						model.isFavorite
+					case .isInCart:
+						model.isInCart
+					case .isNotFavourite:
+						!model.isFavorite
+					case .isNotInCart:
+						!model.isInCart
+					}
+				}
+				
+				return matchesText && matchesTokens
+			}
+
 	}
 	
 	init(
@@ -74,6 +98,22 @@ extension AsyncNFTs {
 	func viewDidDissappear() {
 		viewDidDisappeared = true
 		cancelFetchingTask()
+	}
+	
+	func tokenAction(for token: FilterToken) {
+		if activeTokens.contains(token.contrary) {
+			activeTokens.removeAll(where: { $0 == token.contrary })
+		}
+		
+		if activeTokens.contains(token) {
+			activeTokens.removeAll(where: { $0 == token })
+		} else {
+			activeTokens.append(token)
+		}
+	}
+	
+	func onDebounce(_ text: String) {
+		searchText = text
 	}
 }
 

@@ -43,10 +43,9 @@ struct StatisticsNFTCollectionView: View {
 					.font(.bold17)
 			}
 			ToolbarItem(placement: .destructiveAction) {
-				if case .fetching = loadingState {
-					ProgressView()
-						.progressViewStyle(.circular)
-				}
+				ProgressView()
+					.progressViewStyle(.circular)
+					.opacity(loadingState == .fetching ? 1 : 0)
 			}
 		}
 	}

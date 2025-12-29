@@ -63,7 +63,6 @@ struct NFTImageView: View {
 		{
 			urlString = model.imagesURLsStrings[imageIndex]
 		} else {
-			imageIndex = 0
 			urlString = ""
 		}
 		
