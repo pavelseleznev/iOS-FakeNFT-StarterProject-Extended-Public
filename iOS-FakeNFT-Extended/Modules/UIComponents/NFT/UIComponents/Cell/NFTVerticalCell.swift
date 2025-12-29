@@ -42,7 +42,7 @@ struct NFTVerticalCell: View {
 	}
 	
 	private var nameLabel: some View {
-		Text(model?.nft.name ?? NFTModel.mock.name)
+		Text(model?.nft.name ?? NFTResponse.mock.name)
 			.foregroundStyle(.ypBlack)
 			.lineLimit(Constants.nftNameLineLimit)
 			.truncationMode(.tail)
