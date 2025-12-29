@@ -44,6 +44,7 @@ private extension ObservedNetworkClient {
 
 // --- nft collections ---
 extension ObservedNetworkClient {
+    @discardableResult
 	func getCollections() async throws -> [NFTCollectionItemResponse] {
 		let request = GetCollectionRequest()
 		return try await fetch(request)

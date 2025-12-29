@@ -45,7 +45,7 @@ extension CatalogViewModel {
     @Sendable
     func loadCollections() async {
         do {
-            _ = try await api.getCollections()
+            try await api.getCollections()
         } catch {
             print(error)
         }

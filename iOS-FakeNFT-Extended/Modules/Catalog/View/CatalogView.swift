@@ -47,7 +47,7 @@ struct CatalogView: View {
             .listStyle(.plain)
             .animation(.easeInOut(duration: 0.15), value: viewModel.visibleCollections)
         }
-        .task {
+        .task(priority: .userInitiated) {
             await viewModel.loadCollections()
         }
         .safeAreaTopBackground()
