@@ -8,18 +8,18 @@
 import SwiftUI
 
 struct CatalogNFTCollectionView: View {
-    @State private var viewModel: CatalogNFTCollectionViewModel
+    private let nftsIDs: [String]
+    private let nftService: NFTServiceProtocol
+    private let loadingState: LoadingState
     
     init(
-        api: ObservedNetworkClient,
-        push: @escaping (Page) -> Void
+        nftsIDs: [String],
+        loadingState: LoadingState,
+        nftService: NFTServiceProtocol
     ) {
-        _viewModel = .init(
-            initialValue: .init(
-                api: api,
-                push: push
-            )
-        )
+        self.nftsIDs = nftsIDs
+        self.loadingState = loadingState
+        self.nftService = nftService
     }
     
     var body: some View {
@@ -65,9 +65,9 @@ struct CatalogNFTCollectionView: View {
                 .padding(.horizontal, 16)
                 
                 NFTCollectionView(
-                    nfts: viewModel.nfts,
-                    likeActionOn: viewModel.didTapLikeButton,
-                    cartActionOn: viewModel.didTapCartButton
+                    nftsIDs: nftsIDs,
+                    nftService: nftService,
+                    errorIsPresented: loadingState == .error
                 )
                 .safeAreaPadding(.bottom)
                 .padding(.bottom, 20)
@@ -79,13 +79,16 @@ struct CatalogNFTCollectionView: View {
 }
 
 #Preview {
-    @Previewable let obsAPI: ObservedNetworkClient = {
-        let api = DefaultNetworkClient()
-        return .init(api: api)
-    }()
-    
     CatalogNFTCollectionView(
-        api: .mock,
-        push: { _ in }
+        nftsIDs: [
+            "d6a02bd1-1255-46cd-815b-656174c1d9c0",
+            "f380f245-0264-4b42-8e7e-c4486e237504",
+            "c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
+        ],
+        loadingState: .idle,
+        nftService: NFTService(
+            api: .mock,
+            storage: NFTStorage()
+        )
     )
 }

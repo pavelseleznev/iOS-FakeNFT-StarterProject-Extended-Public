@@ -10,7 +10,7 @@ enum Page: Identifiable {
     case aboutAuthor
     
     // catalog
-    case catalogDetails
+    case catalogDetails(nftsIDs: [String])
     
     var id: String { .init(describing: self) }
 }

@@ -28,7 +28,7 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
             name: "Apple",
             coverImageURLString: "coverImageURLString",
             nftsIDs: [
-                "123"
+                "d6a02bd1-1255-46cd-815b-656174c1d9c0"
             ],
             description: "description",
             author: "author",
@@ -42,8 +42,8 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
             name: "Banana",
             coverImageURLString: "coverImageURLString",
             nftsIDs: [
-                "123",
-                "123"
+                "d6a02bd1-1255-46cd-815b-656174c1d9c0",
+                "f380f245-0264-4b42-8e7e-c4486e237504"
             ],
             description: "description",
             author: "author",
@@ -57,9 +57,9 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
             name: "Cherry",
             coverImageURLString: "coverImageURLString",
             nftsIDs: [
-                "123",
-                "123",
-                "123"
+                "d6a02bd1-1255-46cd-815b-656174c1d9c0",
+                "f380f245-0264-4b42-8e7e-c4486e237504",
+                "c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
             ],
             description: "description",
             author: "author",

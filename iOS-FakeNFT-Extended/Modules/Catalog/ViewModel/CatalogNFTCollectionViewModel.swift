@@ -25,12 +25,4 @@ final class CatalogNFTCollectionViewModel {
         self.api = api
         self.push = push
     }
-    
-    func didTapLikeButton(for nft: NFTModel) {
-        //TODO: Добавить логику лайка
-    }
-    
-    func didTapCartButton(for nft: NFTModel) {
-        //TODO: Добавить логику добавления в корзину
-    }
 }

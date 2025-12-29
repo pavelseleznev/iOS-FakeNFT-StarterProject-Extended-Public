@@ -39,7 +39,7 @@ extension CatalogViewModel {
     }
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        push(.catalogDetails)
+        push(.catalogDetails(nftsIDs: item.nftsIDs))
     }
     
     @Sendable

@@ -36,7 +36,7 @@ struct CoordinatorView: View {
 		let api = ObservedNetworkClient()
 		let nftStorage = NFTStorage()
 		let nft = NFTService(api: api, storage: nftStorage)
-		let appContainer = AppContainer(nft: nft, api: api)
+		let appContainer = AppContainer(nftService: nft, api: api)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 	}
 	
