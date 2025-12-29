@@ -8,7 +8,7 @@
 import Foundation
 
 enum SplashLoadingComment: String, CaseIterable {
-	case phase1, phase2, phase3, phase4
+	case phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8
 	
 	var title: LocalizedStringResource {
 		switch self {
@@ -20,19 +20,20 @@ enum SplashLoadingComment: String, CaseIterable {
 			.splashLoadingComment3
 		case .phase4:
 			.splashLoadingComment4
+		case .phase5:
+			.splashLoadingComment5
+		case .phase6:
+			.splashLoadingComment6
+		case .phase7:
+			.splashLoadingComment7
+		case .phase8:
+			.splashLoadingComment8
 		}
 	}
 	
 	var next: Self {
-		switch self {
-		case .phase1:
-			.phase2
-		case .phase2:
-			.phase3
-		case .phase3:
-			.phase4
-		case .phase4:
-			.phase1
-		}
+		var set = Set(Self.allCases)
+		set.remove(self)
+		return set.randomElement() ?? .phase1
 	}
 }

@@ -1033,13 +1033,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Loading the databases"
+            "value" : "Warming up the blockchain"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Подгружаем базы"
+            "value" : "Разогреваем блокчейн"
           }
         }
       }
@@ -1050,13 +1050,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Making API engineers work"
+            "value" : "Exploring the blockchain jungle"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Заставляем работать API инженеров"
+            "state" : "translated",
+            "value" : "Исследуем блокчейн-джунгли"
           }
         }
       }
@@ -1067,13 +1067,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Establishing communication with the satellite"
+            "value" : "Counting zeros in the price"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Устанавливаем связь со спутником"
+            "state" : "translated",
+            "value" : "Считаем нули в цене"
           }
         }
       }
@@ -1084,13 +1084,81 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "We look at the bonfire"
+            "value" : "Constructing the crypto vault"
           }
         },
         "ru" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Смотрим на костер"
+            "state" : "translated",
+            "value" : "Строим крипто-убежище"
+          }
+        }
+      }
+    },
+    "splashLoadingComment5" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mining digital gold"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добываем цифровое золото"
+          }
+        }
+      }
+    },
+    "splashLoadingComment6" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blowing dust off the servers"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сдуваем пыль с серверов"
+          }
+        }
+      }
+    },
+    "splashLoadingComment7" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explaining NFTs to Grandma"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Объясняем бабушке, что такое NFT"
+          }
+        }
+      }
+    },
+    "splashLoadingComment8" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assembling the collection"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Собираем коллекцию"
           }
         }
       }
