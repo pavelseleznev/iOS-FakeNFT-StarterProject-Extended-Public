@@ -10,17 +10,48 @@ import SwiftUI
 fileprivate let maxScale: CGFloat = 3
 fileprivate let minScale: CGFloat = 0.5
 fileprivate let dismissScaleRatio: CGFloat = 0.1
+fileprivate let spacing: CGFloat = 16
+fileprivate let dissapearScaleThreshold: CGFloat = 1.08
+fileprivate let dissapearVelocityThreshold: CGFloat = 2000
+fileprivate let velocityHistoryCapacity: Int = 5
+@MainActor fileprivate let imageStateTransition: AnyTransition = .opacity.animation(.easeInOut(duration: 0.5))
 
 struct NFTDetailImagesView: View {
-	let nftsImagesURLsStrings: [String]
-	let screenWidth: CGFloat
-	let isFavourite: Bool
-	@Binding var isFullScreen: Bool
+	@State private var nftsImagesURLsStrings: [String : String]
+	private let screenWidth: CGFloat
+	private let isFavourite: Bool
+	@Binding private var isFullScreen: Bool
 	
 	@State private var isDismissing = false
 	@State private var scale: CGFloat = 1
 	@State private var baseScale: CGFloat?
 	@State private var selection: String?
+	@State private var velocityHistory: [CGFloat] = {
+		var array = [CGFloat]()
+		array.reserveCapacity(velocityHistoryCapacity)
+		return array
+	}()
+	
+	init(
+		nftsImagesURLsStrings: [String],
+		screenWidth: CGFloat,
+		isFavourite: Bool,
+		isFullScreen: Binding<Bool>
+	) {
+		
+		var _nftsImagesURLsStrings = [String : String]()
+		nftsImagesURLsStrings.forEach {
+			let id = UUID().uuidString
+			_nftsImagesURLsStrings[$0, default: id] = id
+		}
+		
+		selection = _nftsImagesURLsStrings.first?.value
+		
+		self.nftsImagesURLsStrings = _nftsImagesURLsStrings
+		self.screenWidth = screenWidth
+		self.isFavourite = isFavourite
+		self._isFullScreen = isFullScreen
+	}
 	
 	var body: some View {
 		ZStack {
@@ -37,9 +68,10 @@ struct NFTDetailImagesView: View {
 					}
 				}
 			}
-			.gesture(dismissGesture)
+			.simultaneousGesture(dismissGesture, isEnabled: isFullScreen)
 			.scaleEffect(y: isDismissing ? scale : 1)
 			.tabViewStyle(.page(indexDisplayMode: .never))
+			.scrollDisabled(true)
 			.background(
 				LinearGradient(
 					colors: [.purple, .indigo, .cyan],
@@ -61,8 +93,8 @@ struct NFTDetailImagesView: View {
 			}
 		}
 		.animation(Constants.defaultAnimation, value: isDismissing)
+		.animation(Constants.defaultAnimation, value: nftsImagesURLsStrings)
 		.onChange(of: isFullScreen) { resetScale() }
-		.onAppear(perform: setFirstSelection)
 	}
 }
 
@@ -72,15 +104,31 @@ struct NFTDetailImagesView: View {
 private extension NFTDetailImagesView {
 	var tabSelectorsView: some View {
 		TabIndicatorsView(
-			items: nftsImagesURLsStrings,
+			items: nftsImagesURLsStrings.map(\.value),
 			selection: selection
 		)
-		.offset(y: 16)
-		.padding(.horizontal, 16)
+		.offset(y: spacing)
+		.padding(.horizontal, spacing)
+	}
+	
+	func loadingStateFromAsyncImagePhase(_ phase: AsyncImagePhase) -> LoadingState {
+		switch phase {
+		case .success:
+			.idle
+		case .failure:
+			.error
+		default:
+			.fetching
+		}
 	}
 	
 	var content: some View {
-		ForEach(nftsImagesURLsStrings, id: \.self) { imageURLString in
+		ForEach(
+			Array(nftsImagesURLsStrings.enumerated()),
+			id: \.element.key
+		) { _, element in
+			let imageURLString = element.key
+			
 			AsyncImage(
 				url: URL(string: imageURLString),
 				transaction: .init(animation: Constants.defaultAnimation)
@@ -88,18 +136,24 @@ private extension NFTDetailImagesView {
 				switch phase {
 				case .empty:
 					LoadingView(loadingState: .fetching)
+						.transition(imageStateTransition)
 				case .success(let image):
-					loadedImageView(image, isSelected: selection == imageURLString)
-				default:
-					ZStack {
-						Text(.loadingError)
-							.font(.bold22)
-							.foregroundStyle(.ypBlack)
+					loadedImageView(image, isSelected: selection == element.value)
+						.transition(imageStateTransition)
+				case .failure:
+					LoadingView(loadingState: .error) {
+						reloadImage(key: element.key, imageURLString: imageURLString)
 					}
+					.transition(imageStateTransition)
+				@unknown default:
+					Text(.notImplemented)
+						.font(.bold22)
+						.foregroundStyle(.ypBlack)
+						.transition(imageStateTransition)
 				}
 			}
-			.tag(imageURLString)
-			.id(imageURLString)
+			.tag(element.value)
+			.id(element.value)
 		}
 	}
 	
@@ -122,7 +176,7 @@ private extension NFTDetailImagesView {
 					}
 				}
 		}
-		.gesture(magnificationGesture)
+		.highPriorityGesture(magnificationGesture, isEnabled: isFullScreen)
 	}
 }
 
@@ -137,8 +191,26 @@ private extension NFTDetailImagesView {
 		}
 	}
 	
-	func setFirstSelection() {
-		selection = nftsImagesURLsStrings.first
+	func reloadImage(key: String, imageURLString: String) {
+		let id = UUID().uuidString
+		
+		if nftsImagesURLsStrings[key, default: id] == selection {
+			selection = id
+		}
+		nftsImagesURLsStrings[key, default: id] = id
+	}
+	
+	func isVelocityThresholdReached(with rawVelocity: CGFloat) -> Bool {
+		velocityHistory.append(rawVelocity)
+		if velocityHistory.count == velocityHistoryCapacity { velocityHistory.removeFirst() }
+		
+		let velocity = velocityHistory.reduce(0, +) / CGFloat(velocityHistory.count)
+
+		return velocity >= dissapearVelocityThreshold
+	}
+	
+	func isScaleThresholdReached(with scale: CGFloat) -> Bool {
+		scale >= dissapearScaleThreshold
 	}
 }
 
@@ -147,8 +219,7 @@ private extension NFTDetailImagesView {
 	var magnificationGesture: some Gesture {
 		MagnificationGesture()
 			.onChanged { value in
-				guard isFullScreen else { return }
-				
+				print(value)
 				if baseScale == nil {
 					baseScale = scale
 				}
@@ -157,8 +228,6 @@ private extension NFTDetailImagesView {
 				scale = (baseScale ?? 1) * value
 			}
 			.onEnded { _ in
-				guard isFullScreen else { return }
-				
 				isDismissing = false
 				resetScale(checkForClippingBounds: true)
 			}
@@ -168,7 +237,7 @@ private extension NFTDetailImagesView {
 		DragGesture()
 			.onChanged { value in
 				let isBottomToTopDrag = value.translation.height < 0
-				guard isFullScreen && isBottomToTopDrag else { return }
+				guard isBottomToTopDrag else { return }
 				
 				if !isDismissing {
 					resetScale()
@@ -183,14 +252,19 @@ private extension NFTDetailImagesView {
 				isDismissing = true
 				scale = (baseScale ?? 1) * newScale
 				
-				if scale > 1.1 {
+				let rawVelocty = value.velocity.height
+				
+				if
+					rawVelocty < 0,
+					isVelocityThresholdReached(with: rawVelocty) ||
+					isScaleThresholdReached(with: scale)
+				{
 					withAnimation(Constants.defaultAnimation) {
 						isFullScreen = false
 					}
 				}
 			}
 			.onEnded { _ in
-				guard isFullScreen else { return }
 				resetScale()
 			}
 	}
@@ -203,6 +277,7 @@ private extension NFTDetailImagesView {
 		NavigationStack {
 			NFTDetailImagesView(
 				nftsImagesURLsStrings: [
+					"https://noUrl.com",
 					"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/1.png",
 					"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/2.png",
 					"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/3.png"
