@@ -35,7 +35,6 @@
 		ABC5E1A62C31F815002B4068 /* NetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1A52C31F815002B4068 /* NetworkRequest.swift */; };
 		ABC5E1AB2C31FACD002B4068 /* NFTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1AA2C31FACD002B4068 /* NFTService.swift */; };
 		ABC5E1B02C31FB90002B4068 /* RequestConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1AF2C31FB90002B4068 /* RequestConstants.swift */; };
-		ABC5E1D82C3204A9002B4068 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ABC5E1D72C3204A9002B4068 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,7 +111,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABC5E1D82C3204A9002B4068 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -322,7 +320,6 @@
 			);
 			name = "iOS-FakeNFT-Extended";
 			packageProductDependencies = (
-				ABC5E1D72C3204A9002B4068 /* Kingfisher */,
 			);
 			productName = "iOS-FakeNFT-Extended";
 			productReference = ABC5E1682C31F5AF002B4068 /* iOS-FakeNFT-Extended.app */;
@@ -398,7 +395,6 @@
 			);
 			mainGroup = ABC5E15F2C31F5AF002B4068;
 			packageReferences = (
-				ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = ABC5E1692C31F5AF002B4068 /* Products */;
 			projectDirPath = "";
@@ -810,25 +806,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		ABC5E1D72C3204A9002B4068 /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ABC5E1602C31F5AF002B4068 /* Project object */;
 }
