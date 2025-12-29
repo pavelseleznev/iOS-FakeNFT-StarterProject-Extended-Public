@@ -162,7 +162,7 @@ private extension NFTDetailViewModel {
 				isInCart: invertInCartState ? !model.isInCart : model.isInCart
 			)
 			
-			withAnimation(.easeInOut(duration: 0.25)) {
+			withAnimation(Constants.defaultAnimation) {
 				modelUpdateTriggerID = .init()
 			}
 		}
