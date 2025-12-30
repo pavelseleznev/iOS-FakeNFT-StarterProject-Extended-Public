@@ -1,6 +1,10 @@
 {
   "images" : [
     {
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
       "filename" : "onboardingCompete.svg",
       "idiom" : "universal",
       "scale" : "2x"

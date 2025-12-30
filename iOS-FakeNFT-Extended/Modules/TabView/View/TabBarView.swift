@@ -23,10 +23,8 @@ struct TabBarView: View {
 				)
 				.tag(tab)
 				.tabItem {
-					Group {
-						tab.imageView()
-						Text(tab.title)
-					}
+					Text(tab.title)
+					tab.imageView
 				}
 			}
         }

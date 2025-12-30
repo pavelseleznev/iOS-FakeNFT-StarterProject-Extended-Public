@@ -30,8 +30,7 @@ final class DataLoader {
 			}
 			return try await operation()
 		} catch {
-			let isCancellation =
-			cancelErrorsDscr.contains(error.localizedDescription.lowercased()) ||
+			let isCancellation = cancelErrorsDscr.contains(error.localizedDescription.lowercased()) ||
 			error is CancellationError
 
 			loadingState = isCancellation ? .idle : .error

@@ -26,8 +26,7 @@ enum Tab: String, CaseIterable, Identifiable {
 		}
 	}
 	
-	@ViewBuilder
-	func imageView() -> some View {
+	var imageView: Image {
 		switch self {
 		case .profile:
 			Image.profilePerson

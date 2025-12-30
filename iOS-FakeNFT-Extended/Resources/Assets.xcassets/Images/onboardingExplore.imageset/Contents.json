@@ -1,6 +1,10 @@
 {
   "images" : [
     {
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
       "filename" : "onboardingExplore.svg",
       "idiom" : "universal",
       "scale" : "2x"

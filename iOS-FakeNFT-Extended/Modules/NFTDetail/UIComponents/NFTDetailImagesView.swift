@@ -32,6 +32,9 @@ struct NFTDetailImagesView: View {
 		return array
 	}()
 	
+	private let imageCoordinateSpace: CoordinateSpace = .named("imageCoordinateSpace")
+	private let wholeViewCoordinateSpace: CoordinateSpace = .named("wholeViewCoordinateSpace")
+	
 	init(
 		nftsImagesURLsStrings: [String],
 		screenWidth: CGFloat,
@@ -95,6 +98,8 @@ struct NFTDetailImagesView: View {
 		.animation(Constants.defaultAnimation, value: isDismissing)
 		.animation(Constants.defaultAnimation, value: nftsImagesURLsStrings)
 		.onChange(of: isFullScreen) { resetScale() }
+		.coordinateSpace(name: wholeViewCoordinateSpace)
+		.simultaneousGesture(tapGestures)
 	}
 }
 
@@ -165,11 +170,7 @@ private extension NFTDetailImagesView {
 				.resizable()
 				.aspectRatio(1, contentMode: .fit)
 				.scaleEffect(isSelected ? scale : 1)
-				.onTapGesture(count: 2) {
-					withAnimation(Constants.defaultAnimation) {
-						scale = 1
-					}
-				}
+				.coordinateSpace(name: imageCoordinateSpace)
 				.onAppear {
 					withAnimation(Constants.defaultAnimation) {
 						scale = 1
@@ -204,7 +205,8 @@ private extension NFTDetailImagesView {
 		velocityHistory.append(rawVelocity)
 		if velocityHistory.count == velocityHistoryCapacity { velocityHistory.removeFirst() }
 		
-		let velocity = velocityHistory.reduce(0, +) / CGFloat(velocityHistory.count)
+		let historyItemsCount = CGFloat(velocityHistory.count)
+		let velocity = velocityHistory.reduce(0, +) / (historyItemsCount == 0 ? 1 : historyItemsCount)
 
 		return velocity >= dissapearVelocityThreshold
 	}
@@ -219,7 +221,6 @@ private extension NFTDetailImagesView {
 	var magnificationGesture: some Gesture {
 		MagnificationGesture()
 			.onChanged { value in
-				print(value)
 				if baseScale == nil {
 					baseScale = scale
 				}
@@ -267,6 +268,23 @@ private extension NFTDetailImagesView {
 			.onEnded { _ in
 				resetScale()
 			}
+	}
+	
+	var tapGestures: some Gesture {
+		SimultaneousGesture(
+			SpatialTapGesture(count: 2, coordinateSpace: imageCoordinateSpace)
+				.onEnded { _ in
+					withAnimation(Constants.defaultAnimation) {
+						scale = 1
+					}
+				},
+			SpatialTapGesture(count: 1, coordinateSpace: wholeViewCoordinateSpace)
+				.onEnded { _ in
+					withAnimation(Constants.defaultAnimation) {
+						isFullScreen = true
+					}
+				}
+		)
 	}
 }
 

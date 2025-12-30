@@ -114,19 +114,19 @@ fileprivate extension View {
 	]
 	
 	@Previewable @State var excludingNFTID = ""
-	let authorID = "ab33768d-02ac-4f45-9890-7acf503bde54"
-//	let authorID = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
+	let authorIDWithSomeNFTs = "ab33768d-02ac-4f45-9890-7acf503bde54"
+	let authorIDWithEmptyNFTs = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
 	
 	NavigationStack(path: $path) {
 		ZStack {
 			SellerNFTsView(
-				authorID: authorID,
+				authorID: authorIDWithSomeNFTs,
 				didTapDetail: {
 					path
 						.append(
 							.nftDetail(
 								model: $0,
-								authorID: authorID,
+								authorID: authorIDWithSomeNFTs,
 								authorWebsiteURLString: ""
 							)
 						)
@@ -138,7 +138,7 @@ fileprivate extension View {
 		}
 		.task(priority: .userInitiated) {
 			do {
-				excludingNFTID = try await api.getUser(by: authorID).nftsIDs.first ?? ""
+				excludingNFTID = try await api.getUser(by: authorIDWithSomeNFTs).nftsIDs.first ?? ""
 			} catch { print(error.localizedDescription) }
 		}
 	}
