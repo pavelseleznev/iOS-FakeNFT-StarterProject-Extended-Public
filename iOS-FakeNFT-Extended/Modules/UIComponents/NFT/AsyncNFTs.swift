@@ -28,31 +28,9 @@ final class AsyncNFTs: ObservableObject {
 	@inline(__always)
 	var visibleNFTs: [NFTModelContainer?] {
 		nfts
-			.sorted {
-				$0.key.localizedStandardCompare($1.key) == .orderedAscending
-			}
+			.sorted(by: sortComparator)
 			.map(\.value)
-			.filter { model in
-				guard let model else { return true }
-				
-				let matchesText = searchText.isEmpty ||
-					model.nft.name.localizedCaseInsensitiveContains(searchText)
-				
-				let matchesTokens = activeTokens.allSatisfy { token in
-					switch token {
-					case .isFavourite:
-						model.isFavorite
-					case .isInCart:
-						model.isInCart
-					case .isNotFavourite:
-						!model.isFavorite
-					case .isNotInCart:
-						!model.isInCart
-					}
-				}
-				
-				return matchesText && matchesTokens
-			}
+			.filter(filterApplier)
 
 	}
 	
@@ -97,7 +75,7 @@ extension AsyncNFTs {
 	
 	func viewDidDissappear() {
 		viewDidDisappeared = true
-		cancelFetchingTask()
+		clearAllATasks()
 	}
 	
 	func tokenAction(for token: FilterToken) {
@@ -110,6 +88,8 @@ extension AsyncNFTs {
 		} else {
 			activeTokens.append(token)
 		}
+		
+		objectWillChange.send()
 	}
 	
 	func onDebounce(_ text: String) {
@@ -169,6 +149,59 @@ extension AsyncNFTs {
 			group.cancelAll()
 			throw NSError(domain: "No value received", code: 0, userInfo: nil)
 		}
+	}
+	
+	func sortComparator(
+		_ model1: [String : NFTModelContainer?].Element,
+		_ model2: [String : NFTModelContainer?].Element
+	) -> Bool {
+		let activeSortOptions = activeTokens.filter(\.isSortOption)
+		guard
+			!activeSortOptions.isEmpty,
+			let value1 = model1.value,
+			let value2 = model2.value
+		else {
+			return model1.key.localizedStandardCompare(model2.key) == .orderedAscending
+		}
+		
+		return activeSortOptions.allSatisfy { sortOption in
+			switch sortOption {
+			case .ratingAscending:
+				value1.nft.rating < value2.nft.rating
+			case .ratingDescending:
+				value1.nft.rating > value2.nft.rating
+			case .costAscending:
+				value1.nft.price < value2.nft.price
+			case .costDescending:
+				value1.nft.price > value2.nft.price
+			default:
+				true
+			}
+		}
+	}
+	
+	func filterApplier(_ model: NFTModelContainer?) -> Bool {
+		guard let model else { return true }
+		
+		let matchesText = searchText.isEmpty ||
+			model.nft.name.localizedCaseInsensitiveContains(searchText)
+		
+		let matchesTokens = activeTokens.allSatisfy { token in
+			switch token {
+			case .isFavourite:
+				model.isFavorite
+			case .isInCart:
+				model.isInCart
+			case .isNotFavourite:
+				!model.isFavorite
+			case .isNotInCart:
+				!model.isInCart
+			default:
+				true
+			}
+		}
+		
+		return matchesText && matchesTokens
 	}
 }
 
@@ -250,6 +283,8 @@ private extension AsyncNFTs {
 		let idsToRemove = oldIDs.subtracting(newIDs)
 		
 		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
+		
+		guard newCapacity != oldIDs.count else { return }
 		nfts.reserveCapacity(newCapacity)
 		
 		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
@@ -302,7 +337,7 @@ extension AsyncNFTs {
 		}
 	}
 	
-	func clearAllATasks() {
+	private func clearAllATasks() {
 		cancelFetchingTask()
 		
 		pollingTask?.cancel()
