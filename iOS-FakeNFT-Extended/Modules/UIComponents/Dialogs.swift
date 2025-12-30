@@ -27,12 +27,14 @@ extension View {
 	
 	func applyCartSort(
 		placement: BaseConfirmationDialogTriggerPlacement,
-		activeSortOption: Binding<CartSortActionsViewModifier.SortOption>
+		activeSortOption: Binding<CartSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
 	) -> some View {
 		self
 			.modifier(
 				CartSortActionsViewModifier(
 					activeSortOption: activeSortOption,
+					searchText: searchText,
 					placement: placement
 				)
 			)

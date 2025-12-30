@@ -21,6 +21,7 @@ final class CartViewModel {
 	private(set) var removalApproveAlertIsPresented = false
 	private(set) var modelForRemoval: NFTModelContainer?
 	var dataLoadingErrorIsPresented = false
+	var searchText = ""
 	
 	private let nftService: NFTServiceProtocol
 	private let push: (Page) -> Void
@@ -39,29 +40,17 @@ final class CartViewModel {
 // MARK: - CartViewModel Extensions
 // --- internal helpers ---
 extension CartViewModel {
-	func setSortOption(_ option: SortOption) {
+	func onDebounce(_ searchText: String) {
+		self.searchText = searchText
+	}
+	
+	func setSortOption(_: SortOption, _ option: SortOption) {
 		sortOption = option
 	}
 	
-	private func waitPolling() async throws {
-		try await Task.sleep(for: cartPingInterval)
-	}
-	
-	private func onError(_ error: Error) {
-		guard !(error is CancellationError) else { return }
-		withAnimation(Constants.defaultAnimation) {
-			dataLoadingErrorIsPresented = true
-		}
-	}
-	
-	func clearIdsUpdateTask() {
-		idsUpdateTask?.cancel()
-		idsUpdateTask = nil
-	}
-	
-	func clearNftsLoadTask() {
-		nftsLoadTask?.cancel()
-		nftsLoadTask = nil
+	func viewDidDissappear() {
+		clearIdsUpdateTask()
+		clearNftsLoadTask()
 	}
 	
 	func updateIDs() async {
@@ -75,22 +64,25 @@ extension CartViewModel {
 			while !Task.isCancelled {
 				do {
 					try Task.checkCancellation()
-					let ids = await nftService.getAllCart()
+					let loadedIDs = await nftService.getAllCart()
 					
-					let currentIds = Array(nfts.keys)
-					let diff = difference(currentIds, ids)
+					let oldIDs = Set(nfts.keys)
+					let newIDs = Set(loadedIDs).subtracting(oldIDs)
+					let idsToRemove = oldIDs.subtracting(Set(loadedIDs))
 					
-					guard !diff.onlyInFirst.isEmpty || !diff.onlyInSecond.isEmpty else {
+					let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
+					
+					guard newCapacity != oldIDs.count else {
 						try await waitPolling()
 						continue
 					}
 					
-					diff.onlyInFirst.forEach {
+					idsToRemove.forEach {
 						nfts.removeValue(forKey: $0)
 					}
 					
-					nfts.reserveCapacity(nfts.count + diff.onlyInSecond.count)
-					diff.onlyInSecond.forEach {
+					nfts.reserveCapacity(newCapacity)
+					newIDs.forEach {
 						nfts[$0, default: nil] = nil
 					}
 					
@@ -148,7 +140,55 @@ extension CartViewModel {
 		}
 	}
 	
-	private func loadNFTs(using ids: [String]) async throws {
+	func performPayment() {
+		push(.paymentMethodChoose)
+	}
+}
+
+// --- private helpers ---
+private extension CartViewModel {
+	func sortComparator(lhs: NFTModelContainer?, rhs: NFTModelContainer?) -> Bool {
+		guard let lhs, let rhs else { return false }
+		switch sortOption {
+		case .name:
+			return lhs.nft.name.localizedStandardCompare(rhs.nft.name) == .orderedAscending
+		case .cost:
+			return lhs.nft.price.isLess(than: rhs.nft.price)
+		case .rate:
+			return lhs.nft.rating < rhs.nft.rating
+		}
+	}
+	
+	func filterApplier(_ model: NFTModelContainer?) -> Bool {
+		if !searchText.isEmpty, let model {
+			model.nft.name.contains(searchText)
+		} else {
+			true
+		}
+	}
+	
+	func waitPolling() async throws {
+		try await Task.sleep(for: cartPingInterval)
+	}
+	
+	func onError(_ error: Error) {
+		guard !(error is CancellationError) else { return }
+		withAnimation(Constants.defaultAnimation) {
+			dataLoadingErrorIsPresented = true
+		}
+	}
+	
+	func clearIdsUpdateTask() {
+		idsUpdateTask?.cancel()
+		idsUpdateTask = nil
+	}
+	
+	func clearNftsLoadTask() {
+		nftsLoadTask?.cancel()
+		nftsLoadTask = nil
+	}
+	
+	func loadNFTs(using ids: [String]) async throws {
 		for id in ids {
 			try Task.checkCancellation()
 			let nft = try await nftService.loadNFT(id: id)
@@ -158,10 +198,6 @@ extension CartViewModel {
 				isInCart: true
 			)
 		}
-	}
-	
-	func performPayment() {
-		push(.paymentMethodChoose)
 	}
 }
 
@@ -180,17 +216,8 @@ extension CartViewModel {
 		if isLoaded {
 			nfts
 				.map(\.value)
-				.sorted {
-					guard let first = $0, let second = $1 else { return false }
-					switch sortOption {
-					case .name:
-						return first.nft.name.localizedStandardCompare(second.nft.name) == .orderedAscending
-					case .cost:
-						return first.nft.price.isLess(than: second.nft.price)
-					case .rate:
-						return first.nft.rating < second.nft.rating
-					}
-				}
+				.sorted(by: sortComparator)
+				.filter(filterApplier)
 		} else {
 			nfts
 				.map(\.value)
@@ -208,12 +235,17 @@ extension CartViewModel {
 	
 	var cartCostLabel: String {
 		let isGreaterThanThousand = cartCost > 1000
-		return String(
-			format: "%0.2f",
-			isGreaterThanThousand ? cartCost / 1000 : cartCost
-		) +
-		(isGreaterThanThousand ? "K" : "") +
-		" ETH"
+		let string = String(isGreaterThanThousand ? cartCost / 1000 : cartCost)
+		if let double = Double(string) {
+			return String(
+				format: "%0.2f",
+				double,
+			) +
+			(isGreaterThanThousand ? "K" : "") +
+			" ETH"
+		} else {
+			return "0.00 ETH"
+		}
 	}
 }
 
@@ -241,20 +273,4 @@ extension CartViewModel {
 			nfts.removeValue(forKey: modelForRemoval.id)
 		}
 	}
-}
-
-// MARK: - Private helpers
-private struct ArrayDifference<T: Hashable> {
-	let onlyInFirst: [T]
-	let onlyInSecond: [T]
-}
-
-private func difference<T: Hashable>(_ array1: [T], _ array2: [T]) -> ArrayDifference<T> {
-	let set1 = Set(array1)
-	let set2 = Set(array2)
-
-	return ArrayDifference(
-		onlyInFirst: Array(set1.subtracting(set2)),
-		onlyInSecond: Array(set2.subtracting(set1))
-	)
 }

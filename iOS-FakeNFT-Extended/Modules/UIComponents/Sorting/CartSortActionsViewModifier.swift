@@ -33,14 +33,26 @@ struct CartSortActionsViewModifier: ViewModifier {
 		}
 	}
 	
-	@Binding var activeSortOption: SortOption
+	@Binding private var activeSortOption: SortOption
+	@Binding private var searchText: String
+	private let placement: BaseConfirmationDialogTriggerPlacement
 	
-	let placement: BaseConfirmationDialogTriggerPlacement
+	init(
+		activeSortOption: Binding<SortOption>,
+		searchText: Binding<String>,
+		placement: BaseConfirmationDialogTriggerPlacement,
+	) {
+		self._activeSortOption = activeSortOption
+		self._searchText = searchText
+		self.placement = placement
+	}
 	
 	func body(content: Content) -> some View {
 		content
 			.modifier(
 				BaseConfirmationDialogViewModifier(
+					needsSearchBar: true,
+					searchText: $searchText,
 					placement: placement,
 					title: .sorting,
 					activeSortOption: activeSortOption.description,

@@ -168,6 +168,7 @@ private extension SellerNFTsViewModel {
 		let idsToRemove = oldIDs.subtracting(loadedIDs)
 		
 		let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
+		guard newCapacity != oldIDs.count else { return }
 		nfts.reserveCapacity(newCapacity)
 		
 		newIDs.forEach {

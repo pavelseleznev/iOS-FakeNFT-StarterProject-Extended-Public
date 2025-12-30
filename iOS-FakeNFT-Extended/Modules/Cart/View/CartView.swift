@@ -11,6 +11,7 @@ struct CartView: View {
 	private static let cartSortOptionKey: String = "cartSortOptionKey"
 	
 	@State private var viewModel: CartViewModel
+	@StateObject private var debouncer = DebouncingViewModel()
 	@AppStorage(cartSortOptionKey) private var sortOption: CartSortActionsViewModifier.SortOption = .name
 	
 	init(
@@ -36,59 +37,42 @@ struct CartView: View {
 						viewModel.setNFTForRemoval(nft)
 					}
 				)
-				.listRowBackground(Color.clear)
-				.listRowInsets(.init())
-				.listRowSeparator(.hidden)
+				.listCellModifiers()
 			}
-			.scrollContentBackground(.hidden)
-			.listStyle(.plain)
-			.listRowSpacing(32)
-			.safeAreaPadding(.bottom)
-			.scrollIndicators(.hidden)
+			.listModifiers()
 			.overlay(content: emptyCartView)
 		}
+		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
 		.task(priority: .userInitiated) { await viewModel.updateIDs() }
 		.task(priority: .userInitiated) { await viewModel.loadNilNFTs() }
-		.onDisappear {
-			viewModel.clearNftsLoadTask()
-			viewModel.clearIdsUpdateTask()
-		}
-		.onChange(of: sortOption) {
-			viewModel.setSortOption(sortOption)
-		}
-		.onAppear {
-			viewModel.setSortOption(sortOption)
-		}
-		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
+		.onChange(of: sortOption, viewModel.setSortOption)
 		.safeAreaTopBackground()
 		.applyCartSort(
 			placement: .safeAreaTop,
-			activeSortOption: $sortOption
+			activeSortOption: $sortOption,
+			searchText: $debouncer.text
 		)
 		.safeAreaInset(edge: .bottom, content: cartActionContent)
 		.allowsHitTesting(!viewModel.removalApproveAlertIsPresented)
 		.blur(radius: viewModel.removalApproveAlertIsPresented ? 40 : 0)
-		.overlay {
-			if viewModel.removalApproveAlertIsPresented {
-				CartNFTRemovalApproveAlertView(
-					model: viewModel.modelForRemoval,
-					removeAction: {
-						viewModel.removeNFTFromCart()
-						viewModel.nftDismissAction()
-					},
-					dismissAction: viewModel.nftDismissAction
-				)
-				.transition(.scale.combined(with: .opacity))
-			}
-		}
+		.overlay(content: removalApproveContent)
 		.toolbar(.hidden)
 		.applyRepeatableAlert(
 			isPresneted: $viewModel.dataLoadingErrorIsPresented,
 			message: .cantGetData,
 			didTapRepeat: viewModel.reloadCart
 		)
+		.onDisappear(perform: viewModel.viewDidDissappear)
+		.onAppear {
+			debouncer.onDebounce = viewModel.onDebounce
+			viewModel.setSortOption(sortOption, sortOption)
+		}
 	}
-	
+}
+
+// MARK: - CartView Extensions
+// --- subviews ---
+private extension CartView {
 	@ViewBuilder
 	private func emptyCartView() -> some View {
 		if viewModel.nftCount == 0 {
@@ -104,23 +88,61 @@ struct CartView: View {
 			isLoaded: viewModel.isLoaded
 		)
 	}
+	
+	@ViewBuilder
+	private func removalApproveContent() -> some View {
+		if viewModel.removalApproveAlertIsPresented {
+			CartNFTRemovalApproveAlertView(
+				model: viewModel.modelForRemoval,
+				removeAction: {
+					viewModel.removeNFTFromCart()
+					viewModel.nftDismissAction()
+				},
+				dismissAction: viewModel.nftDismissAction
+			)
+			.transition(.scale.combined(with: .opacity))
+		}
+	}
 }
 
+// MARK: - View helpers
+private extension View {
+	func listModifiers() -> some View {
+		self
+			.scrollContentBackground(.hidden)
+			.listStyle(.plain)
+			.listRowSpacing(32)
+			.safeAreaPadding(.bottom)
+			.scrollIndicators(.hidden)
+			.scrollDismissesKeyboard(.interactively)
+	}
+	
+	func listCellModifiers() -> some View {
+		self
+			.listRowBackground(Color.clear)
+			.listRowInsets(.init())
+			.listRowSeparator(.hidden)
+	}
+}
+
+// MARK: - Preview
 #if DEBUG
 #Preview {
 	@Previewable let api = ObservedNetworkClient()
 	@Previewable let storage = NFTStorage()
 	
-	CartView(
-		nftService: NFTService(api: api, storage: storage),
-		push: {_ in}
-	)
-	.task(priority: .userInitiated) {
-		do {
-			for id in try await api.getOrder().nftsIDs {
-				await storage.addToCart(id: id)
-			}
-		} catch { print(error.localizedDescription) }
+	NavigationStack {
+		CartView(
+			nftService: NFTService(api: api, storage: storage),
+			push: {_ in}
+		)
+		.task(priority: .userInitiated) {
+			do {
+				for id in try await api.getOrder().nftsIDs {
+					await storage.addToCart(id: id)
+				}
+			} catch { print(error.localizedDescription) }
+		}
 	}
 }
 #endif
