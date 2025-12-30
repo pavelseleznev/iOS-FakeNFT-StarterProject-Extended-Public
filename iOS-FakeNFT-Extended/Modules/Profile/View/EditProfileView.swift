@@ -17,10 +17,14 @@ struct EditProfileView: View {
 
     init(
         profile: ProfileModel,
+        profileStore: ProfileStore,
         onSave: @Sendable @escaping (ProfileModel) -> Void,
         onCancel: @escaping () -> Void
     ) {
-        _viewModel = State(initialValue: EditProfileViewModel(profile: profile))
+        _viewModel = State(initialValue: EditProfileViewModel(
+            profile: profile,
+            profileStore: profileStore)
+        )
         self.onSave = onSave
         self.onCancel = onCancel
     }
@@ -53,15 +57,8 @@ struct EditProfileView: View {
                 EditProfileFooter(
                     isVisible: viewModel.canSave,
                     onSave: {
-                        Task {
-                            do {
-                                let updatedProfile = try await viewModel.saveTapped()
-                                onSave(updatedProfile)
-                            } catch {
-                                // TODO: Handle error (alert, log, etc.)
-                                print(error)
-                            }
-                        }
+                        Task { @MainActor in
+                            performSave() }
                     }
                 )
             }
@@ -84,31 +81,50 @@ struct EditProfileView: View {
                 viewModel.photoURLCancelled()
             }
         )
+        .applyRepeatableAlert(
+            isPresented: $viewModel.isSaveErrorPresented,
+            message: viewModel.saveErrorMessage,
+            didTapRepeat: {
+                performSave()
+            }
+        )
         .overlay {
             LoadingView(loadingState: viewModel.loadingState)
+        }
+    }
+    
+    private func performSave() {
+        Task {
+            do {
+                try await viewModel.saveTapped()
+                onSave(ProfileModel(
+                    name: viewModel.name,
+                    about: viewModel.about,
+                    website: viewModel.website,
+                    avatarURL: viewModel.avatarURL
+                ))
+            } catch {
+                viewModel.isSaveErrorPresented = true
+            }
         }
     }
 }
 
 struct EditProfileView_Preview: PreviewProvider {
-    static var mockProvider = MockProfileProvider()
-    
     static var previews: some View {
-        let sampleProfile = mockProvider.profile()
         Group {
             EditProfileView(
-                profile: sampleProfile,
-                onSave: { newProfile in print("Saved: \(newProfile)")
-                },
-                onCancel: {
-                    print("Cancelled")
-                }
+                profile: .preview,
+                profileStore: .preview,
+                onSave: { _ in },
+                onCancel: {}
             )
             .previewDisplayName("Light")
             .environment(\.colorScheme, .light)
             
             EditProfileView(
-                profile: sampleProfile,
+                profile: .preview,
+                profileStore: ProfileStore.preview,
                 onSave: { _ in },
                 onCancel: {}
             )

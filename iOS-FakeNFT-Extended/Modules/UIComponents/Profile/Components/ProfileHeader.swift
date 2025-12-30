@@ -21,11 +21,11 @@ struct ProfileHeader: View {
                     if let url = URL(string: trimmed),
                        ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                         KFImage(url)
-                            .placeholder { placeholderAvatar }
+                            .placeholder { userPicturePlaceholder }
                             .resizable()
                             .scaledToFit()
                     } else {
-                        placeholderAvatar
+                        userPicturePlaceholder
                     }
                 }
                 .clipShape(Circle())
@@ -46,8 +46,8 @@ struct ProfileHeader: View {
 		.padding(.horizontal, 16)
 	}
     
-    private var placeholderAvatar: some View {
-        Image("userPickMock")
+    private var userPicturePlaceholder: some View {
+        Image.userPicturePlaceholder
             .resizable()
             .scaledToFit()
     }

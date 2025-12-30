@@ -49,7 +49,10 @@ enum Tab: String, CaseIterable, Identifiable {
                 profile: appContainer.profileProvider.profile(),
                 router: TabProfileRouter(push: push),
                 service: appContainer.profileService,
-                favoriteStore: appContainer.favoriteStore
+                myNFTStore: appContainer.myNFTStore,
+                favoriteNFTStore: appContainer.favoriteNFTStore,
+                profileStore: appContainer.profileStore,
+                api: appContainer.api
 			)
 		case .catalog:
 			CatalogView(

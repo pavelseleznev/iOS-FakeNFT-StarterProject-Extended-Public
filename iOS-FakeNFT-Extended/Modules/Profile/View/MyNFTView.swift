@@ -9,16 +9,12 @@ import SwiftUI
 
 struct MyNFTView: View {
     
+    @Bindable var viewModel: MyNFTViewModel
+    
     private let sortPlacement: BaseConfirmationDialogTriggerPlacement = .toolbar
     private static let myNFTSortOptionKey: String = "myNFTSortOptionKey"
     
     @AppStorage(myNFTSortOptionKey) private var sortOption: ProfileSortActionsViewModifier.SortOption = .name
-    
-    @State private var viewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])
-    
-    init(viewModel: MyNFTViewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])) {
-        _viewModel = State(wrappedValue: viewModel)
-    }
     
     var body: some View {
         ZStack {
@@ -36,7 +32,7 @@ struct MyNFTView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(viewModel.items) { nft in
+                        ForEach(viewModel.items, id: \.id) { nft in
                             myRow(for: nft)
                         }
                     }
@@ -53,19 +49,19 @@ struct MyNFTView: View {
                             ProfileSortActionsViewModifier(
                                 activeSortOption: $sortOption,
                                 placement: sortPlacement,
-                                didTapCost: { viewModel.sort(by: .cost) },
-                                didTapRate: { viewModel.sort(by: .rate) },
-                                didTapName: { viewModel.sort(by: .name) }
+                                didTapCost: { sortOption = .cost },
+                                didTapRate: { sortOption = .rate },
+                                didTapName: { sortOption = .name }
                             )
                         )
                 }
             }
         }
         .onAppear() {
-            viewModel.sort(by: sortOption)
+            viewModel.setSortOption(sortOption)
         }
         .onChange(of: sortOption) {
-            viewModel.sort(by: sortOption)
+            viewModel.setSortOption(sortOption)
         }
     }
     
@@ -85,7 +81,11 @@ struct MyNFTView: View {
 
 #Preview("With NFTs") {
     NavigationStack {
-        MyNFTView()
+        MyNFTView(
+            viewModel: MyNFTViewModel(
+                items: [.mock1, .mock2, .mock3]
+            )
+        )
     }
 }
 

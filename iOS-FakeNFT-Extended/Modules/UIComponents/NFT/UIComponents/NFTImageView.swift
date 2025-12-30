@@ -21,7 +21,12 @@ struct NFTImageView: View {
                ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                 KFImage(url)
                     .placeholder {
-                        placeholder
+                        ZStack {
+                            placeholder
+                            ProgressView()
+                                .tint(.ypWhiteUniversal)
+                        }
+                        .aspectRatio(1, contentMode: .fit)
                     }
                     .resizable()
                     .scaledToFit()
@@ -30,7 +35,12 @@ struct NFTImageView: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                placeholder
+                ZStack {
+                    placeholder
+                    Image(systemName: "questionmark")
+                        .font(.bold22)
+                        .foregroundStyle(.ypWhiteUniversal)
+                }
             }
 		}
 		.overlay(alignment: .topTrailing) {
@@ -49,11 +59,7 @@ struct NFTImageView: View {
 	}
     
     private var placeholder: some View {
-        ZStack {
-            Color.ypBackgroundUniversal
-            Text("?")
-                .font(.bold22)
-                .foregroundStyle(.ypWhiteUniversal)
-        }
+        Color.ypBlackUniversal
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

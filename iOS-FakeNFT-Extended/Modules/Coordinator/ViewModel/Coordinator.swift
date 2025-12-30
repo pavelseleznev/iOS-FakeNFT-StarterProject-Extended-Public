@@ -29,6 +29,7 @@ extension Coordinator {
 	}
 	
 	func pop() {
+        guard !path.isEmpty else { return }
 		path.removeLast()
 	}
 }
@@ -75,18 +76,22 @@ extension Coordinator {
         case .editProfile(let profile):
             EditProfileView(
                 profile: profile,
-                onSave: { updated in
-                    //TODO: save to your profile service / storage
-                    self.pop()
+                profileStore: appContainer.profileStore,
+                onSave: { _ in
+                    Task { @MainActor in
+                        self.pop()
+                    }
                 },
                 onCancel: {
-                    self.pop()
+                    Task { @MainActor in
+                        self.pop()
+                    }
                 }
             )
         case .myNFTs:
-            MyNFTView()
+            MyNFTView(viewModel: appContainer.myNFTStore)
         case .favoriteNFTs:
-            FavoriteNFTView(favoriteStore: appContainer.favoriteStore)
+            FavoriteNFTView(viewModel: appContainer.favoriteNFTStore)
         }
     }
 	

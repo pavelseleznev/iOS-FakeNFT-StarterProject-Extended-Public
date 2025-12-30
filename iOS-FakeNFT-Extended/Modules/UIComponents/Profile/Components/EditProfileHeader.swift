@@ -24,24 +24,33 @@ struct EditProfileHeader: View {
                        ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                         KFImage(url)
                             .placeholder {
-                                Image.userPickMockEdit
+                                Image.userPicturePlaceholder
                                     .resizable()
                                     .scaledToFit()
                             }
+                            .resizable()
+                            .scaledToFit()
                     } else {
-                        Image.userPickMockEdit
+                        Image.userPicturePlaceholder
                             .resizable()
                             .scaledToFit()
                     }
                 }
-                .frame(width: 70)
-                .onTapGesture { isPhotoActionsPresented = true }
-                .modifier(ProfilePhotoActionsViewModifier(
-                    isPresented: $isPhotoActionsPresented,
-                    didTapChangePhoto: didTapChangePhoto,
-                    didTapDeletePhoto: didTapDeletePhoto
-                ))
             }
+            .frame(width: 70, height: 70)
+            .clipShape(Circle())
+            .onTapGesture { isPhotoActionsPresented = true }
+            .modifier(ProfilePhotoActionsViewModifier(
+                isPresented: $isPhotoActionsPresented,
+                didTapChangePhoto: didTapChangePhoto,
+                didTapDeletePhoto: didTapDeletePhoto
+            ))
+            
+            Image.frameCamera
+                .resizable()
+                .frame(width: 24, height: 24)
+                .clipShape(Circle())
+                .offset(x: 4, y: 4)
         }
     }
 }

@@ -13,14 +13,21 @@ struct ProfileView: View {
         profile: ProfileModel,
         router: ProfileRouting,
         service: ProfileService,
-        favoriteStore: FavoriteNFTViewModel) {
+        myNFTStore: MyNFTViewModel,
+        favoriteNFTStore: FavoriteNFTViewModel,
+        profileStore: ProfileStore,
+        api: ObservedNetworkClient
+    ) {
         _viewModel = State(
             initialValue: ProfileViewModel(
-            profile: profile,
-            router: router,
-            service: service,
-            favoriteStore: favoriteStore
-        ))
+                profile: profile,
+                router: router,
+                service: service,
+                myNFTStore: myNFTStore,
+                favoriteNFTStore: favoriteNFTStore,
+                profileStore: profileStore,
+                api: api
+            ))
     }
     
 	var body: some View {
@@ -39,7 +46,7 @@ struct ProfileView: View {
             } actions: {
                 [
                     ProfileActionCell(
-                        title: "Мои NFT (3)",
+                        title: viewModel.myNFTTitle,
                         action: {
                             viewModel.myNFTsTapped()
                         }
@@ -56,12 +63,14 @@ struct ProfileView: View {
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
-        .overlay {
-            LoadingView(loadingState: viewModel.loadingState)
-        }
         .task {
             await viewModel.load()
         }
+        .applyRepeatableAlert(
+            isPresented: $viewModel.loadErrorPresented,
+            message: viewModel.loadErrorMessage) {
+                Task { await viewModel.retryLoad() }
+            }
 	}
 }
 

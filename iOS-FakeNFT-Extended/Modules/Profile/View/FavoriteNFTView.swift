@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FavoriteNFTView: View {
     
-    @Bindable var favoriteStore: FavoriteNFTViewModel
+    @Bindable var viewModel: FavoriteNFTViewModel
     
     private let columns: [GridItem] = [
         GridItem(.flexible(), spacing: 20),
@@ -20,7 +20,7 @@ struct FavoriteNFTView: View {
         ZStack {
             Color.ypWhite.ignoresSafeArea()
             
-            if favoriteStore.items.isEmpty {
+            if viewModel.items.isEmpty {
                 VStack {
                     Spacer()
                     Text("У Вас ещё нет избранных NFT")
@@ -35,12 +35,24 @@ struct FavoriteNFTView: View {
                         columns: columns,
                         spacing: 20
                     ) {
-                        ForEach(favoriteStore.items, id: \.id) { nft in
+                        ForEach(viewModel.items, id: \.id) { nft in
                             NFTCompactCellView(
                                 model: nft,
                                 likeAction: {
-                                    withAnimation {
-                                        favoriteStore.removeFavorite(id: nft.id)
+                                    let oldItems = viewModel.items
+                                    
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        _ = viewModel.removeLocal(id: nft.id)
+                                    }
+                                    
+                                    Task { @MainActor in
+                                        do {
+                                            try await viewModel.syncLikesToServer()
+                                        } catch {
+                                            withAnimation(.easeInOut(duration: 0.2)) {
+                                                viewModel.restore(oldItems)
+                                            }
+                                        }
                                     }
                                 }
                             )
@@ -53,7 +65,7 @@ struct FavoriteNFTView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if !favoriteStore.items.isEmpty {
+                if !viewModel.items.isEmpty {
                     Text("Избранные NFT")
                         .font(.headline)
                 }
@@ -64,12 +76,20 @@ struct FavoriteNFTView: View {
 
 #Preview("With NFTs") {
     NavigationStack {
-        FavoriteNFTView(favoriteStore: FavoriteNFTViewModel(items: NFTModel.favoriteMocks))
+        FavoriteNFTView(
+            viewModel: FavoriteNFTViewModel(
+                items: [.preview, .preview, .preview],
+                service: PreviewProfileService()
+            )
+        )
     }
 }
 
 #Preview("Empty Preview") {
     NavigationStack {
-        FavoriteNFTView(favoriteStore: FavoriteNFTViewModel(items: []))
+        FavoriteNFTView(viewModel: FavoriteNFTViewModel(
+            items: [],
+            service: PreviewProfileService())
+        )
     }
 }

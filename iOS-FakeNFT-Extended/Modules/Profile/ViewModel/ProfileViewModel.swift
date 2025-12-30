@@ -10,39 +10,64 @@ import Foundation
 @MainActor
 @Observable
 final class ProfileViewModel {
+    
+    var profile: ProfileModel { profileStore.profile }
+    var loadErrorPresented = false
+    var loadErrorMessage = "Не удалось загрузить данные"
+        
+    var myNFTTitle: String {
+        "Мои NFT (\(myNFTStore.count))"
+    }
+    var favoriteTitle: String {
+        "Избранные NFT (\(favoriteNFTStore.count))"
+    }
+    
     private let router: ProfileRouting
     private let service: ProfileService
-    private let favoriteStore: FavoriteNFTViewModel
+    private let myNFTStore: MyNFTViewModel
+    private let favoriteNFTStore: FavoriteNFTViewModel
+    private let profileStore: ProfileStore
+    private let api: ObservedNetworkClient
+    private var hasLoadedNFTLists = false
     
-    var loadingState: LoadingState = .idle
-    var favoriteTitle: String {
-        "Избранные NFT (\(favoriteStore.count))"
-    }
-    private var hasLoadedProfile = false
-    private(set) var profile: ProfileModel
-    
-    init(profile: ProfileModel, router: ProfileRouting, service: ProfileService, favoriteStore: FavoriteNFTViewModel) {
-        self.profile = profile
+    init(profile: ProfileModel,
+         router: ProfileRouting,
+         service: ProfileService,
+         myNFTStore: MyNFTViewModel,
+         favoriteNFTStore: FavoriteNFTViewModel,
+         profileStore: ProfileStore,
+         api: ObservedNetworkClient
+    ) {
         self.router = router
         self.service = service
-        self.favoriteStore = favoriteStore
+        self.myNFTStore = myNFTStore
+        self.favoriteNFTStore = favoriteNFTStore
+        self.profileStore = profileStore
+        self.api = api
     }
     
     func load() async {
-        guard !hasLoadedProfile else { return }
-        
-        loadingState = .fetching
-        defer {
-            loadingState = .idle
-        }
-        
         do {
-            profile = try await service.fetchProfile()
-            hasLoadedProfile = true
+            try await profileStore.loadIfNeeded()
+            
+            guard !hasLoadedNFTLists else { return}
+            hasLoadedNFTLists = true
+            
+            let liked = try await service.getNFTs(ids: profileStore.likes)
+            favoriteNFTStore.items = liked.map(mapToNFTModel(isFavorite: true))
+            
+            let mine = try await service.getNFTs(ids: profileStore.nfts)
+            myNFTStore.setItems(mine.map(mapToNFTModel(isFavorite: false)))
         } catch {
-            // later: set an error flag + show retry alert
-            print("Profile load failed:", error)
+            hasLoadedNFTLists = false
+            loadErrorMessage = "Не удалось загрузить данные"
+            loadErrorPresented = true
         }
+    }
+    
+    func retryLoad() async {
+        hasLoadedNFTLists = false
+        await load()
     }
     
     func websiteTapped() {
@@ -50,7 +75,7 @@ final class ProfileViewModel {
     }
     
     func editTapped() {
-        router.showEditProfile(profile: profile)
+        router.showEditProfile(profile: profileStore.profile)
     }
     
     func myNFTsTapped() {
@@ -59,5 +84,19 @@ final class ProfileViewModel {
     
     func favoriteNFTsTapped() {
         router.showFavoriteNFTs()
+    }
+    
+    private func mapToNFTModel(isFavorite: Bool) -> (NFTResponse) -> NFTModel {
+        { dto in
+            NFTModel(
+                imageURLString: dto.imagesURLsStrings.first ?? "",
+                name: dto.name,
+                author: dto.authorSiteURL,
+                cost: "\(dto.price) ETH",
+                rate: "\(dto.ratingInt)/5",
+                isFavorite: isFavorite,
+                id: dto.id
+            )
+        }
     }
 }
