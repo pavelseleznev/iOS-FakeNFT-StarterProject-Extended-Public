@@ -7,11 +7,16 @@
 
 import Foundation
 
-enum FilterToken: String, CaseIterable, Identifiable {
+enum FilterToken: Int, CaseIterable, Identifiable {
 	case isFavourite
 	case isInCart
 	case isNotFavourite
 	case isNotInCart
+	
+	case ratingAscending
+	case ratingDescending
+	case costAscending
+	case costDescending
 	
 	var title: LocalizedStringResource {
 		switch self {
@@ -23,6 +28,24 @@ enum FilterToken: String, CaseIterable, Identifiable {
 			.isNotFavouriteFilter
 		case .isNotInCart:
 			.isNotInCartFilter
+			
+		case .costAscending:
+			.costAscending
+		case .costDescending:
+			.costDescending
+		case .ratingAscending:
+			.ratingAscending
+		case .ratingDescending:
+			.ratingDescending
+		}
+	}
+	
+	var isSortOption: Bool {
+		switch self {
+		case .ratingAscending, .ratingDescending, .costAscending, .costDescending:
+			true
+		default:
+			false
 		}
 	}
 	
@@ -36,8 +59,17 @@ enum FilterToken: String, CaseIterable, Identifiable {
 			.isFavourite
 		case .isNotInCart:
 			.isInCart
+		
+		case .costAscending:
+			.costDescending
+		case .costDescending:
+			.costAscending
+		case .ratingAscending:
+			.ratingDescending
+		case .ratingDescending:
+			.ratingAscending
 		}
 	}
 	
-	var id: String { rawValue }
+	var id: Int { rawValue }
 }

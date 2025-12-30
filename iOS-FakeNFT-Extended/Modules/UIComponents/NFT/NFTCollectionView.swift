@@ -12,6 +12,9 @@ struct NFTCollectionView: View {
 	@StateObject private var asyncNFTs: AsyncNFTs
 	private let didTapDetail: (NFTModelContainer) -> Void
 	
+	@Environment(\.isSearching) private var isSearching
+	@State private var isSearchingState = false
+	
 	init(
 		nftsIDs: [String],
 		nftService: NFTServiceProtocol,
@@ -34,114 +37,153 @@ struct NFTCollectionView: View {
 	]
 	
 	var body: some View {
-		ScrollView(.vertical) {
-			LazyVGrid(
-				columns: columns,
-				alignment: .center,
-				spacing: 28
-			) {
-				ForEach(
-					Array(asyncNFTs.visibleNFTs.enumerated()),
-					id: \.offset
-				) { index, model in
-					NFTVerticalCell(
-						model: model,
-						didTapDetail: didTapDetail,
-						likeAction: {
-							asyncNFTs.didTapLikeButton(for: model)
-						},
-						cartAction: {
-							asyncNFTs.didTapCartButton(for: model)
-						}
-					)
-					.transition(.scale.combined(with: .blurReplace))
-				}
-				.scrollTransition { content, phase in
-					content
-						.opacity(phase.isIdentity ? 1 : 0.45)
-						.blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
-						.rotation3DEffect(
-							.degrees(phase.isIdentity ? 0 : 25 * phase.value),
-							axis: (x: phase.isIdentity ? 0 : 1, y: 0, z: 0)
+		ZStack {
+			ScrollView(.vertical) {
+				LazyVGrid(
+					columns: columns,
+					alignment: .center,
+					spacing: 28,
+					pinnedViews: .sectionHeaders
+				) {
+					ForEach(
+						Array(asyncNFTs.visibleNFTs.enumerated()),
+						id: \.offset
+					) { index, model in
+						NFTVerticalCell(
+							model: model,
+							didTapDetail: didTapDetail,
+							likeAction: {
+								asyncNFTs.didTapLikeButton(for: model)
+							},
+							cartAction: {
+								asyncNFTs.didTapCartButton(for: model)
+							}
 						)
+						.transition(.scale.combined(with: .blurReplace))
+					}
+					.scrollTransition { content, phase in
+						content
+							.opacity(phase.isIdentity ? 1 : 0.45)
+							.blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
+							.rotation3DEffect(
+								.degrees(phase.isIdentity ? 0 : 25 * phase.value),
+								axis: (x: phase.isIdentity ? 0 : 1, y: 0, z: 0)
+							)
+					}
+					.animation(Constants.defaultAnimation, value: asyncNFTs.visibleNFTs)
 				}
+				.collectionSearchable(
+					text: $debouncingViewModel.text,
+					activeTokens: $asyncNFTs.activeTokens,
+					tokenAction: asyncNFTs.tokenAction,
+					isSearching: $isSearchingState
+				)
+				.animation(Constants.defaultAnimation, value: asyncNFTs.activeTokens)
 			}
-			.collectionSearchable(
-				text: $debouncingViewModel.text,
-				activeTokens: $asyncNFTs.activeTokens,
-				tokenAction: asyncNFTs.tokenAction
+			.layout(isSearchingState: isSearchingState)
+			.scrollModifiers()
+			.overlay(alignment: .center, content: emptyNFTsView)
+			.overlay(alignment: .bottomTrailing, content: filtrationButton)
+			.applyRepeatableAlert(
+				isPresneted: $asyncNFTs.errorIsPresented,
+				message: .cantGetNFTs,
+				didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
+			)
+			.onChange(of: isSearching, onIsSearchingChanged)
+			.onAppear(perform: setDebouncingHandler)
+			.lifeCycle(
+				onAppear: asyncNFTs.startBackgroundUnloadedLoadPolling,
+				onDisappear: asyncNFTs.viewDidDissappear
+			)
+			.onReceive(
+				NotificationCenter.default.publisher(for: .nftDidChange),
+				perform: asyncNFTs.handleNFTChangeNotification
 			)
 		}
-		.animation(Constants.defaultAnimation, value: asyncNFTs.visibleNFTs)
-		.padding(.horizontal, 16)
-		.scrollIndicators(.hidden)
-		.onDisappear(perform: asyncNFTs.clearAllATasks)
-		.onAppear(perform: asyncNFTs.startBackgroundUnloadedLoadPolling)
-		.onDisappear(perform: asyncNFTs.viewDidDissappear)
-		.applyRepeatableAlert(
-			isPresneted: $asyncNFTs.errorIsPresented,
-			message: .cantGetNFTs,
-			didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
-		)
-		.overlay(alignment: .center, content: emptyNFTsView)
-		.onReceive(
-			NotificationCenter.default.publisher(for: .nftDidChange),
-			perform: asyncNFTs.handleNFTChangeNotification
-		)
-		.onAppear {
-			debouncingViewModel.onDebounce = asyncNFTs.onDebounce
+	}
+}
+
+// MARK: - NFTCollectionView Extensions
+// --- subviews ---
+private extension NFTCollectionView {
+	@ViewBuilder
+	func emptyNFTsView() -> some View {
+		if asyncNFTs.visibleNFTs.isEmpty {
+			EmptyContentView(type: .nfts)
 		}
 	}
 	
 	@ViewBuilder
-	private func emptyNFTsView() -> some View {
-		if asyncNFTs.visibleNFTs.isEmpty {
-			EmptyContentView(type: .nfts)
+	func filtrationButton() -> some View {
+		if isSearchingState {
+			NFTCollectionFiltrationButtonView()
+				.environmentObject(asyncNFTs)
+		}
+	}
+}
+
+// --- methods ---
+private extension NFTCollectionView {
+	private func setDebouncingHandler() {
+		debouncingViewModel.onDebounce = asyncNFTs.onDebounce
+	}
+	
+	private func onIsSearchingChanged(_: Bool, _: Bool) {
+		withAnimation(Constants.defaultAnimation) {
+			isSearchingState = isSearching
 		}
 	}
 }
 
 // MARK: - View helper
-private extension View {
+fileprivate extension View {
+	func lifeCycle(
+		onAppear: @escaping () -> Void,
+		onDisappear: @escaping () -> Void
+	) -> some View {
+		self
+			.onAppear(perform: onAppear)
+			.onDisappear(perform: onDisappear)
+	}
+	
+	func layout(isSearchingState: Bool) -> some View {
+		self
+			.contentMargins(.bottom, isSearchingState ? 60 + 24 : 0)
+			.padding(.horizontal, 16)
+	}
+	
+	func scrollModifiers() -> some View {
+		self
+			.scrollIndicators(.hidden)
+			.scrollDismissesKeyboard(.interactively)
+	}
+	
 	func collectionSearchable(
 		text: Binding<String>,
 		activeTokens: Binding<[FilterToken]>,
-		tokenAction: @escaping (FilterToken) -> Void
+		tokenAction: @escaping (FilterToken) -> Void,
+		isSearching: Binding<Bool>
 	) -> some View {
 		self
 			.autocorrectionDisabled()
 			.textInputAutocapitalization(.never)
-			.scrollDismissesKeyboard(.interactively)
 			.searchable(
 				text: text,
 				tokens: activeTokens,
+				isPresented: isSearching,
 				placement: .navigationBarDrawer(displayMode: .always),
 				prompt: .search,
 				token: { Text($0.title) }
 			)
 			.toolbar {
 				ToolbarItem(placement: .destructiveAction) {
-					Menu {
-						ForEach(FilterToken.allCases) { token in
-							let tokenIsActive = activeTokens.wrappedValue.contains(token)
-							
-							let title = String(localized: token.title)
-							let buttonTitle: LocalizedStringResource = tokenIsActive ? .filterRemove(title: title) : .filterAdd(title: title)
-							Button(
-								buttonTitle,
-								role: tokenIsActive ? .destructive : .cancel
-							) {
-								tokenAction(token)
-							}
-						}
-					} label: {
-						Image(systemName: "line.3.horizontal.decrease.circle.fill")
-							.font(.bold22)
-							.foregroundStyle(
-								activeTokens.wrappedValue.isEmpty ? .ypBlack : .cyan
-							)
-					}
-
+					NFTCollectionToolbarView(
+						activeTokens: activeTokens,
+						tokenAction: tokenAction,
+						isActive: { activeTokens.wrappedValue.contains($0) },
+						atLeastOneSelected: !activeTokens.wrappedValue.isEmpty,
+					)
+					.font(.bold22)
 				}
 			}
 	}

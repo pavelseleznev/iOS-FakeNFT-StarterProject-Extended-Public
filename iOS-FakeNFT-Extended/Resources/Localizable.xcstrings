@@ -480,6 +480,40 @@
         }
       }
     },
+    "costAscending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cost ascending"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цена по возврастанию"
+          }
+        }
+      }
+    },
+    "costDescending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cost descending"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цена по убыванию"
+          }
+        }
+      }
+    },
     "delete" : {
       "comment" : "A button label that translates to \"Delete\" in English.",
       "extractionState" : "manual",
@@ -571,23 +605,6 @@
         }
       }
     },
-    "filterAdd" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add filter %1$(title)@"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавить фильтр: %(title)@"
-          }
-        }
-      }
-    },
     "filterRemove" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -601,6 +618,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Убрать фильтр: %(title)@"
+          }
+        }
+      }
+    },
+    "filtration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtration"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фильтрация"
           }
         }
       }
@@ -1034,6 +1068,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пожалуйста, оцените приложение"
+          }
+        }
+      }
+    },
+    "ratingAscending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rating ascending"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рейтинг по возрастанию"
+          }
+        }
+      }
+    },
+    "ratingDescending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rating descending"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рейтинг по убыванию"
           }
         }
       }
