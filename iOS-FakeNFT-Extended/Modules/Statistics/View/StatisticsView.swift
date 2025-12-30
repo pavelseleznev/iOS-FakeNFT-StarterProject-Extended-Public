@@ -42,16 +42,9 @@ struct StatisticsView: View {
 					.onTapGesture {
 						viewModel.didTapUserCell(for: user)
 					}
-					.listRowSeparator(.hidden)
-					.listRowInsets(.init())
-					.listRowBackground(Color.clear)
-					.padding(.horizontal)
+					.listCellModifiers()
 			}
-			.scrollIndicators(.hidden)
-			.safeAreaPadding(.bottom)
-			.listRowSpacing(8)
-			.scrollContentBackground(.hidden)
-			.listStyle(.plain)
+			.listModifiers()
 			.animation(Constants.defaultAnimation, value: viewModel.visibleUsers)
 			.overlay(content: loadingView)
 		}
@@ -77,6 +70,25 @@ struct StatisticsView: View {
 	
 	private func loadingView() -> some View {
 		LoadingView(loadingState: viewModel.loadingState)
+	}
+}
+
+private extension View {
+	func listCellModifiers() -> some View {
+		self
+			.listRowSeparator(.hidden)
+			.listRowInsets(.init())
+			.listRowBackground(Color.clear)
+			.padding(.horizontal)
+	}
+	
+	func listModifiers() -> some View {
+		self
+			.scrollIndicators(.hidden)
+			.safeAreaPadding(.bottom)
+			.listRowSpacing(8)
+			.scrollContentBackground(.hidden)
+			.listStyle(.plain)
 	}
 }
 

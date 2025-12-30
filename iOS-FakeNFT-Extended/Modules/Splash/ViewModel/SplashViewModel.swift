@@ -15,7 +15,7 @@ final class SplashViewModel {
 	private let dependencies: AppContainer
 	private let onComplete: () -> Void
 	
-	private(set) var currentLoadingComment: SplashLoadingComment = .phase1
+	private(set) var currentLoadingComment: SplashLoadingComment = .allCases.randomElement()!
 	private(set) var updateID = UUID()
 	private(set) var dataLoadingErrorIsPresented = false
 	
