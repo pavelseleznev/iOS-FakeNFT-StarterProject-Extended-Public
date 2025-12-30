@@ -42,12 +42,14 @@ extension View {
 	
 	func applyStatisticsSort(
 		placement: BaseConfirmationDialogTriggerPlacement,
-		activeSortOption: Binding<StatisticsSortActionsViewModifier.SortOption>
+		activeSortOption: Binding<StatisticsSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
 	) -> some View {
 		self
 			.modifier(
 				StatisticsSortActionsViewModifier(
 					activeSortOption: activeSortOption,
+					searchText: searchText,
 					placement: placement
 				)
 			)
@@ -91,7 +93,8 @@ extension View {
 	}
 	.applyStatisticsSort(
 		placement: .safeAreaTop,
-		activeSortOption: .constant(.name)
+		activeSortOption: .constant(.name),
+		searchText: .constant("")
 	)
 }
 

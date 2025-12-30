@@ -161,7 +161,7 @@ private extension CartViewModel {
 	
 	func filterApplier(_ model: NFTModelContainer?) -> Bool {
 		if !searchText.isEmpty, let model {
-			model.nft.name.contains(searchText)
+			model.nft.name.localizedCaseInsensitiveContains(searchText)
 		} else {
 			true
 		}

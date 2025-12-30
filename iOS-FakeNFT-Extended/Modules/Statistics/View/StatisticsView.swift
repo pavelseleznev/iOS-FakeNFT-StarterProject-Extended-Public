@@ -11,6 +11,7 @@ struct StatisticsView: View {
 	private static let statisticsSortOptionKey: String = "statisticsSortOptionKey"
 	
 	@State private var viewModel: StatisticsViewModel
+	@StateObject private var debouncer = DebouncingViewModel()
 	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .rate
 	
 	init(
@@ -54,9 +55,13 @@ struct StatisticsView: View {
 		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
-			activeSortOption: $sortOption
+			activeSortOption: $sortOption,
+			searchText: $debouncer.text
 		)
 		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+		.onAppear {
+			debouncer.onDebounce = viewModel.onDebounce
+		}
 		.applyRepeatableAlert(
 			isPresneted: $viewModel.dataLoadingErrorIsPresented,
 			message: .cantGetUsersData,
@@ -84,6 +89,7 @@ private extension View {
 	
 	func listModifiers() -> some View {
 		self
+			.scrollDismissesKeyboard(.interactively)
 			.scrollIndicators(.hidden)
 			.safeAreaPadding(.bottom)
 			.listRowSpacing(8)

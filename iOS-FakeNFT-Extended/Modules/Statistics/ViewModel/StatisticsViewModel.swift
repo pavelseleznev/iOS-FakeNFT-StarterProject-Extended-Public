@@ -19,6 +19,7 @@ final class StatisticsViewModel {
 	
 	private var currentPage = 0
 	var dataLoadingErrorIsPresented = false
+	var searchText = ""
 	
 	var currenctSortOption: SortOption = .name
 	
@@ -41,10 +42,15 @@ extension StatisticsViewModel {
 	var visibleUsers: [UserListItemResponse] {
 		users
 			.sorted(by: usersSortComparator)
+			.filter(filterApplier)
 	}
 	
 	func didTapUserCell(for user: UserListItemResponse) {
 		push(.statProfile(profile: user))
+	}
+	
+	func onDebounce(_ searchText: String) {
+		self.searchText = searchText
 	}
 	
 	@Sendable
@@ -78,5 +84,10 @@ private extension StatisticsViewModel {
 		case .name:
 			first.name.localizedStandardCompare(second.name) == .orderedAscending
 		}
+	}
+	
+	func filterApplier(_ model: UserListItemResponse) -> Bool {
+		searchText.isEmpty || model.name
+			.localizedCaseInsensitiveContains(searchText)
 	}
 }

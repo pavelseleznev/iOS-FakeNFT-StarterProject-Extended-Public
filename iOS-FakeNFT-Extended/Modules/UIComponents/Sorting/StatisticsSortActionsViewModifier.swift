@@ -30,6 +30,7 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 	}
 	
 	@Binding var activeSortOption: SortOption
+	@Binding var searchText: String
 	
 	let placement: BaseConfirmationDialogTriggerPlacement
 	
@@ -37,6 +38,8 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 		content
 			.modifier(
 				BaseConfirmationDialogViewModifier(
+					needsSearchBar: true,
+					searchText: $searchText,
 					placement: placement,
 					title: .sorting,
 					activeSortOption: activeSortOption.description,
