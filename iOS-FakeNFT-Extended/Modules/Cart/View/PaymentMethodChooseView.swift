@@ -34,6 +34,7 @@ struct PaymentMethodChooseView: View {
 			
 			VStack {
 				content
+					.overlay(content: emptyView)
 				Spacer()
 				PaymentMethodChooseBottomBar(
 					didTapBuyButton: viewModel.didTapBuyButton,
@@ -82,6 +83,18 @@ struct PaymentMethodChooseView: View {
 			}
 			.padding(.horizontal)
 			.safeAreaPadding(.top)
+		}
+	}
+	
+	@ViewBuilder
+	private func emptyView() -> some View {
+		if viewModel.visibleCurrencies.isEmpty {
+			EmptyContentView(type: .currencies)
+				.transition(
+					.opacity
+						.combined(with: .scale)
+						.animation(Constants.defaultAnimation.delay(0.25))
+				)
 		}
 	}
 }

@@ -797,6 +797,23 @@
         }
       }
     },
+    "noCurrenciesAvailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading currencies"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загрузка способов оплаты"
+          }
+        }
+      }
+    },
     "notImplemented" : {
       "comment" : "A text that should never be visible in the app.",
       "extractionState" : "manual",

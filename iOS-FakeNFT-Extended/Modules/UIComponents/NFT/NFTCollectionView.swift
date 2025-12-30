@@ -64,9 +64,9 @@ struct NFTCollectionView: View {
 					.scrollTransition { content, phase in
 						content
 							.opacity(phase.isIdentity ? 1 : 0.45)
-							.blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
+							.blur(radius: phase.isIdentity ? 0 : 3, opaque: false)
 							.rotation3DEffect(
-								.degrees(phase.isIdentity ? 0 : 25 * phase.value),
+								.degrees(phase.isIdentity ? 0 : 15 * phase.value),
 								axis: (x: phase.isIdentity ? 0 : 1, y: 0, z: 0)
 							)
 					}
