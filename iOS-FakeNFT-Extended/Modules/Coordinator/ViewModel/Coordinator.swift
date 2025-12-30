@@ -71,6 +71,8 @@ extension Coordinator {
             
         case .catalogDetails(let nftsIDs):
             CatalogNFTCollectionView(
+                api: appContainer.api,
+                push: push,
                 nftsIDs: nftsIDs,
                 loadingState: appContainer.api.loadingState,
                 nftService: appContainer.nftService

@@ -12,6 +12,14 @@ import Observation
 final class CatalogViewModel {
     typealias SortOption = CatalogSortActionsViewModifier.SortOption
     
+    // MARK: - Public Properties
+    
+    var visibleCollections: [NFTCollectionItemResponse] {
+        collections.sorted(by: collectionsSortComparator)
+    }
+    
+    // MARK: - Private Properties
+    
     private var collections: [NFTCollectionItemResponse] = [
         .mock1,
         .mock2,
@@ -21,7 +29,9 @@ final class CatalogViewModel {
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
     
-    var currentSortOption: SortOption = .name
+    private var currentSortOption: SortOption = .name
+    
+    // MARK: - Initializers
     
     init(
         api: ObservedNetworkClient,
@@ -30,13 +40,8 @@ final class CatalogViewModel {
         self.api = api
         self.push = push
     }
-}
-
-extension CatalogViewModel {
     
-    var visibleCollections: [NFTCollectionItemResponse] {
-        collections.sorted(by: collectionsSortComparator)
-    }
+    // MARK: - Public Methods
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
         push(.catalogDetails(nftsIDs: item.nftsIDs))
@@ -54,11 +59,10 @@ extension CatalogViewModel {
     func setSortOption(_ option: SortOption) {
         currentSortOption = option
     }
-}
-
-private extension CatalogViewModel {
     
-    func collectionsSortComparator(
+    // MARK: - Private Methods
+    
+    private func collectionsSortComparator(
         _ first: NFTCollectionItemResponse,
         _ second: NFTCollectionItemResponse
     ) -> Bool {

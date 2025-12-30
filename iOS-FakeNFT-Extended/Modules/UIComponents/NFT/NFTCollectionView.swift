@@ -13,6 +13,12 @@ struct NFTCollectionView: View {
     private let nftsIDs: [String]
     private let errorIsPresented: Bool
     
+    private let columns = [
+        GridItem(.flexible(), spacing: 9, alignment: .top),
+        GridItem(.flexible(), spacing: 9, alignment: .top),
+        GridItem(.flexible(), spacing: 9, alignment: .top)
+    ]
+    
     init(
         nftsIDs: [String],
         nftService: NFTServiceProtocol,
@@ -25,12 +31,6 @@ struct NFTCollectionView: View {
             wrappedValue: .init(nftService: nftService)
         )
     }
-    
-    private let columns = [
-        GridItem(.flexible(), spacing: 9, alignment: .top),
-        GridItem(.flexible(), spacing: 9, alignment: .top),
-        GridItem(.flexible(), spacing: 9, alignment: .top)
-    ]
     
     var body: some View {
         ScrollView(.vertical) {
