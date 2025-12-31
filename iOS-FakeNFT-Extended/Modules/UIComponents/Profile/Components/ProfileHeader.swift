@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Kingfisher
 
 struct ProfileHeader: View {
     let name: String
@@ -20,10 +19,24 @@ struct ProfileHeader: View {
                     let trimmed = imageURLString.trimmingCharacters(in: .whitespacesAndNewlines)
                     if let url = URL(string: trimmed),
                        ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
-                        KFImage(url)
-                            .placeholder { userPicturePlaceholder }
-                            .resizable()
-                            .scaledToFit()
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                userPicturePlaceholder
+                                    .overlay {
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
+                                    }
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            case .failure:
+                                userPicturePlaceholder
+                            @unknown default:
+                                userPicturePlaceholder
+                            }
+                        }
                     } else {
                         userPicturePlaceholder
                     }
