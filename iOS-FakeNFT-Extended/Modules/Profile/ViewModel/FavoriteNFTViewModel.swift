@@ -12,6 +12,8 @@ import Foundation
 final class FavoriteNFTViewModel {
     var items: [NFTModel]
     var count: Int { items.count }
+    var loadErrorPresented = false
+    var loadErrorMessage = "Не удалось удалить NFT из избранного"
     
     private let service: ProfileService
     
@@ -20,17 +22,18 @@ final class FavoriteNFTViewModel {
         self.service = service
     }
     
-    func removeLocal(id: String) -> [NFTModel] {
-        let old = items
-        items.removeAll { $0.id == id }
-        return old
-    }
-    
-    func syncLikesToServer() async throws {
-        try await service.updateLikes(items.map(\.id))
-    }
-    
-    func restore(_ oldItems: [NFTModel]) {
-        items = oldItems
+    func removeFromFavorites(id: String) async {
+        let oldItems = items
+        items.removeAll() { $0.id == id }
+        
+        do {
+            try await service.updateLikes(items.map(\.id))
+        } catch is CancellationError {
+            return
+        } catch {
+            items = oldItems
+            loadErrorMessage = "Не удалось удалить NFT из избранного"
+            loadErrorPresented = true
+        }
     }
 }

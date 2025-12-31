@@ -39,20 +39,12 @@ struct FavoriteNFTView: View {
                             NFTCompactCellView(
                                 model: nft,
                                 likeAction: {
-                                    let oldItems = viewModel.items
-                                    
                                     withAnimation(.easeInOut(duration: 0.2)) {
-                                        _ = viewModel.removeLocal(id: nft.id)
+                                        // the VM will remove immediately when the task starts
+                                        // so the UI animates away
                                     }
-                                    
-                                    Task(priority: .userInitiated) { @MainActor in
-                                        do {
-                                            try await viewModel.syncLikesToServer()
-                                        } catch {
-                                            withAnimation(.easeInOut(duration: 0.2)) {
-                                                viewModel.restore(oldItems)
-                                            }
-                                        }
+                                    Task(priority: .userInitiated) {
+                                        await viewModel.removeFromFavorites(id: nft.id)
                                     }
                                 }
                             )
@@ -70,6 +62,11 @@ struct FavoriteNFTView: View {
                         .font(.headline)
                 }
             }
+        }
+        .alert("Ошибка", isPresented: $viewModel.loadErrorPresented) {
+            Button("ОК", role: .cancel) { }
+        } message: {
+            Text(viewModel.loadErrorMessage)
         }
     }
 }
