@@ -57,8 +57,9 @@ struct EditProfileView: View {
                 EditProfileFooter(
                     isVisible: viewModel.canSave,
                     onSave: {
-                        Task { @MainActor in
-                            performSave() }
+                        Task(priority: .userInitiated) {
+                            await performSave()
+                        }
                     }
                 )
             }
@@ -85,7 +86,9 @@ struct EditProfileView: View {
             isPresented: $viewModel.isSaveErrorPresented,
             message: viewModel.saveErrorMessage,
             didTapRepeat: {
-                performSave()
+                Task(priority: .userInitiated) {
+                    await performSave()
+                }
             }
         )
         .overlay {
@@ -93,19 +96,18 @@ struct EditProfileView: View {
         }
     }
     
-    private func performSave() {
-        Task {
-            do {
-                try await viewModel.saveTapped()
-                onSave(ProfileModel(
-                    name: viewModel.name,
-                    about: viewModel.about,
-                    website: viewModel.website,
-                    avatarURL: viewModel.avatarURL
-                ))
-            } catch {
-                viewModel.isSaveErrorPresented = true
-            }
+    @MainActor
+    private func performSave() async {
+        do {
+            try await viewModel.saveTapped()
+            onSave(ProfileModel(
+                name: viewModel.name,
+                about: viewModel.about,
+                website: viewModel.website,
+                avatarURL: viewModel.avatarURL
+            ))
+        } catch {
+            viewModel.isSaveErrorPresented = true
         }
     }
 }

@@ -45,7 +45,7 @@ struct FavoriteNFTView: View {
                                         _ = viewModel.removeLocal(id: nft.id)
                                     }
                                     
-                                    Task { @MainActor in
+                                    Task(priority: .userInitiated) { @MainActor in
                                         do {
                                             try await viewModel.syncLikesToServer()
                                         } catch {

@@ -61,14 +61,15 @@ struct ProfileView: View {
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
-        .task {
-            await viewModel.load()
-        }
+        .task(priority: .userInitiated) { await viewModel.load() }
         .applyRepeatableAlert(
             isPresented: $viewModel.loadErrorPresented,
-            message: viewModel.loadErrorMessage) {
-                Task { await viewModel.retryLoad() }
+            message: viewModel.loadErrorMessage
+        ) {
+            Task(priority: .userInitiated) {
+                await viewModel.retryLoad()
             }
+        }
 	}
 }
 
