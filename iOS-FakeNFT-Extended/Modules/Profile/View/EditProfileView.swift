@@ -107,6 +107,8 @@ struct EditProfileView: View {
                 avatarURL: viewModel.avatarURL
             ))
         } catch {
+            guard !(error is CancellationError) else { return }
+            print("Save profile failed:", error)
             viewModel.isSaveErrorPresented = true
         }
     }

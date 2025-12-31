@@ -58,6 +58,8 @@ final class ProfileViewModel {
             let mine = try await service.getNFTs(ids: profileStore.nfts)
             myNFTStore.setItems(mine.map(mapToNFTModel(isFavorite: false)))
         } catch {
+            guard !(error is CancellationError) else { return }
+            print("Loading user profile failed:", error)
             hasLoadedNFTLists = false
             loadErrorMessage = "Не удалось загрузить данные"
             loadErrorPresented = true
