@@ -28,7 +28,7 @@ struct NFTVerticalCell: View {
 					Text(model.name)
 						.foregroundStyle(.ypBlack)
 						.font(.bold17)
-						.lineLimit(1)
+						.lineLimit(2)
 					
 					Text(model.cost)
 						.foregroundStyle(.ypBlack)
