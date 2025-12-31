@@ -11,12 +11,18 @@ import SwiftUI
 @MainActor
 final class Coordinator {
 	let appContainer: AppContainer
+    let profile: ProfileContext
 	var path = NavigationPath()
 	var sheet: Sheet?
 	var fullScreencover: FullScreenCover? = .splash
 	
-	init(appContainer: AppContainer) {
+    init(appContainer: AppContainer, profileProvider: ProfileProvider, profileService: ProfileService) {
 		self.appContainer = appContainer
+        self.profile = ProfileContext(
+            api: appContainer.api,
+            initialProfile: profileProvider.profile(),
+            service: profileService
+        )
 	}
 }
 
@@ -61,6 +67,7 @@ extension Coordinator {
         case .tabView:
             TabBarView(
                 appContainer: appContainer,
+                profile: profile,
                 push: push,
                 present: present,
                 dismiss: dismissSheet,
@@ -76,7 +83,7 @@ extension Coordinator {
         case .editProfile(let profile):
             EditProfileView(
                 profile: profile,
-                profileStore: appContainer.profileStore,
+                profileStore: self.profile.store,
                 onSave: { _ in
                     Task { @MainActor in
                         self.pop()
@@ -89,9 +96,9 @@ extension Coordinator {
                 }
             )
         case .myNFTs:
-            MyNFTView(viewModel: appContainer.myNFTStore)
+            MyNFTView(viewModel: profile.myNFTStore)
         case .favoriteNFTs:
-            FavoriteNFTView(viewModel: appContainer.favoriteNFTStore)
+            FavoriteNFTView(viewModel: profile.favoriteNFTStore)
         }
     }
 	

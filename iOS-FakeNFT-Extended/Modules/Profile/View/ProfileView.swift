@@ -10,7 +10,6 @@ import SwiftUI
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     init(
-        profile: ProfileModel,
         router: ProfileRouting,
         service: ProfileService,
         myNFTStore: MyNFTViewModel,
@@ -20,7 +19,6 @@ struct ProfileView: View {
     ) {
         _viewModel = State(
             initialValue: ProfileViewModel(
-                profile: profile,
                 router: router,
                 service: service,
                 myNFTStore: myNFTStore,

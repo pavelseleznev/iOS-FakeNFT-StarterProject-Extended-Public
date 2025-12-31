@@ -30,8 +30,7 @@ final class ProfileViewModel {
     private let api: ObservedNetworkClient
     private var hasLoadedNFTLists = false
     
-    init(profile: ProfileModel,
-         router: ProfileRouting,
+    init(router: ProfileRouting,
          service: ProfileService,
          myNFTStore: MyNFTViewModel,
          favoriteNFTStore: FavoriteNFTViewModel,

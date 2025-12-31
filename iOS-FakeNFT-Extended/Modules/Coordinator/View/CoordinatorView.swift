@@ -45,12 +45,14 @@ struct CoordinatorView: View {
         let networkClient: NetworkClient = DefaultNetworkClient()
         let profileService: ProfileService = DefaultProfileService(client: networkClient)
 		let appContainer = AppContainer(
-            nft: nft,
-            api: api,
-            profileProvider: profileProvider,
-            profileService: profileService
+            nftService: nft,
+            api: api
         )
-		_coordinator = State(initialValue: .init(appContainer: appContainer))
+        
+        _coordinator = State(initialValue: .init(
+            appContainer: appContainer,
+            profileProvider: profileProvider,
+            profileService: profileService))
 	}
 	
 	private func loadingView() -> some View {

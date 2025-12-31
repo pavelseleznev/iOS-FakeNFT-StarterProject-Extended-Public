@@ -39,21 +39,18 @@ enum Tab: String, CaseIterable, Identifiable {
 	@ViewBuilder
 	func view(
 		appContainer: AppContainer,
+        profile: ProfileContext,
 		push: @escaping (Page) -> Void,
 		present: @escaping (Sheet) -> Void,
 		dismiss: @escaping () -> Void
 	) -> some View {
 		switch self {
-		case .profile:
-			ProfileView(
-                profile: appContainer.profileProvider.profile(),
-                router: TabProfileRouter(push: push),
-                service: appContainer.profileService,
-                myNFTStore: appContainer.myNFTStore,
-                favoriteNFTStore: appContainer.favoriteNFTStore,
-                profileStore: appContainer.profileStore,
-                api: appContainer.api
-			)
+        case .profile:
+            ProfileRootView(
+                profile: profile,
+                appContainer: appContainer,
+                push: push
+            )
 		case .catalog:
 			CatalogView(
 				appContainer: appContainer,

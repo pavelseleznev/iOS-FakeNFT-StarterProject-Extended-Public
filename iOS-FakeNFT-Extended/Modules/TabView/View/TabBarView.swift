@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TabBarView: View {
 	let appContainer: AppContainer
+    let profile: ProfileContext
 	let push: (Page) -> Void
 	let present: (Sheet) -> Void
 	let dismiss: () -> Void
@@ -16,7 +17,8 @@ struct TabBarView: View {
 				id: \.offset
 			) { index, tab in
 				tab.view(
-					appContainer: appContainer,
+                    appContainer: appContainer,
+                    profile: profile,
 					push: push,
 					present: present,
 					dismiss: dismiss
