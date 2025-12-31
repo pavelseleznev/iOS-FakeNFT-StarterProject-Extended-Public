@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 struct NFTImageView: View {
     
     let model: NFTModel
@@ -14,7 +15,9 @@ struct NFTImageView: View {
     let likeAction: () -> Void
     
     var body: some View {
-        AsyncImage(url: imageURL) { phase in
+        AsyncImage(
+            url: URL(string: model.imageURLString.trimmingCharacters(in: .whitespacesAndNewlines))
+        ) { phase in
             switch phase {
             case .empty:
                 placeholder
@@ -25,14 +28,13 @@ struct NFTImageView: View {
                     }
                 
             case .success(let image):
-                image
-                    .resizable()
+                image.resizable()
             case .failure:
                 placeholder
                     .overlay {
-                        Image(systemName: "questionmark")
-                            .font(.bold22)
-                            .foregroundStyle(.ypWhiteUniversal)
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.ypWhiteUniversal)
                     }
                 
             @unknown default:
@@ -45,23 +47,12 @@ struct NFTImageView: View {
                 Image.heartFill
                     .padding(.top, 10)
                     .padding(.trailing, 8)
-                    .foregroundStyle(
-                        model.isFavorite ? .ypRedUniversal : .ypWhiteUniversal
-                    )
+                    .foregroundStyle(model.isFavorite ? .ypRedUniversal : .ypWhiteUniversal)
                     .shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
             }
         }
         .aspectRatio(1, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-        
-    }
-    
-    private var imageURL: URL? {
-        let trimmed = model.imageURLString.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: trimmed),
-              ["http", "https"].contains(url.scheme?.lowercased() ?? "")
-        else { return nil }
-        return url
     }
     
     private var placeholder: some View {

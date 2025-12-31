@@ -14,52 +14,41 @@ struct EditProfileHeader: View {
     let didTapDeletePhoto: () -> Void
 
     var body: some View {
-        
         ZStack(alignment: .bottomTrailing) {
-            ZStack {
-                Group {
-                    let trimmed = avatarURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if let url = URL(string: trimmed),
-                       ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .empty:
-                                Image.userPicturePlaceholder
-                                    .resizable()
-                                    .scaledToFit()
-                                    .overlay {
-                                        ProgressView()
-                                            .progressViewStyle(.circular)
-                                    }
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                            case .failure:
-                                Image.userPicturePlaceholder
-                                    .resizable()
-                                    .scaledToFit()
-                            @unknown default:
-                                Image.userPicturePlaceholder
-                                    .resizable()
-                                    .scaledToFit()
-                            }
+            AsyncImage(
+                url: URL(
+                    string: avatarURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                )
+            ) { phase in
+                switch phase {
+                case .empty:
+                    placeholder
+                        .overlay {
+                            ProgressView()
+                                .progressViewStyle(.circular)
                         }
-                    } else {
-                        Image.userPicturePlaceholder
-                            .resizable()
-                            .scaledToFit()
-                    }
+                    
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFit()
+                case .failure:
+                    placeholder
+                @unknown default:
+                    placeholder
                 }
             }
             .frame(width: 70, height: 70)
             .clipShape(Circle())
-            .onTapGesture { isPhotoActionsPresented = true }
-            .modifier(ProfilePhotoActionsViewModifier(
-                isPresented: $isPhotoActionsPresented,
-                didTapChangePhoto: didTapChangePhoto,
-                didTapDeletePhoto: didTapDeletePhoto
-            ))
+            .onTapGesture {
+                isPhotoActionsPresented = true
+            }
+            .modifier(
+                ProfilePhotoActionsViewModifier(
+                    isPresented: $isPhotoActionsPresented,
+                    didTapChangePhoto: didTapChangePhoto,
+                    didTapDeletePhoto: didTapDeletePhoto
+                ))
             
             Image.frameCamera
                 .resizable()
@@ -67,5 +56,10 @@ struct EditProfileHeader: View {
                 .clipShape(Circle())
                 .offset(x: 4, y: 4)
         }
+    }
+    private var placeholder: some View {
+        Image.userPicturePlaceholder
+            .resizable()
+            .scaledToFit()
     }
 }
