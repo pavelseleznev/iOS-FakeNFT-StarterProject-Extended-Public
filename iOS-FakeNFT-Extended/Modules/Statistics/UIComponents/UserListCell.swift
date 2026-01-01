@@ -7,73 +7,94 @@
 
 import SwiftUI
 
+fileprivate let profileImageSize: CGFloat = 28
+
 struct UserListCell: View {
 	let model: UserListItemResponse
-	let counter: Int
 	
 	var body: some View {
 		HStack {
-			Text("\(counter + 1)")
-				.foregroundStyle(.ypBlack)
-				.frame(width: 35)
-				.font(.regular15)
-				.multilineTextAlignment(.leading)
+			profileImage
 			
-			HStack {
-				profileImage
+			Group {
+				Text(model.name)
 				
-				Group {
-					Text(model.name)
-					
-					Spacer()
-					
-					Text("\(model.nftsIDs.count)")
-				}
-				.foregroundStyle(.ypBlack)
-				.font(.bold22)
-				.lineLimit(Constants.authorNameLineLimit)
+				Spacer()
+				
+				Text("\(model.nftsIDs.count)")
+					.padding(.leading)
 			}
-			.padding(.horizontal, 16)
-			.padding(.vertical, 26)
-			.background {
-				RoundedRectangle(cornerRadius: 12)
-					.fill(.ypLightGrey)
-			}
+			.foregroundStyle(.ypBlack)
+			.font(.bold22)
+			.lineLimit(Constants.authorNameLineLimit)
 		}
+		.padding(.horizontal, 16)
+		.padding(.vertical, 16)
+		.background(
+			RoundedRectangle(cornerRadius: 26)
+				.stroke(
+					LinearGradient(
+						stops: [
+							.init(color: .indigo, location: 0),
+							.init(color: .ypLightGrey, location: 0.1),
+							.init(color: .ypLightGrey, location: 0.9),
+							.init(color: .purple, location: 1),
+						],
+						startPoint: .topLeading,
+						endPoint: .bottomTrailing
+					),
+					lineWidth: 0.5
+				)
+				.fill(.ypLightGrey)
+		)
+		.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 4)
 	}
 	
 	private var profileImage: some View {
-		AsyncImage(
-			url: URL(string: model.avatarURLString),
-			transaction: .init(animation: Constants.defaultAnimation)
-		) { phase in
+		AsyncImageCached (urlString: model.avatarURLString) { phase in
 			switch phase {
 			case .empty:
-				ProgressView()
-					.progressViewStyle(.circular)
-			case .success(let image):
-				image
+				Color.ypLightGrey
+					.overlay {
+						ProgressView()
+					}
+			case .loaded(let image):
+				Image(uiImage: image)
 					.resizable()
 					.scaledToFit()
-			default:
+			case .error:
 				Image.profilePerson
 					.resizable()
-					.scaledToFit()
+					.renderingMode(.template)
+					.foregroundStyle(.ypGrayUniversal)
+					.aspectRatio(contentMode: .fill)
 			}
 		}
-		.frame(width: 28, height: 28)
+		.frame(width: profileImageSize, height: profileImageSize)
 		.clipShape(.circle)
 	}
 }
 
 #if DEBUG
 #Preview {
-	VStack {
-		UserListCell(model: .mock, counter: 0)
-		UserListCell(model: .mock, counter: 1)
-		UserListCell(model: .mock, counter: 2)
-		UserListCell(model: .mock, counter: 3)
+	@Previewable let monitor = NetworkMonitor.shared
+	@Previewable @State var isShown = false
+	
+	ScrollView(.vertical) {
+		LazyVStack(spacing: 16) {
+			if isShown {
+				ForEach(0...100, id: \.self) { _ in
+					UserListCell(model: .mock)
+				}
+			}
+		}
+		.safeAreaPadding(.horizontal)
 	}
 	.background(.ypWhite)
+	.onAppear {
+		DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+			isShown = true
+		}
+	}
 }
 #endif

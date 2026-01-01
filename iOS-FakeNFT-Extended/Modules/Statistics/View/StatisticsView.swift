@@ -32,8 +32,8 @@ struct StatisticsView: View {
 		ZStack(alignment: .top) {
 			Color.ypWhite.ignoresSafeArea()
 			
-			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { counter, user in
-				UserListCell(model: user, counter: counter)
+			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { index, user in
+				UserListCell(model: user)
 					.id(user.id)
 					.task(priority: .userInitiated) {
 						if user == viewModel.visibleUsers.last {
@@ -96,7 +96,7 @@ private extension View {
 			.scrollDismissesKeyboard(.interactively)
 			.scrollIndicators(.hidden)
 			.safeAreaPadding(.bottom)
-			.listRowSpacing(8)
+			.listRowSpacing(16)
 			.scrollContentBackground(.hidden)
 			.listStyle(.plain)
 	}
