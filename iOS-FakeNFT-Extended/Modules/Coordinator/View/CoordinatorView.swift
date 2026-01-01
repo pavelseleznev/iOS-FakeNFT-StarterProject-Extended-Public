@@ -18,7 +18,7 @@ struct CoordinatorView: View {
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
 						.customNavigationBackButton(
-							hasBackButton: coordinator.bindingPath.wrappedValue.last?.hasNotBackButton ?? false,
+							hasNotBackButton: coordinator.bindingPath.wrappedValue.last?.hasNotBackButton,
 							backAction: coordinator.pop
 						)
 						.onAppear(perform: performLaunchAction)
@@ -40,7 +40,10 @@ struct CoordinatorView: View {
 		let api = ObservedNetworkClient()
 		let nftStorage = NFTStorage()
 		let nft = NFTService(api: api, storage: nftStorage)
-		let appContainer = AppContainer(nftService: nft, api: api)
+		let appContainer = AppContainer(
+			nftService: nft,
+			api: api
+		)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 		
 		launchCount += 1

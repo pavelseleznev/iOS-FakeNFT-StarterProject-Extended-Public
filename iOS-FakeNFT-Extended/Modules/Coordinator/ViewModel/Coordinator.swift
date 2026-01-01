@@ -10,6 +10,7 @@ import SwiftUI
 @Observable
 @MainActor
 final class Coordinator {
+	private weak var navigationController: UINavigationController?
 	private let appContainer: AppContainer
 	private var path = [Page]()
 	private var sheet: Sheet?

@@ -222,7 +222,7 @@ fileprivate extension View {
 				didTapDetail: {_ in}
 			)
 		}
-		.customNavigationBackButton(hasBackButton: true, backAction: {})
+		.customNavigationBackButton(hasNotBackButton: true, backAction: {})
 	}
 }
 #endif
