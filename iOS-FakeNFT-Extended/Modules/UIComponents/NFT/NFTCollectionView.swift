@@ -63,12 +63,12 @@ struct NFTCollectionView: View {
 					}
 					.scrollTransition { content, phase in
 						content
-							.opacity(phase.isIdentity ? 1 : 0.45)
-							.blur(radius: phase.isIdentity ? 0 : 3, opaque: false)
 							.rotation3DEffect(
-								.degrees(phase.isIdentity ? 0 : 15 * phase.value),
+								.degrees(phase.isIdentity ? 0 : 10 * phase.value),
 								axis: (x: phase.isIdentity ? 0 : 1, y: 0, z: 0)
 							)
+							.blur(radius: phase.isIdentity ? 0 : 1, opaque: false)
+							.opacity(phase.isIdentity ? 1 : 0.7)
 					}
 					.animation(Constants.defaultAnimation, value: asyncNFTs.visibleNFTs)
 				}
@@ -148,7 +148,7 @@ fileprivate extension View {
 	
 	func layout(isSearchingState: Bool) -> some View {
 		self
-			.contentMargins(.bottom, isSearchingState ? 60 + 24 : 0)
+			.contentMargins(.bottom, isSearchingState ? 60 + 32 : 0)
 			.padding(.horizontal, 16)
 	}
 	
