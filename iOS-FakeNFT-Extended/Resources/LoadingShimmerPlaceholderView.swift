@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 fileprivate enum LoadingShimmerPhase {
 	case start, shine1, peak, shine2, end
@@ -24,10 +25,26 @@ fileprivate enum LoadingShimmerPhase {
 			2
 		}
 	}
+	
+	var nextPhase: Self {
+		switch self {
+		case .start:
+			.shine1
+		case .shine1:
+			.peak
+		case .peak:
+			.shine2
+		case .shine2:
+			.end
+		case .end:
+			.start
+		}
+	}
 }
 
 struct LoadingShimmerPlaceholderView: View {
 	@State private var animationPhase: LoadingShimmerPhase = .start
+	@State private var cancellableTimer: Cancellable?
 	
 	var body: some View {
 		GeometryReader {
@@ -39,13 +56,19 @@ struct LoadingShimmerPlaceholderView: View {
 					RoundedRectangle(cornerRadius: 8)
 						.fill(.ypBlackUniversal.opacity(0.3))
 						.mask(animatedGradient(size: size))
-						.onAppear {
-							withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
-								animationPhase = .end
-							}
-						}
 				}
 		}
+		.onAppear {
+			cancellableTimer = Timer
+				.publish(every: 0.2, on: .main, in: .common)
+				.autoconnect()
+				.sink { _ in
+					withAnimation(animationPhase != .end ? .linear(duration: 0.2) : nil) {
+						animationPhase = animationPhase.nextPhase
+					}
+				}
+		}
+		.onDisappear { cancellableTimer?.cancel() }
 	}
 	
 	private func animatedGradient(size: CGSize) -> some View {

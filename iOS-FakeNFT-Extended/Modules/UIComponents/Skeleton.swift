@@ -19,3 +19,19 @@ extension View {
 			}
 	}
 }
+
+#Preview {
+	@Previewable @State var data: String?
+	
+	ZStack {
+		Image(.big)
+			.resizable()
+			.aspectRatio(1, contentMode: .fit)
+			.frame(width: 300, height: 300)
+			.applySkeleton(data)
+	}
+	.task(priority: .userInitiated) {
+		try? await Task.sleep(for: .seconds(2))
+		data = "Hello, World!"
+	}
+}
