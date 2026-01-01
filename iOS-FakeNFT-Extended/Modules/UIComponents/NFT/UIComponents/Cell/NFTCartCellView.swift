@@ -52,26 +52,45 @@ struct NFTCartCellView: View {
 
 #if DEBUG
 #Preview {
-	@Previewable @State var models: [NFTModelContainer] = [
-		.mock,
-		.mock,
-		.badImageURLMock,
-		.mock,
-		.badImageURLMock
-	]
+//	@Previewable @State var models: [NFTModelContainer] = [
+//		.mock,
+//		.mock,
+//		.badImageURLMock,
+//		.mock,
+//		.badImageURLMock
+//	]
+	
+	@Previewable let api = ObservedNetworkClient()
+	
+	@Previewable @State var nfts = [String : NFTModelContainer?]()
 	
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 		
 		ScrollView(.vertical) {
 			LazyVStack(spacing: 24) {
-				ForEach(models) {
+				ForEach(
+					Array(nfts.enumerated()),
+					id: \.offset
+				) { _, element in
 					NFTCartCellView(
-						model: $0,
+						model: element.value,
 						cartAction: {}
 					)
+					.id(element.key)
 				}
 			}
+		}
+		.animation(Constants.defaultAnimation, value: nfts)
+		.task(priority: .userInitiated) {
+			do {
+				let nftsIDs = try await api.getOrder().nftsIDs
+				nftsIDs.forEach { nfts[$0, default: nil] = nil }
+				for id in nftsIDs {
+					let nft = try await api.getNFT(by: id)
+					nfts[id] = .init(nft: nft, isFavorite: .random(), isInCart: .random())
+				}
+			} catch { print(error.localizedDescription) }
 		}
 	}
 }
