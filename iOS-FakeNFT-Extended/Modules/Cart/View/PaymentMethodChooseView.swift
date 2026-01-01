@@ -70,7 +70,7 @@ struct PaymentMethodChooseView: View {
 					id: \.offset
 				) { _, model in
 					PaymentMethodChooseCell(
-						currnecy: model?.currency,
+						currency: model?.currency,
 						selected: viewModel.selectedCurrency == model && model != nil
 					)
 					.onTapGesture {
