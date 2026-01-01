@@ -6,6 +6,7 @@
 //
 
 import Observation
+import Foundation
 
 enum LoadingState: Equatable {
 	case idle
@@ -18,10 +19,15 @@ enum LoadingState: Equatable {
 final class DataLoader {
 	private(set) var loadingState: LoadingState = .idle
 	private let cancelErrorsDscr = ["отменено", "cancelled"]
+	private let monitor = NetworkMonitor.shared
 	
 	func fetchData<T: Decodable>(
 		_ operation: @escaping @Sendable () async throws -> T
 	) async throws -> T {
+		guard monitor.isOnline else {
+			throw NSError(domain: "No internet connection", code: 1)
+		}
+		
 		loadingState = .fetching
 		
 		do {
