@@ -45,6 +45,10 @@ struct StatisticsView: View {
 					}
 					.listCellModifiers()
 			}
+			.refreshable {
+				await viewModel.updateUsers()
+			}
+			.padding(.top, viewModel.isRefreshing ? -16 : 0)
 			.listModifiers()
 			.animation(Constants.defaultAnimation, value: viewModel.visibleUsers)
 			.overlay(content: loadingView)

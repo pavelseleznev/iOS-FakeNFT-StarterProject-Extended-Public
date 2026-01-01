@@ -149,8 +149,16 @@ extension CartViewModel {
 private extension CartViewModel {
 	func sortComparator(lhs: NFTModelContainer?, rhs: NFTModelContainer?) -> Bool {
 		guard let lhs, let rhs else { return false }
+		
 		switch sortOption {
 		case .name:
+			let lhsPriority = comparatorPriority(lhs.nft.name)
+			let rhsPriority = comparatorPriority(rhs.nft.name)
+			
+			if lhsPriority != rhsPriority {
+				return lhsPriority < rhsPriority
+			}
+			
 			return lhs.nft.name.localizedStandardCompare(rhs.nft.name) == .orderedAscending
 		case .cost:
 			return lhs.nft.price.isLess(than: rhs.nft.price)

@@ -17,11 +17,14 @@ final class StatisticsViewModel {
 	
 	private(set) var users = Set<UserListItemResponse>()
 	
+	private(set) var isRefreshing = false
 	private var currentPage = 0
 	var dataLoadingErrorIsPresented = false
 	var searchText = ""
 	
 	var currenctSortOption: SortOption = .name
+	
+	private var updateTask: Task<Void, Never>?
 	
 	init(
 		api: ObservedNetworkClient,
@@ -35,7 +38,7 @@ final class StatisticsViewModel {
 extension StatisticsViewModel {
 	@inline(__always)
 	var loadingState: LoadingState {
-		api.loadingState
+		isRefreshing ? .idle : api.loadingState
 	}
 	
 	@inline(__always)
@@ -63,12 +66,45 @@ extension StatisticsViewModel {
 					users.insert($0)
 				}
 			currentPage += 1
-		} catch {
-			guard !(error is CancellationError) else { return }
+		} catch { onError(error) }
+	}
+	
+	@Sendable
+	func updateUsers() async {
+		guard !users.isEmpty else { return }
+		
+		withAnimation(Constants.defaultAnimation) {
+			isRefreshing = true
+		}
+		
+		defer {
 			withAnimation(Constants.defaultAnimation) {
-				dataLoadingErrorIsPresented = true
+				isRefreshing = false
 			}
 		}
+		
+		do {
+			var usersToRemove = Set<UserListItemResponse>()
+			var usersToAdd = Set<UserListItemResponse>()
+			
+			for page in 0...currentPage - 1 {
+				guard !Task.isCancelled, isRefreshing else { break }
+				let pageUsers = Set(try await api.getUsers(page: page, sortOption: currenctSortOption))
+				
+				let pageToRemove = users.intersection(pageUsers).subtracting(
+					pageUsers
+				)
+				let pageToAdd = pageUsers.subtracting(users)
+				
+				usersToRemove.formUnion(pageToRemove)
+				usersToAdd.formUnion(pageToAdd)
+			}
+			
+			if !usersToRemove.isEmpty || !usersToAdd.isEmpty {
+				users.subtract(usersToRemove)
+				users.formUnion(usersToAdd)
+			}
+		} catch { onError(error) }
 	}
 	
 	func setSortOption(_ option: SortOption) {
@@ -77,17 +113,31 @@ extension StatisticsViewModel {
 }
 
 private extension StatisticsViewModel {
-	func usersSortComparator(_ first: UserListItemResponse, _ second: UserListItemResponse) -> Bool {
+	func usersSortComparator(_ lhs: UserListItemResponse, _ rhs: UserListItemResponse) -> Bool {
 		switch currenctSortOption {
 		case .rate:
-			first.rating.localizedStandardCompare(second.rating) == .orderedAscending
+			return lhs.rating.localizedStandardCompare(rhs.rating) == .orderedAscending
 		case .name:
-			first.name.localizedStandardCompare(second.name) == .orderedAscending
+			let lhsPriority = comparatorPriority(lhs.name)
+			let rhsPriority = comparatorPriority(rhs.name)
+			
+			if lhsPriority != rhsPriority {
+				return lhsPriority < rhsPriority
+			}
+			
+			return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
 		}
 	}
 	
 	func filterApplier(_ model: UserListItemResponse) -> Bool {
 		searchText.isEmpty || model.name
 			.localizedCaseInsensitiveContains(searchText)
+	}
+	
+	func onError(_ error: Error) {
+		guard !(error is CancellationError) else { return }
+		withAnimation(Constants.defaultAnimation) {
+			dataLoadingErrorIsPresented = true
+		}
 	}
 }
