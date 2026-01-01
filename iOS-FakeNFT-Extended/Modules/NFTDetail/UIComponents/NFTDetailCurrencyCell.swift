@@ -61,29 +61,30 @@ struct NFTDetailCurrencyCell: View {
 	}
 	
 	private var image: some View {
-		Color.ypBackgroundUniversal
-			.overlay {
-				AsyncImage(
-					url: URL(string: model?.currency.image ?? ""),
-					transaction: .init(animation: Constants.defaultAnimation)
-				) { phase in
-					switch phase {
-					case .empty:
+		AsyncImageCached(
+			urlString: model?.currency.image ?? "",
+			placeholder: .vector
+		) { phase in
+			switch phase {
+			case .empty:
+				Color.ypLightGrey
+					.overlay {
 						ProgressView()
-							.progressViewStyle(.circular)
-					case .success(let image):
-						image
-							.resizable()
-							.scaledToFit()
-					default:
+					}
+			case .loaded(let image):
+				Image(uiImage: image)
+					.resizable()
+			case .error:
+				Color.ypLightGrey
+					.overlay {
 						Text("?")
 							.font(.bold17)
-							.foregroundStyle(.ypBlack)
+							.foregroundStyle(.ypWhiteUniversal)
 					}
-				}
 			}
-			.frame(width: imageSize, height: imageSize)
-			.clipShape(RoundedRectangle(cornerRadius: 6))
-			.applySkeleton(model)
+		}
+		.frame(width: imageSize, height: imageSize)
+		.clipShape(RoundedRectangle(cornerRadius: 6))
+		.applySkeleton(model)
 	}
 }

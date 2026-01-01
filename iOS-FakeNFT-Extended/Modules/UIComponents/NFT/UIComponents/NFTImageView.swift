@@ -21,19 +21,16 @@ struct NFTImageView: View {
 			if model != nil {
 				Color.ypBackgroundUniversal
 					.overlay {
-						AsyncImage(
-							url: imageURL,
-							transaction: .init(animation: Constants.defaultAnimation)
-						) { phase in
+						AsyncImageCached(urlString: imageURLString) { phase in
 							switch phase {
 							case .empty:
 								ProgressView()
 									.progressViewStyle(.circular)
-							case .success(let image):
-								image
+							case .loaded(let image):
+								Image(uiImage: image)
 									.resizable()
 									.scaledToFit()
-							default:
+							case .error:
 								Text("?")
 									.font(.bold22)
 									.foregroundStyle(.ypWhiteUniversal)
@@ -46,31 +43,32 @@ struct NFTImageView: View {
 			}
 		}
 		.scaledToFit()
+		.aspectRatio(1, contentMode: .fit)
+		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay(alignment: .topTrailing) {
 			Button(action: likeAction) {
 				favouriteImage
 			}
 		}
-		.aspectRatio(1, contentMode: .fit)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
 	}
 	
-	private var imageURL: URL? {
-		let urlString: String
-		if
+	private var imageURLString: String {
+		guard
 			let model,
+			!model.imagesURLsStrings.isEmpty,
 			model.imagesURLsStrings.indices.contains(imageIndex)
-		{
-			urlString = model.imagesURLsStrings[imageIndex]
-		} else {
-			urlString = ""
-		}
+		else { return "" }
 		
-		return URL(string: urlString)
+		return model.imagesURLsStrings[imageIndex]
 	}
 	
 	private func tryNextImage() {
-		imageIndex += 1
+		guard
+			let model,
+			!model.imagesURLsStrings.isEmpty
+		else { return }
+		
+		imageIndex = (imageIndex + 1) % model.imagesURLsStrings.count
 	}
 	
 	private var favouriteImage: some View {

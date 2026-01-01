@@ -7,53 +7,52 @@
 
 import SwiftUI
 
+fileprivate let imageSize: CGFloat = 36
+
 struct PaymentMethodChooseCell: View {
-	let currnecy: CurrencyResponse?
+	let currency: CurrencyResponse?
 	let selected: Bool
 	
 	var body: some View {
 		HStack {
-			AsyncImage(
-				url: URL(string: currnecy?.image ?? ""),
-				transaction: .init(animation: Constants.defaultAnimation)
-			) { phase in
+			AsyncImageCached(urlString: currency?.image ?? "") { phase in
 				switch phase {
 				case .empty:
-					ProgressView()
-						.progressViewStyle(.circular)
-				case .success(let image):
-					image
+					Color.ypLightGrey
+						.overlay {
+							ProgressView()
+						}
+				case .loaded(let image):
+					Image(uiImage: image)
 						.resizable()
-						.scaledToFit()
-				default:
-					Image(.vector)
-						.resizable()
-						.scaledToFit()
+				case .error:
+					Color.ypLightGrey
+						.overlay {
+							Text("?")
+								.font(.bold17)
+								.foregroundStyle(.ypWhiteUniversal)
+						}
 				}
 			}
+			.frame(width: imageSize, height: imageSize)
+			.applySkeleton(currency)
 			.clipShape(RoundedRectangle(cornerRadius: 6))
-			.frame(width: 36, height: 36)
-			.overlay {
-				if currnecy == nil {
-					LoadingShimmerPlaceholderView()
-				}
-			}
 
 			VStack(alignment: .leading) {
-				Text(currnecy?.title ?? "Bitcoin")
+				Text(currency?.title ?? "Bitcoin")
 					.foregroundStyle(.ypBlack)
 					.overlay {
-						if currnecy == nil {
+						if currency == nil {
 							LoadingShimmerPlaceholderView()
 								.padding(.vertical, 1)
 								.scaleEffect(x: 1.1)
 						}
 					}
 				
-				Text(currnecy?.id ?? "BTC")
+				Text(currency?.id ?? "BTC")
 					.foregroundStyle(.ypGreenUniversal)
 					.overlay {
-						if currnecy == nil {
+						if currency == nil {
 							LoadingShimmerPlaceholderView()
 								.padding(.vertical, 1)
 								.scaleEffect(x: 1.1)
@@ -79,6 +78,6 @@ struct PaymentMethodChooseCell: View {
 
 #if DEBUG
 #Preview {
-	PaymentMethodChooseCell(currnecy: .mock, selected: true)
+	PaymentMethodChooseCell(currency: .mock, selected: true)
 }
 #endif

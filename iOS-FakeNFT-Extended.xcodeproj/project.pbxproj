@@ -25,6 +25,7 @@
 		2DC8CB442EE48771005A7229 /* NFTsRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB432EE48771005A7229 /* NFTsRequests.swift */; };
 		2DC8CB462EE4878A005A7229 /* CurrenciesRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB452EE4878A005A7229 /* CurrenciesRequests.swift */; };
 		2DC8CB482EE48C7D005A7229 /* ObservedNetworkClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB472EE48C6A005A7229 /* ObservedNetworkClientTests.swift */; };
+		2DD72AA32F07393800BA0F38 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD72AA22F07393800BA0F38 /* NetworkMonitor.swift */; };
 		ABC5E1732C31F5AF002B4068 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABC5E1722C31F5AF002B4068 /* Preview Assets.xcassets */; };
 		ABC5E17D2C31F5B0002B4068 /* iOS_FakeNFT_ExtendedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E17C2C31F5B0002B4068 /* iOS_FakeNFT_ExtendedTests.swift */; };
 		ABC5E1872C31F5B0002B4068 /* iOS_FakeNFT_ExtendedUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1862C31F5B0002B4068 /* iOS_FakeNFT_ExtendedUITests.swift */; };
@@ -73,6 +74,7 @@
 		2DC8CB432EE48771005A7229 /* NFTsRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTsRequests.swift; sourceTree = "<group>"; };
 		2DC8CB452EE4878A005A7229 /* CurrenciesRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrenciesRequests.swift; sourceTree = "<group>"; };
 		2DC8CB472EE48C6A005A7229 /* ObservedNetworkClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservedNetworkClientTests.swift; sourceTree = "<group>"; };
+		2DD72AA22F07393800BA0F38 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		ABC5E1682C31F5AF002B4068 /* iOS-FakeNFT-Extended.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "iOS-FakeNFT-Extended.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABC5E1722C31F5AF002B4068 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		ABC5E1782C31F5B0002B4068 /* iOS-FakeNFT-ExtendedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "iOS-FakeNFT-ExtendedTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -102,6 +104,7 @@
 		2D0DD9E02EE1A5FF00EB1D66 /* Splash */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Splash; sourceTree = "<group>"; };
 		2D433B5A2EFF2C3300397AEC /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		2D8D779E2EFB35A700F2B0CB /* Cart */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cart; sourceTree = "<group>"; };
+		2DD72AA42F07396A00BA0F38 /* Cache */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cache; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,8 +196,10 @@
 		ABC5E19A2C31F687002B4068 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
+				2DD72AA42F07396A00BA0F38 /* Cache */,
 				ABC5E19B2C31F69C002B4068 /* MemoryStorage */,
 				ABC5E1A22C31F7E8002B4068 /* NetworkClient */,
+				2DD72AA22F07393800BA0F38 /* NetworkMonitor.swift */,
 			);
 			path = Foundation;
 			sourceTree = "<group>";
@@ -314,6 +319,7 @@
 				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
 				2D433B5A2EFF2C3300397AEC /* Onboarding */,
 				2D8D779E2EFB35A700F2B0CB /* Cart */,
+				2DD72AA42F07396A00BA0F38 /* Cache */,
 			);
 			name = "iOS-FakeNFT-Extended";
 			packageProductDependencies = (
@@ -450,6 +456,7 @@
 				2DC8CB422EE4875A005A7229 /* CollectionRequests.swift in Sources */,
 				2DC8CB402EE4872F005A7229 /* ProfileRequests.swift in Sources */,
 				2DC8CB302EE31C1B005A7229 /* UserListItemResponse.swift in Sources */,
+				2DD72AA32F07393800BA0F38 /* NetworkMonitor.swift in Sources */,
 				ABC5E1A62C31F815002B4068 /* NetworkRequest.swift in Sources */,
 				ABC5E1A42C31F800002B4068 /* NetworkClient.swift in Sources */,
 				ABC5E1A12C31F6D7002B4068 /* NFTResponse.swift in Sources */,

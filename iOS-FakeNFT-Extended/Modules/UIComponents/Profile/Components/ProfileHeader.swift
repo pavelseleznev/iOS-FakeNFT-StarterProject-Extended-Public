@@ -17,28 +17,27 @@ struct ProfileHeader: View {
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
-				Group {
-					AsyncImage(
-						url: URL(string: imageURLString),
-						transaction: .init(animation: Constants.defaultAnimation)
-					) { phase in
-						switch phase {
-						case .empty:
-							ProgressView()
-								.progressViewStyle(.circular)
-						case .success(let image):
-							image
-								.resizable()
-								.scaledToFit()
-						default:
-							Image.profilePerson
-								.resizable()
-								.scaledToFit()
-						}
+				AsyncImageCached(urlString: imageURLString) { phase in
+					switch phase {
+					case .empty:
+						Color.ypLightGrey
+							.overlay {
+								ProgressView()
+							}
+					case .loaded(let image):
+						Image(uiImage: image)
+							.resizable()
+							.scaledToFit()
+					case .error:
+						Image.profilePerson
+							.resizable()
+							.renderingMode(.template)
+							.foregroundStyle(.ypLightGrey)
+							.aspectRatio(contentMode: .fill)
 					}
 				}
-				.clipShape(Circle())
 				.frame(width: imageSize, height: imageSize)
+				.clipShape(.circle)
 				
 				Text(name)
 					.foregroundStyle(.ypBlack)
@@ -47,10 +46,16 @@ struct ProfileHeader: View {
 				Spacer()
 			}
 			
-			Text(about)
-				.lineSpacing(4)
-				.foregroundStyle(.ypBlack)
-				.font(.regular13)
+			Group {
+				if about.isEmpty {
+					Text(.noDescription)
+				} else {
+					Text(about)
+				}
+			}
+			.lineSpacing(4)
+			.foregroundStyle(.ypBlack)
+			.font(.regular13)
 		}
 		.padding(.horizontal, 16)
 	}

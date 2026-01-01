@@ -98,7 +98,6 @@ struct NFTDetailImagesView: View {
 		.animation(Constants.defaultAnimation, value: isDismissing)
 		.animation(Constants.defaultAnimation, value: nftsImagesURLsStrings)
 		.onChange(of: isFullScreen) { resetScale() }
-		.coordinateSpace(name: wholeViewCoordinateSpace)
 		.simultaneousGesture(tapGestures)
 	}
 }
@@ -134,43 +133,34 @@ private extension NFTDetailImagesView {
 		) { _, element in
 			let imageURLString = element.key
 			
-			AsyncImage(
-				url: URL(string: imageURLString),
-				transaction: .init(animation: Constants.defaultAnimation)
-			) { phase in
+			AsyncImageCached(urlString: imageURLString, transition: .opacity) { phase in
 				switch phase {
 				case .empty:
 					LoadingView(loadingState: .fetching)
-						.transition(imageStateTransition)
-				case .success(let image):
+				case .loaded(let image):
 					loadedImageView(image, isSelected: selection == element.value)
-						.transition(imageStateTransition)
-				case .failure:
+						.coordinateSpace(name: imageCoordinateSpace)
+				case .error:
 					LoadingView(loadingState: .error) {
 						reloadImage(key: element.key, imageURLString: imageURLString)
 					}
-					.transition(imageStateTransition)
-				@unknown default:
-					Text(.notImplemented)
-						.font(.bold22)
-						.foregroundStyle(.ypBlack)
-						.transition(imageStateTransition)
+					.coordinateSpace(name: "loadingError")
 				}
 			}
 			.tag(element.value)
 			.id(element.value)
 		}
+		.coordinateSpace(name: wholeViewCoordinateSpace)
 	}
 	
-	func loadedImageView(_ image: Image, isSelected: Bool) -> some View {
+	func loadedImageView(_ image: UIImage, isSelected: Bool) -> some View {
 		ZStack {
 			Color.ypWhite
 			
-			image
+			Image(uiImage: image)
 				.resizable()
 				.aspectRatio(1, contentMode: .fit)
 				.scaleEffect(isSelected ? scale : 1)
-				.coordinateSpace(name: imageCoordinateSpace)
 				.onAppear {
 					withAnimation(Constants.defaultAnimation) {
 						scale = 1

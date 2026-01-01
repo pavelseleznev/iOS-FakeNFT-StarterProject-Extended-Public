@@ -15,55 +15,50 @@ struct NFTCartImageView: View {
 	@State private var imageIndex: Int = 0
 	
 	var body: some View {
-		Group {
-			if model != nil {
+		AsyncImageCached(urlString: imageURLString) { phase in
+			switch phase {
+			case .empty:
 				Color.ypBackgroundUniversal
 					.overlay {
-						AsyncImage(
-							url: imageURL,
-							transaction: .init(animation: Constants.defaultAnimation)
-						) { phase in
-							switch phase {
-							case .empty:
-								ProgressView()
-									.progressViewStyle(.circular)
-							case .success(let image):
-								image
-									.resizable()
-									.scaledToFit()
-							default:
-								Text("?")
-									.font(.bold22)
-									.foregroundStyle(.ypWhiteUniversal)
-									.onAppear(perform: tryNextImage)
-							}
-						}
+						ProgressView()
+							.progressViewStyle(.circular)
 					}
-			} else {
-				LoadingShimmerPlaceholderView()
+			case .loaded(let image):
+				Image(uiImage: image)
+					.resizable()
+					.scaledToFit()
+			case .error:
+				Color.ypBackgroundUniversal
+					.overlay {
+						Text("?")
+							.font(.bold22)
+							.foregroundStyle(.ypWhiteUniversal)
+							.onAppear(perform: tryNextImage)
+					}
 			}
 		}
+		.applySkeleton(model)
 		.scaledToFit()
 		.aspectRatio(1, contentMode: .fit)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 	}
 	
-	private var imageURL: URL? {
-		let urlString: String
-		if
+	private var imageURLString: String {
+		guard
 			let model,
+			!model.imagesURLsStrings.isEmpty,
 			model.imagesURLsStrings.indices.contains(imageIndex)
-		{
-			urlString = model.imagesURLsStrings[imageIndex]
-		} else {
-			imageIndex = 0
-			urlString = ""
-		}
+		else { return "" }
 		
-		return URL(string: urlString)
+		return model.imagesURLsStrings[imageIndex]
 	}
 	
 	private func tryNextImage() {
-		imageIndex += 1
+		guard
+			let model,
+			!model.imagesURLsStrings.isEmpty
+		else { return }
+		
+		imageIndex = (imageIndex + 1) % model.imagesURLsStrings.count
 	}
 }
