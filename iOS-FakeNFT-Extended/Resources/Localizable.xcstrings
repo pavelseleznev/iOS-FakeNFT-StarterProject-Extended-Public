@@ -814,6 +814,23 @@
         }
       }
     },
+    "noDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No description"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нет описания"
+          }
+        }
+      }
+    },
     "notImplemented" : {
       "comment" : "A text that should never be visible in the app.",
       "extractionState" : "manual",

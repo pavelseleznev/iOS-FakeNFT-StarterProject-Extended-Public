@@ -22,7 +22,11 @@ enum Constants {
 	static let nftNameLineLimit = 2
 	static let authorNameLineLimit = 2
 	
-	static let defaultAnimation: Animation = .easeInOut(duration: 0.15)
+	static let defaultAnimation: Animation = .easeInOut(duration: 0.35)
 	
 	static let maxRatingStars = 5
+	
+	static let imageCacheOnMemoryWarningOldestCountRemoval = 100
+	static let imageCacheCountLimit = 300
+	static let imageCacheTotalCostLimit = 75 * 1024 * 1024 // 75 MB
 }
