@@ -11,81 +11,114 @@ import Foundation
 @Observable
 final class ProfileViewModel {
     
-    var profile: ProfileModel { profileStore.profile }
     var loadErrorPresented = false
     var loadErrorMessage = "Не удалось загрузить данные"
-        
-    var myNFTTitle: String {
-        "Мои NFT (\(myNFTStore.count))"
-    }
-    var favoriteTitle: String {
-        "Избранные NFT (\(favoriteNFTStore.count))"
-    }
     
-    private let router: ProfileRouting
-    private let service: ProfileService
+    var myNFTTitle: String { "Мои NFT (\(myNFTCount))" }
+    var favoriteTitle: String { "Избранные NFT (\(favoriteCount))" }
+    
+    private(set) var profile: ProfileModel = .init(
+        name: "",
+        about: "",
+        website: "",
+        avatarURL: ""
+    )
+    
+    private(set) var myNFTCount: Int = 0
+    private(set) var favoriteCount: Int = 0
+    
+    private var hasLoaded = false
+    private let appContainer: AppContainer
+    private let push: (Page) -> Void
     private let myNFTStore: MyNFTViewModel
     private let favoriteNFTStore: FavoriteNFTViewModel
-    private let profileStore: ProfileStore
-    private let api: ObservedNetworkClient
-    private var hasLoadedNFTLists = false
     
-    init(router: ProfileRouting,
-         service: ProfileService,
-         myNFTStore: MyNFTViewModel,
-         favoriteNFTStore: FavoriteNFTViewModel,
-         profileStore: ProfileStore,
-         api: ObservedNetworkClient
+    init(
+        appContainer: AppContainer,
+        myNFTStore: MyNFTViewModel,
+        favoriteNFTStore: FavoriteNFTViewModel,
+        push: @escaping (Page) -> Void
     ) {
-        self.router = router
-        self.service = service
+        self.appContainer = appContainer
         self.myNFTStore = myNFTStore
         self.favoriteNFTStore = favoriteNFTStore
-        self.profileStore = profileStore
-        self.api = api
+        self.push = push
     }
     
     func load() async {
+        guard !hasLoaded else { return }
+        hasLoaded = true
+        defer { hasLoaded = false }
+
         do {
-            try await profileStore.loadIfNeeded()
-            
-            guard !hasLoadedNFTLists else { return}
-            hasLoadedNFTLists = true
-            
-            let liked = try await service.getNFTs(ids: profileStore.likes)
-            favoriteNFTStore.items = liked.map(mapToNFTModel(isFavorite: true))
-            
-            let mine = try await service.getNFTs(ids: profileStore.nfts)
-            myNFTStore.setItems(mine.map(mapToNFTModel(isFavorite: false)))
+            let profileDTO = try await appContainer.api.getProfile()
+
+            profile = ProfileModel(
+                name: profileDTO.name,
+                about: profileDTO.description,
+                website: profileDTO.website,
+                avatarURL: profileDTO.avatar
+            )
+
+            myNFTCount = profileDTO.nfts.count
+            favoriteCount = profileDTO.likes.count
+
+            Task(priority: .userInitiated) { [weak self] in
+                await self?.loadMyNFTs(ids: profileDTO.nfts)
+                
+            }
+
+            Task(priority: .userInitiated) { [weak self] in
+                await self?.loadFavoriteNFTs(ids: profileDTO.likes)
+            }
+
+        } catch is CancellationError {
+            return
         } catch {
-            guard !(error is CancellationError) else { return }
-            print("Loading user profile failed:", error)
-            hasLoadedNFTLists = false
-            loadErrorMessage = "Не удалось загрузить данные"
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
             loadErrorPresented = true
+            loadErrorMessage = "Не удалось загрузить данные"
+        }
+    }
+    
+    @MainActor
+    private func loadMyNFTs(ids: [String]) async {
+        do {
+            let dtos = try await fetchNFTs(ids: ids)
+            myNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: false)))
+        } catch is CancellationError {
+            return
+        } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            print("MyNFT load failed:", error)
+        }
+    }
+
+    @MainActor
+    private func loadFavoriteNFTs(ids: [String]) async {
+        do {
+            let dtos = try await fetchNFTs(ids: ids)
+            favoriteNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: true)))
+        } catch is CancellationError {
+            return
+        } catch {
+            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            print("Favorite load failed:", error)
         }
     }
     
     func retryLoad() async {
-        hasLoadedNFTLists = false
+        hasLoaded = false
         await load()
     }
     
-    func websiteTapped() {
-        router.showWebsite(url: profile.website)
-    }
+    func websiteTapped() { push(.aboutAuthor(urlString: profile.website)) }
     
-    func editTapped() {
-        router.showEditProfile(profile: profileStore.profile)
-    }
+    func editTapped() { push(.editProfile(profile)) }
     
-    func myNFTsTapped() {
-        router.showMyNFTs()
-    }
+    func myNFTsTapped() { push(.myNFTs) }
     
-    func favoriteNFTsTapped() {
-        router.showFavoriteNFTs()
-    }
+    func favoriteNFTsTapped() { push(.favoriteNFTs) }
     
     private func mapToNFTModel(isFavorite: Bool) -> (NFTResponse) -> NFTModel {
         { dto in
@@ -99,5 +132,28 @@ final class ProfileViewModel {
                 id: dto.id
             )
         }
+    }
+    
+    private func fetchNFTs(ids: [String]) async throws -> [NFTResponse] {
+        try await withThrowingTaskGroup(of: (Int, NFTResponse).self) { group in
+            for (index, id) in ids.enumerated() {
+                group.addTask { [api = appContainer.api] in
+                    let dto = try await api.getNFT(by: id)
+                    return (index, dto)
+                }
+            }
+
+            var bucket: [(Int, NFTResponse)] = []
+            bucket.reserveCapacity(ids.count)
+
+            for try await pair in group { bucket.append(pair) }
+
+            // preserve original ids order
+            return bucket.sorted { $0.0 < $1.0 }.map(\.1)
+        }
+    }
+    
+    func applyUpdatedProfile(_ updated: ProfileModel) {
+        profile = updated
     }
 }

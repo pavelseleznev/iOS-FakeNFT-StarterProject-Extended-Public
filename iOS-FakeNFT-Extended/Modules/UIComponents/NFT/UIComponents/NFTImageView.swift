@@ -13,6 +13,8 @@ struct NFTImageView: View {
     let model: NFTModel
     let layout: NFTCellLayout
     let likeAction: () -> Void
+    @State private var reloadID = UUID()
+    @State private var didRetry = false
     
     var body: some View {
         AsyncImage(
@@ -31,16 +33,18 @@ struct NFTImageView: View {
                 image.resizable()
             case .failure:
                 placeholder
-                    .overlay {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.ypWhiteUniversal)
-                    }
-                
+                    .task {
+                        guard !didRetry else { return }
+                            didRetry = true
+                            
+                            try? await Task.sleep(for: .milliseconds(200))
+                            reloadID = UUID()
+                        }
             @unknown default:
                 placeholder
             }
         }
+        .id(reloadID)
         .scaledToFit()
         .overlay(alignment: .topTrailing) {
             Button(action: likeAction) {

@@ -2,7 +2,8 @@ import SwiftUI
 
 struct TabBarView: View {
 	let appContainer: AppContainer
-    let profile: ProfileContext
+    let myNFTStore: MyNFTViewModel
+    let favoriteNFTStore: FavoriteNFTViewModel
 	let push: (Page) -> Void
 	let present: (Sheet) -> Void
 	let dismiss: () -> Void
@@ -18,7 +19,8 @@ struct TabBarView: View {
 			) { index, tab in
 				tab.view(
                     appContainer: appContainer,
-                    profile: profile,
+                    myNFTStore: myNFTStore,
+                    favoriteNFTStore: favoriteNFTStore,
 					push: push,
 					present: present,
 					dismiss: dismiss

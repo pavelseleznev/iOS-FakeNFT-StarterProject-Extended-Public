@@ -10,22 +10,19 @@ import SwiftUI
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     init(
-        router: ProfileRouting,
-        service: ProfileService,
+        appContainer: AppContainer,
+        push: @escaping (Page) -> Void,
         myNFTStore: MyNFTViewModel,
-        favoriteNFTStore: FavoriteNFTViewModel,
-        profileStore: ProfileStore,
-        api: ObservedNetworkClient
+        favoriteNFTStore: FavoriteNFTViewModel
     ) {
         _viewModel = State(
             initialValue: ProfileViewModel(
-                router: router,
-                service: service,
+                appContainer: appContainer,
                 myNFTStore: myNFTStore,
                 favoriteNFTStore: favoriteNFTStore,
-                profileStore: profileStore,
-                api: api
-            ))
+                push: push
+                )
+            )
     }
     
 	var body: some View {

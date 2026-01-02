@@ -39,17 +39,19 @@ enum Tab: String, CaseIterable, Identifiable {
 	@ViewBuilder
 	func view(
 		appContainer: AppContainer,
-        profile: ProfileContext,
+        myNFTStore: MyNFTViewModel,
+        favoriteNFTStore: FavoriteNFTViewModel,
 		push: @escaping (Page) -> Void,
 		present: @escaping (Sheet) -> Void,
 		dismiss: @escaping () -> Void
 	) -> some View {
 		switch self {
         case .profile:
-            ProfileRootView(
-                profile: profile,
+            ProfileView(
                 appContainer: appContainer,
-                push: push
+                push: push,
+                myNFTStore: myNFTStore,
+                favoriteNFTStore: favoriteNFTStore
             )
 		case .catalog:
 			CatalogView(

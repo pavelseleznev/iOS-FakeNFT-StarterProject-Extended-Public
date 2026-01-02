@@ -70,23 +70,3 @@ struct FavoriteNFTView: View {
         }
     }
 }
-
-#Preview("With NFTs") {
-    NavigationStack {
-        FavoriteNFTView(
-            viewModel: FavoriteNFTViewModel(
-                items: [.preview, .preview, .preview],
-                service: PreviewProfileService()
-            )
-        )
-    }
-}
-
-#Preview("Empty Preview") {
-    NavigationStack {
-        FavoriteNFTView(viewModel: FavoriteNFTViewModel(
-            items: [],
-            service: PreviewProfileService())
-        )
-    }
-}

@@ -11,18 +11,20 @@ import SwiftUI
 @MainActor
 final class Coordinator {
 	let appContainer: AppContainer
-    let profile: ProfileContext
+    
+    let myNFTStore: MyNFTViewModel
+    let favoriteNFTStore: FavoriteNFTViewModel
+    
 	var path = NavigationPath()
 	var sheet: Sheet?
 	var fullScreencover: FullScreenCover? = .splash
+    var profileStore: ProfileStore
 	
-    init(appContainer: AppContainer, profileProvider: ProfileProvider, profileService: ProfileService) {
+    init(appContainer: AppContainer, profileStore: ProfileStore) {
 		self.appContainer = appContainer
-        self.profile = ProfileContext(
-            api: appContainer.api,
-            initialProfile: profileProvider.profile(),
-            service: profileService
-        )
+        self.profileStore = profileStore
+        self.myNFTStore = MyNFTViewModel(items: [])
+        self.favoriteNFTStore = FavoriteNFTViewModel(items: [], api: appContainer.api)
 	}
 }
 
@@ -67,7 +69,8 @@ extension Coordinator {
         case .tabView:
             TabBarView(
                 appContainer: appContainer,
-                profile: profile,
+                myNFTStore: myNFTStore,
+                favoriteNFTStore: favoriteNFTStore,
                 push: push,
                 present: present,
                 dismiss: dismissSheet,
@@ -83,7 +86,7 @@ extension Coordinator {
         case .editProfile(let profile):
             EditProfileView(
                 profile: profile,
-                profileStore: self.profile.store,
+                profileStore: profileStore,
                 onSave: { _ in
                     Task { @MainActor in
                         self.pop()
@@ -96,9 +99,9 @@ extension Coordinator {
                 }
             )
         case .myNFTs:
-            MyNFTView(viewModel: profile.myNFTStore)
+            MyNFTView(viewModel: myNFTStore)
         case .favoriteNFTs:
-            FavoriteNFTView(viewModel: profile.favoriteNFTStore)
+            FavoriteNFTView(viewModel: favoriteNFTStore)
         }
     }
 	

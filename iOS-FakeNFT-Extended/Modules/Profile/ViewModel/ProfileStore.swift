@@ -12,7 +12,6 @@ import Foundation
 final class ProfileStore {
     
     var loadingState: LoadingState = .idle
-    
     private(set) var profile: ProfileModel
     private(set) var likes: [String] = []
     private(set) var nfts: [String] = []

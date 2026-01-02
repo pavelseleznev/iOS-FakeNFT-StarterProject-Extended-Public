@@ -15,19 +15,22 @@ final class FavoriteNFTViewModel {
     var loadErrorPresented = false
     var loadErrorMessage = "Не удалось удалить NFT из избранного"
     
-    private let service: ProfileService
+    private let api: ObservedNetworkClient
     
-    init(items: [NFTModel], service: ProfileService) {
+    init(items: [NFTModel], api: ObservedNetworkClient) {
         self.items = items
-        self.service = service
+        self.api = api
+    }
+    
+    func setItems(_ newItems: [NFTModel]) {
+        items = newItems
     }
     
     func removeFromFavorites(id: String) async {
         let oldItems = items
         items.removeAll() { $0.id == id }
-        
         do {
-            try await service.updateLikes(items.map(\.id))
+            try await updateLikes(items.map(\.id))
         } catch is CancellationError {
             return
         } catch {
@@ -35,5 +38,9 @@ final class FavoriteNFTViewModel {
             loadErrorMessage = "Не удалось удалить NFT из избранного"
             loadErrorPresented = true
         }
+    }
+    
+    func updateLikes(_ ids: [String]) async throws {
+        _ = try await api.updateProfile(payload: .init(likes: ids.isEmpty ? nil : ids))
     }
 }
