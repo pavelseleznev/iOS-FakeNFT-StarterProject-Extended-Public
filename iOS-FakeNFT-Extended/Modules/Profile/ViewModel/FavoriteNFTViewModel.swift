@@ -41,7 +41,7 @@ final class FavoriteNFTViewModel {
             return
         } catch {
             items = oldItems
-            loadErrorMessage = "Не удалось NFT из избранного"
+            loadErrorMessage = "Не удалось удалить NFT из избранного"
             loadErrorPresented = true
         }
     }
