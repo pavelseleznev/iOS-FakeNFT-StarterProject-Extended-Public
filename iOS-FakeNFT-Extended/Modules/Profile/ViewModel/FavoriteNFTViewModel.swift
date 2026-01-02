@@ -41,12 +41,13 @@ final class FavoriteNFTViewModel {
             return
         } catch {
             items = oldItems
-            loadErrorMessage = "Не удалось удалить NFT из избранного"
+            loadErrorMessage = "Не удалось NFT из избранного"
             loadErrorPresented = true
         }
     }
     
     func updateLikes(_ ids: [String]) async throws {
-        _ = try await api.updateProfile(payload: .init(likes: ids.isEmpty ? nil : ids))
+        let likesPayload: [String?] = ids.isEmpty ? ["null"] : ids.map(Optional.some)
+        _ = try await api.updateProfile(payload: .init(likes: likesPayload))
     }
 }
