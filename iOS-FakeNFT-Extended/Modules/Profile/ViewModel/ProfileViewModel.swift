@@ -27,6 +27,8 @@ final class ProfileViewModel {
     private(set) var myNFTCount: Int = 0
     private(set) var favoriteCount: Int = 0
     
+    private var myNFTsTask: Task<Void, Never>?
+    private var favoritesTask: Task<Void, Never>?
     private var hasLoaded = false
     private let appContainer: AppContainer
     private let push: (Page) -> Void
@@ -50,6 +52,8 @@ final class ProfileViewModel {
         hasLoaded = true
         defer { hasLoaded = false }
 
+        myNFTsTask?.cancel()
+        favoritesTask?.cancel()
         do {
             let profileDTO = try await appContainer.api.getProfile()
 
@@ -63,12 +67,11 @@ final class ProfileViewModel {
             myNFTCount = profileDTO.nfts.count
             favoriteCount = profileDTO.likes.count
 
-            Task(priority: .userInitiated) { [weak self] in
+            myNFTsTask = Task(priority: .userInitiated) { [weak self] in
                 await self?.loadMyNFTs(ids: profileDTO.nfts)
-                
             }
 
-            Task(priority: .userInitiated) { [weak self] in
+            favoritesTask = Task(priority: .userInitiated) { [weak self] in
                 await self?.loadFavoriteNFTs(ids: profileDTO.likes)
             }
 
@@ -81,7 +84,6 @@ final class ProfileViewModel {
         }
     }
     
-    @MainActor
     private func loadMyNFTs(ids: [String]) async {
         do {
             let dtos = try await fetchNFTs(ids: ids)
@@ -94,7 +96,6 @@ final class ProfileViewModel {
         }
     }
 
-    @MainActor
     private func loadFavoriteNFTs(ids: [String]) async {
         do {
             let dtos = try await fetchNFTs(ids: ids)
