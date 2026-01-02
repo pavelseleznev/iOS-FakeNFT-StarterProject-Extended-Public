@@ -21,14 +21,24 @@ struct MyNFTView: View {
             Color.ypWhite.ignoresSafeArea()
             
             if viewModel.items.isEmpty {
-                VStack {
-                    Spacer()
-                    Text("У Вас ещё нет NFT")
-                        .font(.bold17)
-                        .multilineTextAlignment(.center)
-                    Spacer()
+                if viewModel.isLoading {
+                    VStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                } else {
+                    VStack {
+                        Spacer()
+                        Text("У Вас ещё нет NFT")
+                            .font(.bold17)
+                            .multilineTextAlignment(.center)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {

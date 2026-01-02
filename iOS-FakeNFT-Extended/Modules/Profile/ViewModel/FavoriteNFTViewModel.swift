@@ -10,7 +10,9 @@ import Foundation
 @MainActor
 @Observable
 final class FavoriteNFTViewModel {
+    
     var items: [NFTModel]
+    var isLoading = false
     var count: Int { items.count }
     var loadErrorPresented = false
     var loadErrorMessage = "Не удалось удалить NFT из избранного"
@@ -24,6 +26,10 @@ final class FavoriteNFTViewModel {
     
     func setItems(_ newItems: [NFTModel]) {
         items = newItems
+    }
+    
+    func setLoading(_ value: Bool) {
+        isLoading = value
     }
     
     func removeFromFavorites(id: String) async {

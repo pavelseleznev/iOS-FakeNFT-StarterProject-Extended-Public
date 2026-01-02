@@ -85,6 +85,8 @@ final class ProfileViewModel {
     }
     
     private func loadMyNFTs(ids: [String]) async {
+        myNFTStore.setLoading(true)
+        defer { myNFTStore.setLoading(false) }
         do {
             let dtos = try await fetchNFTs(ids: ids)
             myNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: false)))
@@ -97,6 +99,8 @@ final class ProfileViewModel {
     }
 
     private func loadFavoriteNFTs(ids: [String]) async {
+        favoriteNFTStore.setLoading(true)
+        defer { favoriteNFTStore.setLoading(false) }
         do {
             let dtos = try await fetchNFTs(ids: ids)
             favoriteNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: true)))

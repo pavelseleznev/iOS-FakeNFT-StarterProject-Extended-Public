@@ -23,9 +23,14 @@ struct FavoriteNFTView: View {
             if viewModel.items.isEmpty {
                 VStack {
                     Spacer()
-                    Text("У Вас ещё нет избранных NFT")
-                        .font(.bold17)
-                        .multilineTextAlignment(.center)
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    } else {
+                        Text("У Вас ещё нет избранных NFT")
+                            .font(.bold17)
+                            .multilineTextAlignment(.center)
+                    }
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)

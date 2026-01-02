@@ -12,7 +12,7 @@ import Foundation
 final class MyNFTViewModel {
     
     var count: Int { items.count }
-    
+    private(set) var isLoading = false
     private(set) var items: [NFTModel] = []
     private(set) var sortOption: ProfileSortActionsViewModifier.SortOption = .name
     
@@ -26,6 +26,10 @@ final class MyNFTViewModel {
     func setItems(_ newItems: [NFTModel]) {
         items = newItems
         applySort()
+    }
+    
+    func setLoading(_ value: Bool) {
+        isLoading = value
     }
     
     func setSortOption(_ option: ProfileSortActionsViewModifier.SortOption) {
