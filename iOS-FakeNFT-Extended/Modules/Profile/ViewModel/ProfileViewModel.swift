@@ -50,11 +50,11 @@ final class ProfileViewModel {
     func load() async {
         guard !hasLoaded else { return }
         hasLoaded = true
-        defer { hasLoaded = false }
-
+        
         myNFTsTask?.cancel()
         favoritesTask?.cancel()
         do {
+            defer { hasLoaded = false }
             let profileDTO = try await appContainer.api.getProfile()
 
             profile = ProfileModel(
@@ -86,9 +86,10 @@ final class ProfileViewModel {
     
     private func loadMyNFTs(ids: [String]) async {
         myNFTStore.setLoading(true)
-        defer { myNFTStore.setLoading(false) }
+        
         do {
             let dtos = try await fetchNFTs(ids: ids)
+            defer { myNFTStore.setLoading(false) }
             myNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: false)))
         } catch is CancellationError {
             return
@@ -100,8 +101,9 @@ final class ProfileViewModel {
 
     private func loadFavoriteNFTs(ids: [String]) async {
         favoriteNFTStore.setLoading(true)
-        defer { favoriteNFTStore.setLoading(false) }
+        
         do {
+            defer { favoriteNFTStore.setLoading(false) }
             let dtos = try await fetchNFTs(ids: ids)
             favoriteNFTStore.setItems(dtos.map(mapToNFTModel(isFavorite: true)))
         } catch is CancellationError {
