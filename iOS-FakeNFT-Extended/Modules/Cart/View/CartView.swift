@@ -43,6 +43,7 @@ struct CartView: View {
 			.overlay(content: emptyCartView)
 		}
 		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
+		.toolbar(.hidden)
 		.task(priority: .userInitiated) { await viewModel.updateIDs() }
 		.task(priority: .userInitiated) { await viewModel.loadNilNFTs() }
 		.onChange(of: sortOption, viewModel.setSortOption)

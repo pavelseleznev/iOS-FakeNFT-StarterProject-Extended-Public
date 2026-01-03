@@ -56,6 +56,7 @@ struct StatisticsView: View {
 		.task(priority: .userInitiated) {
 			await viewModel.loadNextUsersPage(onAppear: true)
 		}
+		.toolbar(.hidden)
 		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
