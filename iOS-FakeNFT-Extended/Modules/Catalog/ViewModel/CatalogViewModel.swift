@@ -40,14 +40,13 @@ final class CatalogViewModel {
     // MARK: - Public Methods
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        push(.catalogDetails(nftsIDs: item.nftsIDs))
+        push(.catalogDetails(catalog: item))
     }
     
     @Sendable
     func loadCollections() async {
         do {
             collections = try await api.getCollections()
-            print("Gigas \(collections)")
         } catch {
             print(error)
         }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CatalogNFTCollectionView: View {
-    private let nftsIDs: [String]
+    private let catalog: NFTCollectionItemResponse
     private let nftService: NFTServiceProtocol
     private let loadingState: LoadingState
     
@@ -17,11 +17,11 @@ struct CatalogNFTCollectionView: View {
     init(
         api: ObservedNetworkClient,
         push: @escaping (Page) -> Void,
-        nftsIDs: [String],
+        catalog: NFTCollectionItemResponse,
         loadingState: LoadingState,
         nftService: NFTServiceProtocol
     ) {
-        self.nftsIDs = nftsIDs
+        self.catalog = catalog
         self.loadingState = loadingState
         self.nftService = nftService
         
@@ -38,14 +38,24 @@ struct CatalogNFTCollectionView: View {
             Color.ypWhite
             
             VStack(spacing: .zero) {
-                Image(.coverCollectionBig)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 310)
-                    .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 12, bottomTrailingRadius: 12))
+                Group {
+                    AsyncImage(url: catalog.coverImageURL) { image in
+                        image
+                            .resizable()
+                    } placeholder: {
+                        Color.ypBackgroundUniversal
+                            .overlay {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                            }
+                    }
+                }
+                .scaledToFill()
+                .frame(height: 310)
+                .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 12, bottomTrailingRadius: 12))
                 
                 VStack(spacing: .zero) {
-                    Text("Peach")
+                    Text(catalog.name)
                         .foregroundStyle(.ypBlack)
                         .font(.bold22)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,7 +66,7 @@ struct CatalogNFTCollectionView: View {
                             .font(.regular13)
                         
                         Button(action: viewModel.didTapCollectionAuthor) {
-                            Text("John Doe")
+                            Text(catalog.author)
                                 .foregroundStyle(.ypBlueUniversal)
                                 .font(.regular15)
                         }
@@ -66,7 +76,7 @@ struct CatalogNFTCollectionView: View {
                     .padding(.top, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     
-                    Text("Персиковый — как облака над закатным солнцем в океане. В этой коллекции совмещены трогательная нежность и живая игривость сказочных зефирных зверей.")
+                    Text(catalog.description)
                         .foregroundStyle(.ypBlack)
                         .font(.regular13)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,7 +86,7 @@ struct CatalogNFTCollectionView: View {
                 .padding(.horizontal, 16)
                 
                 NFTCollectionView(
-                    nftsIDs: nftsIDs,
+                    nftsIDs: catalog.nftsIDs,
                     nftService: nftService,
                     errorIsPresented: loadingState == .error
                 )
@@ -98,11 +108,7 @@ struct CatalogNFTCollectionView: View {
     CatalogNFTCollectionView(
         api: .mock,
         push: { _ in },
-        nftsIDs: [
-            "d6a02bd1-1255-46cd-815b-656174c1d9c0",
-            "f380f245-0264-4b42-8e7e-c4486e237504",
-            "c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
-        ],
+        catalog: .mock1,
         loadingState: .idle,
         nftService: NFTService(
             api: .mock,

@@ -13,7 +13,7 @@ struct NFTCollectionCell: View {
     var body: some View {
         VStack(spacing: .zero) {
             Group {
-                AsyncImage(url: imageURL) { image in
+                AsyncImage(url: model.coverImageURL) { image in
                     image
                         .resizable()
                 } placeholder: {
@@ -28,7 +28,7 @@ struct NFTCollectionCell: View {
             .frame(height: 140)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             
-            Text("\(model.name) (\(model.nftsIDs.count))")
+            Text("\(model.name) (\(Set(model.nftsIDs).count))")
                 .foregroundStyle(.ypBlack)
                 .font(.bold17)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -38,10 +38,6 @@ struct NFTCollectionCell: View {
         }
         .frame(height: 179)
         .padding(.horizontal, 16)
-    }
-    
-    private var imageURL: URL? {
-        URL(string: model.coverImageURLString)
     }
 }
 

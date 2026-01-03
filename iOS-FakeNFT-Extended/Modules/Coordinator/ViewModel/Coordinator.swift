@@ -69,11 +69,11 @@ extension Coordinator {
         case .aboutAuthor:
             AboutAuthorVIew()
             
-        case .catalogDetails(let nftsIDs):
+        case .catalogDetails(let catalog):
             CatalogNFTCollectionView(
                 api: appContainer.api,
                 push: push,
-                nftsIDs: nftsIDs,
+                catalog: catalog,
                 loadingState: appContainer.api.loadingState,
                 nftService: appContainer.nftService
             )
