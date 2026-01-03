@@ -105,6 +105,8 @@
 		2D433B5A2EFF2C3300397AEC /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		2D8D779E2EFB35A700F2B0CB /* Cart */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cart; sourceTree = "<group>"; };
 		2DD72AA42F07396A00BA0F38 /* Cache */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Cache; sourceTree = "<group>"; };
+		2DEB9C822F07C2A400A917AD /* Authorization */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Authorization; sourceTree = "<group>"; };
+		2DEB9C8D2F08347E00A917AD /* KeyChain */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = KeyChain; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +198,7 @@
 		ABC5E19A2C31F687002B4068 /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
+				2DEB9C8D2F08347E00A917AD /* KeyChain */,
 				2DD72AA42F07396A00BA0F38 /* Cache */,
 				ABC5E19B2C31F69C002B4068 /* MemoryStorage */,
 				ABC5E1A22C31F7E8002B4068 /* NetworkClient */,
@@ -274,6 +277,7 @@
 		ABC5E1B32C31FC03002B4068 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				2DEB9C822F07C2A400A917AD /* Authorization */,
 				2D433B5A2EFF2C3300397AEC /* Onboarding */,
 				2D8D779E2EFB35A700F2B0CB /* Cart */,
 				2D0DD9E02EE1A5FF00EB1D66 /* Splash */,
@@ -320,6 +324,8 @@
 				2D433B5A2EFF2C3300397AEC /* Onboarding */,
 				2D8D779E2EFB35A700F2B0CB /* Cart */,
 				2DD72AA42F07396A00BA0F38 /* Cache */,
+				2DEB9C822F07C2A400A917AD /* Authorization */,
+				2DEB9C8D2F08347E00A917AD /* KeyChain */,
 			);
 			name = "iOS-FakeNFT-Extended";
 			packageProductDependencies = (

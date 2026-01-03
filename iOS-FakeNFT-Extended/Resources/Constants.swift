@@ -8,8 +8,11 @@
 import SwiftUI
 
 enum Constants {
+	static let userDataKeychainService = "com.fakeNFT.auth"
+	
 	static let nftChangePayloadKey = "nftChangePayloadKey"
 	
+	static let isAuthedKey = "isAuthedKey"
 	static let isOnboardingCompleteKey = "isOnboardingCompleteKey"
 	static let appLaunchCountKey = "appLaunchCountKey"
 	static let ratingIsAlreadyPresentedThisLaunchKey = "ratingIsAlreadyPresentedThisLaunchKey"
@@ -22,7 +25,7 @@ enum Constants {
 	static let nftNameLineLimit = 2
 	static let authorNameLineLimit = 2
 	
-	static let defaultAnimation: Animation = .easeInOut(duration: 0.35)
+	static let defaultAnimation: Animation = .easeInOut(duration: 0.25)
 	
 	static let maxRatingStars = 5
 	

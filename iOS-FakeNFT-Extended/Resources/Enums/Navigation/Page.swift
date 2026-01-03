@@ -5,6 +5,7 @@
 //  Created by Superior Warden on 03.12.2025.
 //
 
+import Foundation
 
 enum Page: Identifiable {
 	case nftDetail(
@@ -13,6 +14,7 @@ enum Page: Identifiable {
 		authorWebsiteURLString: String
 	)
 	
+	case authorization(AuthorizationPage)
 	case onboarding
 	case splash
 	case tabView
@@ -30,11 +32,11 @@ enum Page: Identifiable {
 	case paymentMethodChoose
 	case successPayment
 	
-	var id: String { .init(describing: self) }
+	var id: String { "\(self)" }
 	
 	var hasNotBackButton: Bool {
 		switch self {
-		case .splash, .tabView, .successPayment, .onboarding:
+		case .splash, .tabView, .successPayment, .onboarding, .authorization(.login):
 			true
 		default:
 			false

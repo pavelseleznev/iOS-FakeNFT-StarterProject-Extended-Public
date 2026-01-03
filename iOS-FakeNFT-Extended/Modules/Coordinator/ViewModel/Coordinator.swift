@@ -10,7 +10,7 @@ import SwiftUI
 @Observable
 @MainActor
 final class Coordinator {
-	private weak var navigationController: UINavigationController?
+	private let secureStorage = AuthSecureStorage(service: Constants.userDataKeychainService)
 	private let appContainer: AppContainer
 	private var path = [Page]()
 	private var sheet: Sheet?
@@ -23,7 +23,11 @@ final class Coordinator {
 	
 	let rootPage: Page = {
 		if UserDefaults.standard.bool(forKey: Constants.isOnboardingCompleteKey) {
-			.splash
+			if UserDefaults.standard.bool(forKey: Constants.isAuthedKey) {
+				.splash
+			} else {
+				.authorization(.login)
+			}
 		} else {
 			.onboarding
 		}
@@ -36,7 +40,7 @@ extension Coordinator {
 	var bindingPath: Binding<[Page]> {
 		.init(
 			get: { self.path },
-			set: { [weak self] in self?.updatePath($0) }
+			set: { self.updatePath($0) }
 		)
 	}
 	
@@ -66,7 +70,11 @@ extension Coordinator {
 private extension Coordinator {
 	func updatePath(_ newValue: [Page]) {
 		print("Navigation path updated to: \(newValue)")
-		path = newValue
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = newValue
+		}
 	}
 
 	func updateRatingViewIsPresented(_ newValue: Bool) {
@@ -86,7 +94,7 @@ private extension Coordinator {
 }
 
 // --- private helpers ---
-private extension Coordinator {
+private extension Coordinator {	
 	func onLoadingStateFromWebsite(_ state: LoadingState) {
 		appContainer.api.setLoadingStateFromWebsite(state)
 	}
@@ -95,7 +103,7 @@ private extension Coordinator {
 		var transaction = Transaction()
 		transaction.disablesAnimations = true
 		withTransaction(transaction) {
-			push(.tabView)
+			path = [.tabView]
 		}
 	}
 	
@@ -118,7 +126,24 @@ private extension Coordinator {
 		var transaction = Transaction()
 		transaction.disablesAnimations = true
 		withTransaction(transaction) {
-			push(.splash)
+			path = [.authorization(.login)]
+		}
+	}
+	
+	func performRegistrationFlow() {
+		push(.authorization(.reg))
+	}
+	
+	func performForgotPasswordFlow() {
+		push(.authorization(.restorePassword))
+	}
+	
+	func onAuthorizationComplete() {
+		UserDefaults.standard.set(true, forKey: Constants.isAuthedKey)
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = [.splash]
 		}
 	}
 }
@@ -162,6 +187,16 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ page: Page) -> some View {
 		switch page {
+		case .authorization(let page):
+			AuthorizationView(
+				page: page,
+				secureStorage: secureStorage,
+				onComplete: onAuthorizationComplete,
+				performLoginFlow: pop,
+				performRegistrationFlow: performRegistrationFlow,
+				performForgotPasswordFlow: performForgotPasswordFlow
+			)
+			
 		case .onboarding:
 			OnboardingView(onComplete: onOnboardingComplete)
 			
