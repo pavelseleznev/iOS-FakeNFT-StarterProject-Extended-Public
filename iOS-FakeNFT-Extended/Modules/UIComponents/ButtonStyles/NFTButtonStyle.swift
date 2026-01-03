@@ -9,6 +9,10 @@ import SwiftUI
 
 private struct NFTButtonStyle: ButtonStyle {
 	let filled: Bool
+	
+	@Environment(\.isEnabled) private var isEnabled: Bool
+	@Environment(\.colorScheme) private var theme
+	
 	func makeBody(configuration: Configuration) -> some View {
 		configuration.label
 			.padding(10)
@@ -35,10 +39,23 @@ private struct NFTButtonStyle: ButtonStyle {
 					)
 			)
 			.opacity(configuration.isPressed ? 0.5 : 1)
+			.brightness(brightness)
 			.padding(.top, 16)
+	}
+	
+	private var brightness: CGFloat {
+		switch theme {
+		case .dark:
+			isEnabled ? 0 : -0.5
+		case .light:
+			isEnabled ? 0 : 0.5
+		@unknown default:
+			0
+		}
 	}
 }
 
+// MARK: - View Helpers
 extension View {
 	func nftButtonStyle(filled: Bool = false) -> some View {
 		self
@@ -47,8 +64,12 @@ extension View {
 }
 
 
+// MARK: - Preview
 #if DEBUG
 #Preview {
+	
+	@Previewable @State var isEnabled = false
+	
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 		VStack {
@@ -56,13 +77,20 @@ extension View {
 				Text("Hello World!")
 			}
 			.nftButtonStyle()
+			.disabled(!isEnabled)
 			
 			Button(action: {}) {
 				Text("Hello World!")
 			}
 			.nftButtonStyle(filled: true)
+			.disabled(!isEnabled)
 		}
 		.padding(.horizontal)
+	}
+	.onAppear {
+		withAnimation(.easeInOut(duration: 0.15).repeatForever().speed(0.5)) {
+			isEnabled.toggle()
+		}
 	}
 }
 #endif
