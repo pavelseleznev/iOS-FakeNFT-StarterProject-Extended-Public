@@ -20,11 +20,7 @@ final class CatalogViewModel {
     
     // MARK: - Private Properties
     
-    private var collections: [NFTCollectionItemResponse] = [
-        .mock1,
-        .mock2,
-        .mock3
-    ]
+    private var collections: [NFTCollectionItemResponse] = []
     
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
@@ -50,7 +46,8 @@ final class CatalogViewModel {
     @Sendable
     func loadCollections() async {
         do {
-            try await api.getCollections()
+            collections = try await api.getCollections()
+            print("Gigas \(collections)")
         } catch {
             print(error)
         }

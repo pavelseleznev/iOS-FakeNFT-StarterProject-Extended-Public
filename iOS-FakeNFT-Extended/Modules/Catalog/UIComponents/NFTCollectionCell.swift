@@ -12,11 +12,21 @@ struct NFTCollectionCell: View {
     
     var body: some View {
         VStack(spacing: .zero) {
-            Image(.coverCollectionMedium)
-                .resizable()
-                .scaledToFill()
-                .frame(height: 140)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Group {
+                AsyncImage(url: imageURL) { image in
+                    image
+                        .resizable()
+                } placeholder: {
+                    Color.ypBackgroundUniversal
+                        .overlay {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        }
+                }
+            }
+            .scaledToFill()
+            .frame(height: 140)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
             
             Text("\(model.name) (\(model.nftsIDs.count))")
                 .foregroundStyle(.ypBlack)
@@ -28,6 +38,10 @@ struct NFTCollectionCell: View {
         }
         .frame(height: 179)
         .padding(.horizontal, 16)
+    }
+    
+    private var imageURL: URL? {
+        URL(string: model.coverImageURLString)
     }
 }
 
