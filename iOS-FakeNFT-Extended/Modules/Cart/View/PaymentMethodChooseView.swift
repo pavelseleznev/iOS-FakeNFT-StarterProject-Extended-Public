@@ -35,7 +35,9 @@ struct PaymentMethodChooseView: View {
 			VStack {
 				content
 					.overlay(content: emptyView)
+				
 				Spacer()
+				
 				PaymentMethodChooseBottomBar(
 					didTapBuyButton: viewModel.didTapBuyButton,
 					isLoaded: viewModel.isLoaded,
@@ -43,6 +45,10 @@ struct PaymentMethodChooseView: View {
 					paymentInProgress: viewModel.paymentInProgress
 				)
 			}
+		}
+		.animation(Constants.defaultAnimation, value: viewModel.visibleCurrencies)
+		.task(priority: .userInitiated) {
+			await viewModel.loadPaymentMethods()
 		}
 		.toolbar {
 			ToolbarItem(placement: .title) {
@@ -58,31 +64,34 @@ struct PaymentMethodChooseView: View {
 		)
 	}
 	
+	@ViewBuilder
 	private var content: some View {
 		ScrollView(.vertical) {
-			LazyVGrid(
-				columns: columns,
-				alignment: .center,
-				spacing: 7
-			) {
-				ForEach(
-					Array(viewModel.visibleCurrencies.enumerated()),
-					id: \.offset
-				) { _, model in
-					PaymentMethodChooseCell(
-						currency: model?.currency,
-						selected: viewModel.selectedCurrency == model && model != nil
-					)
-					.onTapGesture {
-						viewModel.setCurrency(model)
+			if !viewModel.visibleCurrencies.isEmpty {
+				LazyVGrid(
+					columns: columns,
+					alignment: .center,
+					spacing: 7
+				) {
+					ForEach(
+						Array(viewModel.visibleCurrencies.enumerated()),
+						id: \.offset
+					) { _, model in
+						PaymentMethodChooseCell(
+							currency: model?.currency,
+							selected: viewModel.selectedCurrency == model && model != nil
+						)
+						.onTapGesture {
+							viewModel.setCurrency(model)
+						}
 					}
 				}
+				.padding(.horizontal)
+				.safeAreaPadding(.top)
+				.transition(.scale.combined(with: .opacity))
+			} else {
+				Color.clear
 			}
-			.task(priority: .high) {
-				await viewModel.loadPaymentMethods()
-			}
-			.padding(.horizontal)
-			.safeAreaPadding(.top)
 		}
 	}
 	
@@ -91,8 +100,8 @@ struct PaymentMethodChooseView: View {
 		if viewModel.visibleCurrencies.isEmpty {
 			EmptyContentView(type: .currencies)
 				.transition(
-					.opacity
-						.combined(with: .scale)
+					.scale
+						.combined(with: .opacity)
 						.animation(Constants.defaultAnimation.delay(0.25))
 				)
 		}
