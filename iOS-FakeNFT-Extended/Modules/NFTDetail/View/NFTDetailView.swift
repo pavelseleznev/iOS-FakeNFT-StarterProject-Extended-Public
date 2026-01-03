@@ -7,83 +7,156 @@
 
 import SwiftUI
 
+fileprivate let scrollCoordinateSpace = "scroll"
+fileprivate let spacing: CGFloat = 24
+
 struct NFTDetailView: View {
-	let nft: NFTModel
+	private let backAction: () -> Void
 	
-	@State private var images = [URL:UIImage]()
-	@State private var nftImageScale: CGFloat = 1
-	@State private var selection: URL?
-	private let nftImageMaxScale: CGFloat = 3
+	@State private var viewModel: NFTDetailViewModel
+	@State private var isImageFullScreen = false
+	@State private var isImageDissapeared = false
+	
+	init(
+		model: NFTModelContainer,
+		appContainer: AppContainer,
+		authorID: String,
+		authorWebsiteURLString: String,
+		push: @escaping (Page) -> Void,
+		backAction: @escaping () -> Void
+	) {
+		self.backAction = backAction
+		
+		_viewModel = .init(
+			initialValue: .init(
+				appContainer: appContainer,
+				model: model,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString,
+				push: push
+			)
+		)
+	}
 	
 	var body: some View {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			
-			TabView(selection: $selection) {
-//				ForEach(Array(nft.images.enumerated()), id: \.offset) { index, url in
-//					if let image = images[url] {
-//						Image(uiImage: image)
-//							.resizable()
-//							.aspectRatio(contentMode: .fit)
-//							.scaleEffect(nftImageScale)
-//							.gesture(
-//								MagnifyGesture()
-//									.onChanged { value in
-//										nftImageScale = value.magnification
-//									}
-//									.onEnded { value in
-//										if nftImageScale > nftImageMaxScale {
-//											withAnimation {
-//												nftImageScale = nftImageMaxScale
-//											}
-//										}
-//									}
-//							)
-//							.id(url)
-//							.tag(url)
-//					}
-//				}
-			}
-			.tabViewStyle(.page(indexDisplayMode: .never))
-			.overlay(alignment: .bottom) {
-				HStack {
-					ForEach(Array(images.enumerated()), id: \.offset) { index, url in
-						RoundedRectangle(cornerRadius: 12)
-							.fill(selection == url.key ? .ypBlack : .ypGrayUniversal)
-							.frame(width: .infinity, height: 4)
+		GeometryReader { geo in
+			ScrollView(.vertical) {
+				LazyVStack(spacing: spacing) {
+					NFTDetailImagesView(
+						nftsImagesURLsStrings: viewModel.model.nft.imagesURLsStrings,
+						screenWidth: geo.size.width,
+						isFavourite: viewModel.model.isFavorite,
+						isFullScreen: $isImageFullScreen
+					)
+					.frame(height: imageViewHeight(geo: geo))
+					.padding(.bottom, spacing)
+					.overlay(alignment: .top) {
+						SwipeSuggestionChevronView(
+							isImageFullScreen: isImageFullScreen,
+							screenWidth: geo.size.width
+						)
 					}
+					
+					VStack(spacing: spacing) {
+						NFTDetailAboutView(nft: viewModel.model.nft)
+						
+						Divider().padding(.horizontal)
+						
+						NFTDetailCostWithAddToCartView(
+							model: viewModel.model,
+							cartAction: viewModel.didTapCartButton,
+							modelUpdateTriggerID: viewModel.modelUpdateTriggerID
+						)
+						
+						NFTDetailCurrenciesView(
+							currencies: viewModel.visibleCurrencies,
+							cost: viewModel.model.nft.price
+						)
+						
+						NFTDetailGoToSellerSiteButtonView(
+							action: viewModel.didTapGoToSellerSite,
+							spacing: spacing
+						)
+						
+						SellerNFTsView(
+							authorID: viewModel.authorID,
+							didTapDetail: viewModel.didTapDetail,
+							excludingNFTID: viewModel.model.id,
+							nftService: viewModel.appContainer.nftService,
+							loadAuthor: viewModel.appContainer.api.getUser
+						)
+					}
+					.scaleEffect(y: isImageFullScreen ? 0 : 1, anchor: .bottom)
 				}
-				.padding(.horizontal, 16)
+				.overlay(alignment: .top) {
+					NFTDetailScrollViewHandlerView(
+						mainGeo: geo,
+						scrollCoordinateSpace: scrollCoordinateSpace,
+						isImageFullScreen: $isImageFullScreen,
+						isImageDissapeared: $isImageDissapeared
+					)
+				}
+			}
+			.scrollDisabled(isImageFullScreen)
+			.scrollIndicators(.hidden)
+			.scrollContentBackground(.hidden)
+			.coordinateSpace(name: scrollCoordinateSpace)
+			.ignoresSafeArea(edges: .top)
+			.background(.ypWhite)
+			.overlay(alignment: .top) {
+				NFTDetailToolbarView(
+					model: viewModel.model,
+					isImageFullScreen: $isImageFullScreen,
+					isImageDissapeared: isImageDissapeared,
+					backAction: backAction,
+					didTapLikeButton: viewModel.didTapLikeButton,
+					modelUpdateTriggerID: viewModel.modelUpdateTriggerID
+				)
 			}
 		}
-		.toolbar {
-			ToolbarItem(placement: .confirmationAction) {
-				Image.xmark
-					.foregroundStyle(.ypBlack)
-					.font(.xmarkIcon)
-			}
+		.toolbar(.hidden)
+		.task(priority: .userInitiated) {
+			await viewModel.loadCurrencies()
 		}
-		.task {
-			// load image from url
-			withAnimation {
-//				nft.images.forEach {
-//					images[$0, default: .big] = .big
-//				}
+		.applyRepeatableAlert(
+			isPresneted: $viewModel.currenciesLoadErrorIsPresented,
+			message: .cantGetCurrencies,
+			didTapRepeat: {
+				Task(priority: .high) {
+					await viewModel.loadCurrencies()
+				}
 			}
+		)
+	}
+	
+	func imageViewHeight(geo: GeometryProxy) -> CGFloat {
+		withAnimation(Constants.defaultAnimation) {
+			isImageFullScreen ? geo.size.height + geo.safeAreaInsets.bottom : geo.size.width
 		}
 	}
 }
 
+
 #if DEBUG
 #Preview {
-	@Previewable @State var isPresented = true
-		Color.ypWhite.ignoresSafeArea()
-			.sheet(isPresented: $isPresented) {
-				NavigationStack {
-					NFTDetailView(
-						nft: .mock
-					)
-				}
-			}
+	@Previewable let authorID = "ab33768d-02ac-4f45-9890-7acf503bde54"
+//	@Previewable let authorID = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
+	@Previewable let storage = NFTStorage()
+	@Previewable let api = ObservedNetworkClient()
+	
+	NFTDetailView(
+		model: .mock,
+		appContainer: .init(
+			nftService: NFTService(
+				api: api,
+				storage: storage
+			),
+			api: api
+		),
+		authorID: authorID,
+		authorWebsiteURLString: "",
+		push: {_ in},
+		backAction: {}
+	)
 }
 #endif

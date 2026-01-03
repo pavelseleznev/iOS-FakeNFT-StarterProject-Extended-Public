@@ -48,8 +48,14 @@ struct ProfileContainer<Link: View>: View {
 				Link("Joaquin Phienix.com", destination: .init(string: "https://google.com")!)
 			} actions: {
 				[
-					ProfileActionCell(title: "Мои NFT (112)", action: {}),
-					ProfileActionCell(title: "Избранные NFT (11)", action: {})
+					ProfileActionCell(
+						title: "\(LocalizedStringResource.myNFTs) (112)",
+						action: {}
+					),
+					ProfileActionCell(
+						title: "\(LocalizedStringResource.favouritedNFTs) (11)",
+						action: {}
+					)
 				]
 			}
 			.toolbar {
@@ -71,12 +77,12 @@ struct ProfileContainer<Link: View>: View {
 		
 		ProfileContainer(model: .mock) {
 			Button(action: {}) {
-				Text("Перейти на сайт пользователя")
+				Text(.goToUserSite)
 			}
 			.nftButtonStyle()
 		} actions: {
 			[
-				ProfileActionCell(title: "Коллекция NFT (112)", action: {})
+				ProfileActionCell(title: "\(LocalizedStringResource.nftCollection) (112)", action: {})
 			]
 		}
 	}

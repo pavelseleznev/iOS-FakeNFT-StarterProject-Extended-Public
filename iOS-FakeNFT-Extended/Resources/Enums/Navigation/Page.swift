@@ -5,16 +5,43 @@
 //  Created by Superior Warden on 03.12.2025.
 //
 
+import Foundation
 
 enum Page: Identifiable {
+	case nftDetail(
+		model: NFTModelContainer,
+		authorID: String,
+		authorWebsiteURLString: String
+	)
+	
+	case authorization(AuthorizationPage)
+	case onboarding
+	case splash
 	case tabView
 	case aboutAuthor(urlString: String)
 	
 	// statistics
-	case statNFTCollection(nftsIDs: [String])
+	case statNFTCollection(
+		nftsIDs: [String],
+		authorID: String,
+		authorWebsiteURLString: String
+	)
 	case statProfile(profile: UserListItemResponse)
 	
-	var id: String { .init(describing: self) }
+	// cart
+	case paymentMethodChoose
+	case successPayment
+	
+	var id: String { "\(self)" }
+	
+	var hasNotBackButton: Bool {
+		switch self {
+		case .splash, .tabView, .successPayment, .onboarding, .authorization(.login):
+			true
+		default:
+			false
+		}
+	}
 }
 
 extension Page: Hashable {

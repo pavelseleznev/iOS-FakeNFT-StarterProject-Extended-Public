@@ -10,26 +10,30 @@ import SwiftUI
 enum Tab: String, CaseIterable, Identifiable {
 	case profile
 	case catalog
+	case cart
 	case statistics
 	
-	var title: String {
+	var title: LocalizedStringResource {
 		switch self {
 		case .profile:
-			"Профиль"
+			.profile
 		case .catalog:
-			"Каталог"
+			.catalog
+		case .cart:
+			.cart
 		case .statistics:
-			"Статистика"
+			.statistics
 		}
 	}
 	
-	@ViewBuilder
-	func imageView() -> some View {
+	var imageView: Image {
 		switch self {
 		case .profile:
 			Image.profilePerson
 		case .catalog:
 			Image.catalog
+		case .cart:
+			Image.shoppingBag
 		case .statistics:
 			Image.statistics
 		}
@@ -49,11 +53,19 @@ enum Tab: String, CaseIterable, Identifiable {
 				appContainer: appContainer,
 				push: push
 			)
+			
 		case .catalog:
 			CatalogView(
 				appContainer: appContainer,
 				push: push
 			)
+			
+		case .cart:
+			CartView(
+				nftService: appContainer.nftService,
+				push: push
+			)
+			
 		case .statistics:
 			StatisticsView(
 				api: appContainer.api,

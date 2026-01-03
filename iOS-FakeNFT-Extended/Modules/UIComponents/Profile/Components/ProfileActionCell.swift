@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileActionCell: View, Identifiable {
-	let title: String
+	let title: LocalizedStringResource
 	let action: () -> Void
 	
 	let id = UUID().uuidString

@@ -81,13 +81,24 @@ extension ObservedNetworkClient {
 		let request = GetCurrencyByIDRequest(id: id)
 		return try await fetch(request)
 	}
+	
+	func setCurrency(id: String) async throws -> CurrencySetResponse {
+		let request = SetCurrencyByIDRequest(id: id)
+		return try await fetch(request)
+	}
 }
 
 // --- order ---
 extension ObservedNetworkClient {
 	@discardableResult
-	func putOrderAndPay(payload: OrderPayload) async throws -> OrderRepsonse {
-		let request = PutOrderAndPayRequest(payload: payload)
+	func pay(payload: PayPayload) async throws -> OrderRepsonse {
+		let request = PayRequest(payload: payload)
+		return try await fetch(request)
+	}
+	
+	@discardableResult
+	func putOrder(payload: OrderPayload) async throws -> OrderRepsonse {
+		let request = PutOrderRequest(payload: payload)
 		return try await fetch(request)
 	}
 	

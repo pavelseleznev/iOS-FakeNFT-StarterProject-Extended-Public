@@ -15,13 +15,13 @@ struct ProfilePhotoActionsViewModifier: ViewModifier {
 	func body(content: Content) -> some View {
 		content
 			.confirmationDialog(
-				"Фото профиля",
+				.profilePhoto,
 				isPresented: isPresented,
 				titleVisibility: .visible,
 				actions: {
-					Button("Изменить фото", action: didTapChangePhoto)
-					Button("Удалить фото", role: .destructive, action: didTapDeletePhoto)
-					Button("Отмена", role: .cancel) {}
+					Button(.changePhoto, action: didTapChangePhoto)
+					Button(.deletePhoto, role: .destructive, action: didTapDeletePhoto)
+					Button(.cancel, role: .cancel) {}
 				}
 			)
 	}

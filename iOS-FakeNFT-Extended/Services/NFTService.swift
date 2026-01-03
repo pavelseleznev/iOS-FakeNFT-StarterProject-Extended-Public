@@ -9,15 +9,20 @@ protocol NFTServiceProtocol: Sendable {
 	
     func loadNFT(id: String) async throws -> NFTResponse
 	
-	func didPurchase(id: String) async
+	func didPurchase(ids: [String]) async
 	
 	func addToCart(id: String) async
 	func removeFromCart(id: String) async
 	func isInCart(id: String) async -> Bool
+	func clearCart() async
 	
 	func isFavourite(id: String) async -> Bool
 	func removeFromFavourite(id: String) async
 	func addToFavourite(id: String) async
+	
+	func getAllFavourites() async -> [String]
+	func getAllPurchased() async -> [String]
+	func getAllCart() async -> [String]
 }
 
 actor NFTService: NFTServiceProtocol {
@@ -30,7 +35,22 @@ actor NFTService: NFTServiceProtocol {
     }
 }
 
-// --- helpers ---
+// MARK: - getters
+extension NFTService {
+	func getAllFavourites() async -> [String] {
+		Array(await storage.getFavourites())
+	}
+	
+	func getAllPurchased() async -> [String] {
+		Array(await storage.getPurchased())
+	}
+	
+	func getAllCart() async -> [String] {
+		Array(await storage.getCart())
+	}
+}
+
+// MARK: - helpers
 extension NFTService {
 	func loadNFT(id: String) async throws -> NFTResponse {
 		let nft = try await api.getNFT(by: id)
@@ -56,29 +76,41 @@ extension NFTService {
 	}
 }
 
-// --- cart ---
+// MARK: - cart
 extension NFTService {
-	func didPurchase(id: String) {
-		Task {
-			await storage.addToPurchased(id: id)
+	func clearCart() async {
+		await storage.clearCart()
+		do {
+			try await api.putOrder(payload: .init(nfts: nil))
+		} catch {
+			guard !(error is CancellationError) else { return }
+			print(error.localizedDescription)
+		}
+	}
+	
+	func didPurchase(ids: [String]) {
+		Task(priority: .background) {
+			for id in ids {
+				await storage.addToPurchased(id: id)
+			}
 		}
 	}
 	
 	func addToCart(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.addToCart(id: id)
 			
 			let cart = await storage.getCart()
-			try await api.putOrderAndPay(payload: .init(nfts: cart.isEmpty ? nil : Array(cart)))
+			try await api.putOrder(payload: .init(nfts: cart.isEmpty ? nil : Array(cart)))
 		}
 	}
 	
 	func removeFromCart(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.removeFromCart(id: id)
 			
 			let cart = await storage.getCart()
-			try await api.putOrderAndPay(payload: .init(nfts: cart.isEmpty ? nil : Array(cart)))
+			try await api.putOrder(payload: .init(nfts: cart.isEmpty ? nil : Array(cart)))
 		}
 	}
 	
@@ -87,10 +119,10 @@ extension NFTService {
 	}
 }
 
-// --- favourite ---
+// MARK: - favourite
 extension NFTService {
 	func addToFavourite(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.addToFavourites(id: id)
 			
 			var likes = try await api.getProfile().likes
@@ -100,7 +132,7 @@ extension NFTService {
 	}
 	
 	func removeFromFavourite(id: String) {
-		Task {
+		Task(priority: .background) {
 			await storage.removeFromFavourites(id: id)
 			
 			var likes = try await api.getProfile().likes

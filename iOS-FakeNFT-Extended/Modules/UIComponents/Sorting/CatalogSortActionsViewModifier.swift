@@ -10,12 +10,12 @@ import SwiftUI
 struct CatalogSortActionsViewModifier: ViewModifier {
 	private enum SortOption {
 		case name, nftCount
-		var description: String {
+		var description: LocalizedStringResource {
 			switch self {
 			case .name:
-				"По названию"
+				.byTitle
 			case .nftCount:
-				"По кол-ву NFT"
+				.byNFTQuantity
 			}
 		}
 	}
@@ -31,19 +31,19 @@ struct CatalogSortActionsViewModifier: ViewModifier {
 			.modifier(
 				BaseConfirmationDialogViewModifier(
 					placement: placement,
-					title: "Сортировка",
+					title: .sorting,
 					activeSortOption: activeSortOption.description,
 					actions: {
 						Group {
-							Button("По названию") {
+							Button(.byTitle) {
 								didTapName()
 								activeSortOption = .name
 							}
-							Button("По количеству NFT") {
+							Button(.byNFTQuantity) {
 								didTapNFTCount()
 								activeSortOption = .nftCount
 							}
-							Button("Закрыть", role: .cancel) {}
+							Button(.close, role: .cancel) {}
 						}
 					}
 				)

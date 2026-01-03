@@ -10,41 +10,141 @@ import SwiftUI
 @Observable
 @MainActor
 final class Coordinator {
-	let appContainer: AppContainer
-	var path = NavigationPath()
-	var sheet: Sheet?
-	var fullScreencover: FullScreenCover? = .splash
+	private let secureStorage = AuthSecureStorage(service: Constants.userDataKeychainService)
+	private let appContainer: AppContainer
+	private var path = [Page]()
+	private var sheet: Sheet?
+	private var fullScreenCover: FullScreenCover?
+	private var ratingViewIsPresented = false
 	
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
 	}
+	
+	let rootPage: Page = {
+		if UserDefaults.standard.bool(forKey: Constants.isOnboardingCompleteKey) {
+			if UserDefaults.standard.bool(forKey: Constants.isAuthedKey) {
+				.splash
+			} else {
+				.authorization(.login)
+			}
+		} else {
+			.onboarding
+		}
+	}()
 }
 
 // MARK: - Coordinator Extensions
-
-// --- internal methods ---
+// --- internal bindings ---
 extension Coordinator {
-	func loadUserData() async {
-		do {
-			let profile = try await appContainer.api.getProfile()
-			let cart = try await appContainer.api.getOrder()
-			
-			await appContainer.nftService
-				.didLoadUserData(
-					likes: profile.likes,
-					purchased: profile.nfts,
-					cart: cart.nftsIDs
-				)
-		} catch {
-			print(error)
+	var bindingPath: Binding<[Page]> {
+		.init(
+			get: { self.path },
+			set: { self.updatePath($0) }
+		)
+	}
+	
+	var bindingRatingViewIsPresented: Binding<Bool> {
+		.init(
+			get: { self.ratingViewIsPresented },
+			set: { [weak self] in self?.updateRatingViewIsPresented($0) }
+		)
+	}
+	
+	var bindingSheet: Binding<Sheet?> {
+		.init(
+			get: { self.sheet },
+			set: { [weak self] in self?.updateSheet($0) }
+		)
+	}
+	
+	var bindingsFullScreencover: Binding<FullScreenCover?> {
+		.init(
+			get: { self.fullScreenCover },
+			set: { [weak self] in self?.updateFullScreencover($0) }
+		)
+	}
+}
+
+// --- private updaters ---
+private extension Coordinator {
+	func updatePath(_ newValue: [Page]) {
+		print("Navigation path updated to: \(newValue)")
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = newValue
 		}
+	}
+
+	func updateRatingViewIsPresented(_ newValue: Bool) {
+		print("ratingViewIsPresented is updated to: \(newValue)")
+		ratingViewIsPresented = newValue
+	}
+	
+	func updateSheet(_ newValue: Sheet?) {
+		print("sheet is updated to: \(String(describing: newValue))")
+		sheet = newValue
+	}
+	
+	func updateFullScreencover(_ newValue: FullScreenCover?) {
+		print("fullScreenCover is updated to: \(String(describing: newValue))")
+		fullScreenCover = newValue
 	}
 }
 
 // --- private helpers ---
-private extension Coordinator {
+private extension Coordinator {	
 	func onLoadingStateFromWebsite(_ state: LoadingState) {
 		appContainer.api.setLoadingStateFromWebsite(state)
+	}
+	
+	func onSplashComplete() {
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = [.tabView]
+		}
+	}
+	
+	func didTapDetail(
+		model: NFTModelContainer,
+		authorID: String,
+		authorWebsiteURLString: String
+	) {
+		push(
+			.nftDetail(
+				model: model,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString
+			)
+		)
+	}
+	
+	func onOnboardingComplete() {
+		UserDefaults.standard.set(true, forKey: Constants.isOnboardingCompleteKey)
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = [.authorization(.login)]
+		}
+	}
+	
+	func performRegistrationFlow() {
+		push(.authorization(.reg))
+	}
+	
+	func performForgotPasswordFlow() {
+		push(.authorization(.restorePassword))
+	}
+	
+	func onAuthorizationComplete() {
+		UserDefaults.standard.set(true, forKey: Constants.isAuthedKey)
+		var transaction = Transaction()
+		transaction.disablesAnimations = true
+		withTransaction(transaction) {
+			path = [.splash]
+		}
 	}
 }
 
@@ -56,6 +156,10 @@ extension Coordinator {
 	
 	func pop() {
 		path.removeLast()
+	}
+	
+	func popToRoot() {
+		path.removeLast(path.count - 1)
 	}
 }
 
@@ -70,11 +174,11 @@ extension Coordinator {
 	}
 	
 	func present(_ fullScreenCover: FullScreenCover) {
-		self.fullScreencover = fullScreenCover
+		self.fullScreenCover = fullScreenCover
 	}
 	
 	func dismissFullScreenCover() {
-		self.fullScreencover = nil
+		self.fullScreenCover = nil
 	}
 }
 
@@ -83,13 +187,31 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ page: Page) -> some View {
 		switch page {
+		case .authorization(let page):
+			AuthorizationView(
+				page: page,
+				secureStorage: secureStorage,
+				onComplete: onAuthorizationComplete,
+				performLoginFlow: pop,
+				performRegistrationFlow: performRegistrationFlow,
+				performForgotPasswordFlow: performForgotPasswordFlow
+			)
+			
+		case .onboarding:
+			OnboardingView(onComplete: onOnboardingComplete)
+			
+		case .splash:
+			SplashView(
+				appContainer: appContainer,
+				onComplete: onSplashComplete
+			)
+			
 		case .tabView:
 			TabBarView(
 				appContainer: appContainer,
 				push: push,
 				present: present,
-				dismiss: dismissSheet,
-				pop: pop
+				dismiss: dismissSheet
 			)
 			
 		case .aboutAuthor(let websiteURLString):
@@ -98,11 +220,22 @@ extension Coordinator {
 				onLoadingStateChange: onLoadingStateFromWebsite
 			)
 			
-		case .statNFTCollection(let nftsIDs):
+		case .statNFTCollection(
+			let nftsIDs,
+			let authorID,
+			let authorWebsiteURLString
+		):
 			StatisticsNFTCollectionView(
 				nftsIDs: nftsIDs,
 				loadingState: appContainer.api.loadingState,
-				nftService: appContainer.nftService
+				nftService: appContainer.nftService,
+				didTapDetail: { [weak self] in
+					self?.didTapDetail(
+						model: $0,
+						authorID: authorID,
+						authorWebsiteURLString: authorWebsiteURLString
+					)
+				}
 			)
 			
 		case .statProfile(profile: let profile):
@@ -111,22 +244,41 @@ extension Coordinator {
 				push: push,
 				model: profile
 			)
+			
+		case .paymentMethodChoose:
+			PaymentMethodChooseView(
+				appContainer: appContainer,
+				push: push
+			)
+			
+		case .successPayment:
+			SuccessPaymentView(backToCart: popToRoot)
+			
+		case let .nftDetail(nft, authorID, authorWebsiteURLString):
+			NFTDetailView(
+				model: nft,
+				appContainer: appContainer,
+				authorID: authorID,
+				authorWebsiteURLString: authorWebsiteURLString,
+				push: push,
+				backAction: pop
+			)
 		}
 	}
 	
 	@ViewBuilder
 	func build(_ sheet: Sheet) -> some View {
 		switch sheet {
-		case let .nftDetail(nft):
-			NFTDetailView(nft: nft)
+		case .empty:
+			EmptyView()
 		}
 	}
 	
 	@ViewBuilder
 	func build(_ fullScreenCover: FullScreenCover) -> some View {
 		switch fullScreenCover {
-		case .splash:
-			SplashView()
+		case .empty:
+			EmptyView()
 		}
 	}
 }

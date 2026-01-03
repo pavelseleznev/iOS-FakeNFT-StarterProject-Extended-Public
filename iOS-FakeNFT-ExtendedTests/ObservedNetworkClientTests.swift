@@ -76,12 +76,12 @@ extension ObservedNetworkClientTests {
 
 extension ObservedNetworkClientTests {
 	func testGetUsers() async throws {
-		let users = try await sut.getUsers()
+		let users = try await sut.getUsers(page: 0, sortOption: .name)
 		XCTAssertFalse(users.isEmpty)
 	}
 	
 	func testGetUserByID() async throws {
-		if let user = try await sut.getUsers().first {
+		if let user = try await sut.getUsers(page: 0, sortOption: .name).first {
 			let _ = try await sut.getUser(by: user.id)
 		} else {
 			XCTFail("Users must not be empty")
@@ -98,17 +98,17 @@ extension ObservedNetworkClientTests {
 			nftsToBuy.append(nfts[index].id)
 		}
 		
-		let firstEmptyRepsonse = try await sut.putOrderAndPay(
+		let firstEmptyRepsonse = try await sut.putOrder(
 			payload: .init(nfts: nil)
 		)
 		XCTAssertTrue(firstEmptyRepsonse.nftsIDs.isEmpty)
 		
-		let fullResponse = try await sut.putOrderAndPay(
+		let fullResponse = try await sut.putOrder(
 			payload: .init(nfts: nftsToBuy)
 		)
 		XCTAssertEqual(nftsToBuy, fullResponse.nftsIDs)
 		
-		let secondEmptyRepsonse = try await sut.putOrderAndPay(
+		let secondEmptyRepsonse = try await sut.putOrder(
 			payload: .init(nfts: nil)
 		)
 		XCTAssertTrue(secondEmptyRepsonse.nftsIDs.isEmpty)

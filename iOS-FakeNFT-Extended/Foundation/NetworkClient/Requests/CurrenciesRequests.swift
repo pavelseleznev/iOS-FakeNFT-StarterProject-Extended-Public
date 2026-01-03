@@ -20,3 +20,11 @@ struct GetCurrencyByIDRequest: NetworkRequest {
 		URL(string: "\(RequestConstants.baseURL)/api/v1/currencies/\(id)")
 	}
 }
+
+struct SetCurrencyByIDRequest: NetworkRequest {
+	let id: String
+	
+	var endpoint: URL? {
+		URL(string: "\(RequestConstants.baseURL)/api/v1/orders/1/payment/\(id)")
+	}
+}

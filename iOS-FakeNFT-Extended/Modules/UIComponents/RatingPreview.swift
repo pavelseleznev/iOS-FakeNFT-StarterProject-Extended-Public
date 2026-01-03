@@ -14,6 +14,7 @@ struct RatingPreview: View {
 	
 	var body: some View {
 		content
+			.opacity(rating == nil ? 0 : 1)
 			.overlay {
 				if rating == nil {
 					LoadingShimmerPlaceholderView()

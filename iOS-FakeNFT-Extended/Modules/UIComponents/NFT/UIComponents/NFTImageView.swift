@@ -14,35 +14,61 @@ struct NFTImageView: View {
 	let layout: NFTCellLayout
 	let likeAction: () -> Void
 	
+	@State private var imageIndex: Int = 0
+	
 	var body: some View {
 		Group {
 			if model != nil {
-				AsyncImage(url: imageURL) { image in
-					image
-						.resizable()
-				} placeholder: {
-					Color.ypBackgroundUniversal
-						.overlay {
-							ProgressView()
-								.progressViewStyle(.circular)
+				Color.ypBackgroundUniversal
+					.overlay {
+						AsyncImageCached(urlString: imageURLString) { phase in
+							switch phase {
+							case .empty:
+								ProgressView()
+									.progressViewStyle(.circular)
+							case .loaded(let image):
+								Image(uiImage: image)
+									.resizable()
+									.scaledToFit()
+							case .error:
+								Text("?")
+									.font(.bold22)
+									.foregroundStyle(.ypWhiteUniversal)
+									.onAppear(perform: tryNextImage)
+							}
 						}
-				}
+					}
 			} else {
 				LoadingShimmerPlaceholderView()
 			}
 		}
 		.scaledToFit()
+		.aspectRatio(1, contentMode: .fit)
+		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay(alignment: .topTrailing) {
 			Button(action: likeAction) {
 				favouriteImage
 			}
 		}
-		.aspectRatio(1, contentMode: .fit)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
 	}
 	
-	private var imageURL: URL? {
-		URL(string: model?.imagesURLsStrings.first ?? "")
+	private var imageURLString: String {
+		guard
+			let model,
+			!model.imagesURLsStrings.isEmpty,
+			model.imagesURLsStrings.indices.contains(imageIndex)
+		else { return "" }
+		
+		return model.imagesURLsStrings[imageIndex]
+	}
+	
+	private func tryNextImage() {
+		guard
+			let model,
+			!model.imagesURLsStrings.isEmpty
+		else { return }
+		
+		imageIndex = (imageIndex + 1) % model.imagesURLsStrings.count
 	}
 	
 	private var favouriteImage: some View {
@@ -59,6 +85,9 @@ struct NFTImageView: View {
 		}
 		.padding(.top, 10)
 		.padding(.trailing, 8)
-		.shadow(color: .ypBlackUniversal.opacity(0.6), radius: 10)
+		.shadow(
+			color: .ypBlackUniversal,
+			radius: 8
+		)
 	}
 }

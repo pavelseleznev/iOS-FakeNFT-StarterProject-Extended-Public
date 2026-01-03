@@ -10,25 +10,25 @@ import SwiftUI
 extension View {
 	func applyRepeatableAlert(
 		isPresneted: Binding<Bool>,
-		message: String,
+		message: LocalizedStringResource,
 		didTapRepeat: @escaping () -> Void
 	) -> some View {
 		self
 			.alert(message, isPresented: isPresneted) {
-				Button("Отмена", role: .cancel) {}
-				Button("Повторить", action: didTapRepeat)
+				Button(.cancel, role: .cancel) {}
+				Button(.retry, action: didTapRepeat)
 			}
 	}
 	
 	func applyExitAlert(
 		isPresneted: Binding<Bool>,
-		message: String,
+		message: LocalizedStringResource,
 		didTapExit: @escaping () -> Void
 	) -> some View {
 		self
 			.alert(message, isPresented: isPresneted) {
-				Button("Отмена", role: .cancel) {}
-				Button("Выйти", action: didTapExit)
+				Button(.cancel, role: .cancel) {}
+				Button(.exit, action: didTapExit)
 			}
 	}
 }
@@ -44,7 +44,7 @@ extension View {
 	}
 	.applyRepeatableAlert(
 		isPresneted: $isPresented,
-		message: "Не удалось получить данные",
+		message: .cantGetData,
 		didTapRepeat: {}
 	)
 }
@@ -59,7 +59,7 @@ extension View {
 	}
 	.applyExitAlert(
 		isPresneted: $isPresented,
-		message: "Уверены, что хотите выйти?",
+		message: .sureToExit,
 		didTapExit: {}
 	)
 }

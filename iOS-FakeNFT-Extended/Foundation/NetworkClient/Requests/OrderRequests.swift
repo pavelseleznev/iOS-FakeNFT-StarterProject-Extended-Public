@@ -16,7 +16,21 @@ struct OrderPayload: Encodable {
 	}
 }
 
-struct PutOrderAndPayRequest: NetworkRequest {
+struct PayPayload: Encodable {
+	let nfts: String?
+}
+
+struct PayRequest: NetworkRequest {
+	let payload: PayPayload
+	
+	var httpMethod: HttpMethod = .POST
+	var dto: (any Encodable)? { payload }
+	var endpoint: URL? {
+		URL(string: "\(RequestConstants.baseURL)/api/v1/orders/1")
+	}
+}
+
+struct PutOrderRequest: NetworkRequest {
 	let payload: OrderPayload
 	
 	var httpMethod: HttpMethod = .PUT

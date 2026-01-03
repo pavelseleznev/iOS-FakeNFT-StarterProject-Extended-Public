@@ -7,6 +7,7 @@ protocol NFTStorageProtocol: Sendable, AnyObject {
 	func addToCart(id: String) async
 	func removeFromCart(id: String) async
 	func getCart() async -> Set<String>
+	func clearCart() async
 	
 	func getFavourites() async -> Set<String>
 	func addToFavourites(id: String) async
@@ -21,41 +22,45 @@ actor NFTStorage: NFTStorageProtocol {
 
 // MARK: - cart
 extension NFTStorage {
-	func addToCart(id: String) async {
+	func addToCart(id: String) {
 		cart.insert(id)
 	}
 	
-	func removeFromCart(id: String) async {
+	func removeFromCart(id: String) {
 		cart.remove(id)
 	}
 	
-	func getCart() async -> Set<String> {
+	func getCart() -> Set<String> {
 		cart
+	}
+	
+	func clearCart() {
+		cart = []
 	}
 }
 
 // MARK: - favourite
 extension NFTStorage {
-	func getFavourites() async -> Set<String> {
+	func getFavourites() -> Set<String> {
 		favourites
 	}
 
-	func addToFavourites(id: String) async {
+	func addToFavourites(id: String) {
 		favourites.insert(id)
 	}
 
-	func removeFromFavourites(id: String) async {
+	func removeFromFavourites(id: String) {
 		favourites.remove(id)
 	}
 }
 
 // MARK: - purchase
 extension NFTStorage {
-	func addToPurchased(id: String) async {
+	func addToPurchased(id: String) {
 		purchased.insert(id)
 	}
 
-	func getPurchased() async -> Set<String> {
+	func getPurchased() -> Set<String> {
 		purchased
 	}
 }

@@ -10,14 +10,14 @@ import SwiftUI
 struct ProfileSortActionsViewModifier: ViewModifier {
 	private enum SortOption {
 		case cost, rate, name
-		var description: String {
+		var description: LocalizedStringResource {
 			switch self {
 			case .cost:
-				"По цене"
+				.byCost
 			case .rate:
-				"По рейтингу"
+				.byRating
 			case .name:
-				"По названию"
+				.byTitle
 			}
 		}
 	}
@@ -34,23 +34,23 @@ struct ProfileSortActionsViewModifier: ViewModifier {
 			.modifier(
 				BaseConfirmationDialogViewModifier(
 					placement: placement,
-					title: "Сортировка",
+					title: .sorting,
 					activeSortOption: activeSortOption.description,
 					actions: {
 						Group {
-							Button("По цене") {
+							Button(.byCost) {
 								didTapCost()
 								activeSortOption = .cost
 							}
-							Button("По рейтингу") {
+							Button(.byRating) {
 								didTapRate()
 								activeSortOption = .rate
 							}
-							Button("По названию") {
+							Button(.byTitle) {
 								didTapName()
 								activeSortOption = .name
 							}
-							Button("Закрыть", role: .cancel) {}
+							Button(.close, role: .cancel) {}
 						}
 					}
 				)

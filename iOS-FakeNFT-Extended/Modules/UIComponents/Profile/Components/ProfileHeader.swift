@@ -12,27 +12,32 @@ struct ProfileHeader: View {
 	let imageURLString: String
 	let about: String
 	
+	private let imageSize: CGFloat = 70
+	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
-				Group {
-					if let url = URL(string: imageURLString) {
-						AsyncImage(url: url) { image in
-							image
-								.resizable()
-								.scaledToFit()
-						} placeholder: {
-							ProgressView()
-								.progressViewStyle(.circular)
-						}
-					} else {
-						Image.profilePerson
+				AsyncImageCached(urlString: imageURLString) { phase in
+					switch phase {
+					case .empty:
+						Color.ypLightGrey
+							.overlay {
+								ProgressView()
+							}
+					case .loaded(let image):
+						Image(uiImage: image)
 							.resizable()
 							.scaledToFit()
+					case .error:
+						Image.profilePerson
+							.resizable()
+							.renderingMode(.template)
+							.foregroundStyle(.ypLightGrey)
+							.aspectRatio(contentMode: .fill)
 					}
 				}
-				.clipShape(Circle())
-				.frame(width: 70)
+				.frame(width: imageSize, height: imageSize)
+				.clipShape(.circle)
 				
 				Text(name)
 					.foregroundStyle(.ypBlack)
@@ -41,10 +46,16 @@ struct ProfileHeader: View {
 				Spacer()
 			}
 			
-			Text(about)
-				.lineSpacing(4)
-				.foregroundStyle(.ypBlack)
-				.font(.regular13)
+			Group {
+				if about.isEmpty {
+					Text(.noDescription)
+				} else {
+					Text(about)
+				}
+			}
+			.lineSpacing(4)
+			.foregroundStyle(.ypBlack)
+			.font(.regular13)
 		}
 		.padding(.horizontal, 16)
 	}

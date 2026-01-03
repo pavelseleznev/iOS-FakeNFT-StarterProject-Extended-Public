@@ -27,7 +27,9 @@ final class StatisticsProfileViewModel {
 	func didTapProfileActionCell() {
 		push(
 			.statNFTCollection(
-				nftsIDs: model.nftsIDs
+				nftsIDs: model.nftsIDs,
+				authorID: model.id,
+				authorWebsiteURLString: model.websiteURLString
 			)
 		)
 	}
