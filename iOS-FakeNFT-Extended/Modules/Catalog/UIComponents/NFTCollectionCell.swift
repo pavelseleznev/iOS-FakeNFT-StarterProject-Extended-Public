@@ -18,7 +18,7 @@ struct NFTCollectionCell: View {
                 .frame(height: 140)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             
-            Text("Peach (11)")
+            Text("\(model.name) (\(model.nftsIDs.count))")
                 .foregroundStyle(.ypBlack)
                 .font(.bold17)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -32,5 +32,5 @@ struct NFTCollectionCell: View {
 }
 
 #Preview {
-    NFTCollectionCell(model: .mock)
+    NFTCollectionCell(model: .mock1)
 }

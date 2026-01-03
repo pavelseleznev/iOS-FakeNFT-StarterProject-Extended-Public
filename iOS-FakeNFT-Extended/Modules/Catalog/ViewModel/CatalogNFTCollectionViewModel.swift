@@ -10,11 +10,6 @@ import Observation
 @MainActor
 @Observable
 final class CatalogNFTCollectionViewModel {
-    private(set) var nfts: [NFTModel] = [
-        .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock,
-        .mock, .mock, .badImageURLMock, .badImageURLMock, .mock, .mock
-    ]
-    
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
     
@@ -26,11 +21,7 @@ final class CatalogNFTCollectionViewModel {
         self.push = push
     }
     
-    func didTapLikeButton(for nft: NFTModel) {
-        //TODO: Добавить логику лайка
-    }
-    
-    func didTapCartButton(for nft: NFTModel) {
-        //TODO: Добавить логику добавления в корзину
+    func didTapCollectionAuthor() {
+        push(.aboutAuthor)
     }
 }

@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct CatalogView: View {
+    private static let catalogSortOptionKey: String = "catalogSortOptionKey"
+    
     @State private var viewModel: CatalogViewModel
+    @AppStorage(catalogSortOptionKey) private var sortOption: CatalogSortActionsViewModifier.SortOption = .name
     
     init(
         api: ObservedNetworkClient,
@@ -20,6 +23,8 @@ struct CatalogView: View {
                 push: push
             )
         )
+        
+        viewModel.setSortOption(sortOption)
     }
     
     var body: some View {
@@ -27,7 +32,7 @@ struct CatalogView: View {
             Color.ypWhite.ignoresSafeArea()
             
             List {
-                ForEach(viewModel.collections) { item in
+                ForEach(viewModel.visibleCollections) { item in
                     NFTCollectionCell(model: item)
                         .onTapGesture {
                             viewModel.didSelectItem(item)
@@ -40,13 +45,17 @@ struct CatalogView: View {
             .padding(.top, 20)
             .listRowSpacing(8)
             .listStyle(.plain)
+            .animation(.easeInOut(duration: 0.15), value: viewModel.visibleCollections)
+        }
+        .task(priority: .userInitiated) {
+            await viewModel.loadCollections()
         }
         .safeAreaTopBackground()
         .applyCatalogSort(
             placement: .safeAreaTop,
-            didTapName: viewModel.applySortByName,
-            didTapNFTCount: viewModel.applySortByNFTCount
+            activeSortOption: $sortOption
         )
+        .onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
     }
 }
 
