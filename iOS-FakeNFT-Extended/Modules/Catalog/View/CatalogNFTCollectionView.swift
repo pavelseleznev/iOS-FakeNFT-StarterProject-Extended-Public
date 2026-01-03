@@ -8,12 +8,23 @@
 import SwiftUI
 
 struct CatalogNFTCollectionView: View {
+    private let nftsIDs: [String]
+    private let nftService: NFTServiceProtocol
+    private let loadingState: LoadingState
+    
     @State private var viewModel: CatalogNFTCollectionViewModel
     
     init(
         api: ObservedNetworkClient,
-        push: @escaping (Page) -> Void
+        push: @escaping (Page) -> Void,
+        nftsIDs: [String],
+        loadingState: LoadingState,
+        nftService: NFTServiceProtocol
     ) {
+        self.nftsIDs = nftsIDs
+        self.loadingState = loadingState
+        self.nftService = nftService
+        
         _viewModel = .init(
             initialValue: .init(
                 api: api,
@@ -44,7 +55,7 @@ struct CatalogNFTCollectionView: View {
                             .foregroundStyle(.ypBlack)
                             .font(.regular13)
                         
-                        Button(action: {}) {
+                        Button(action: viewModel.didTapCollectionAuthor) {
                             Text("John Doe")
                                 .foregroundStyle(.ypBlueUniversal)
                                 .font(.regular15)
@@ -65,9 +76,9 @@ struct CatalogNFTCollectionView: View {
                 .padding(.horizontal, 16)
                 
                 NFTCollectionView(
-                    nfts: viewModel.nfts,
-                    likeActionOn: viewModel.didTapLikeButton,
-                    cartActionOn: viewModel.didTapCartButton
+                    nftsIDs: nftsIDs,
+                    nftService: nftService,
+                    errorIsPresented: loadingState == .error
                 )
                 .safeAreaPadding(.bottom)
                 .padding(.bottom, 20)

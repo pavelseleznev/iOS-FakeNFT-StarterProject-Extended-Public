@@ -5,7 +5,6 @@
 //  Created by Superior Warden on 03.12.2025.
 //
 
-
 enum Page: Identifiable {
     case splash
 	case tabView
@@ -16,12 +15,14 @@ enum Page: Identifiable {
     
     case profile(ProfilePage)
     
+    case catalogDetails(nftsIDs: [String])
+    
     var id: String { .init(describing: self)}
 }
 
 extension Page: Hashable {
     static func == (lhs: Page, rhs: Page) -> Bool {
-        lhs.id == rhs.id
+        lhs.hashValue == rhs.hashValue
     }
     
     func hash(into hasher: inout Hasher) {

@@ -107,6 +107,15 @@ extension Coordinator {
                 FavoriteNFTView(appContainer: appContainer)
                     .customNavigationBackButton(backAction: pop)
             }
+            
+        case .catalogDetails(let nftsIDs):
+            CatalogNFTCollectionView(
+                api: appContainer.api,
+                push: push,
+                nftsIDs: nftsIDs,
+                loadingState: appContainer.api.loadingState,
+                nftService: appContainer.nftService
+            )
         }
     }
 	

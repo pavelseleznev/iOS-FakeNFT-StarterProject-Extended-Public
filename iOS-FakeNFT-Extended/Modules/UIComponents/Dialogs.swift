@@ -42,20 +42,18 @@ extension View {
 			)
 	}
 	
-	func applyCatalogSort(
-		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapName: @escaping () -> Void,
-		didTapNFTCount: @escaping () -> Void
-	) -> some View {
-		self
-			.modifier(
-				CatalogSortActionsViewModifier(
-					placement: placement,
-					didTapName: didTapName,
-					didTapNFTCount: didTapNFTCount
-				)
-			)
-	}
+    func applyCatalogSort(
+        placement: BaseConfirmationDialogTriggerPlacement,
+        activeSortOption: Binding<CatalogSortActionsViewModifier.SortOption>
+    ) -> some View {
+        self
+            .modifier(
+                CatalogSortActionsViewModifier(
+                    placement: placement,
+                    activeSortOption: activeSortOption
+                )
+            )
+    }
 	
 	func applyProfilePhotoActions(
 		isPresented: Binding<Bool>,
@@ -101,16 +99,15 @@ extension View {
 }
 
 #Preview("Catalog Sort") {
-	NavigationStack {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-		}
-		.applyCatalogSort(
-			placement: .safeAreaTop,
-			didTapName: {},
-			didTapNFTCount: {}
-		)
-	}
+    NavigationStack {
+        ZStack {
+            Color.ypWhite.ignoresSafeArea()
+        }
+        .applyCatalogSort(
+            placement: .safeAreaTop,
+            activeSortOption: .constant(.name)
+        )
+    }
 }
 
 #Preview("Profile Image") {

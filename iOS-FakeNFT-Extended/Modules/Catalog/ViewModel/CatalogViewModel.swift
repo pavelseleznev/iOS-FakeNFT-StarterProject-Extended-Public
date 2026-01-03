@@ -10,20 +10,28 @@ import Observation
 @MainActor
 @Observable
 final class CatalogViewModel {
-    private(set) var collections: [NFTCollectionItemResponse] = [
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock,
-        .mock
+    typealias SortOption = CatalogSortActionsViewModifier.SortOption
+    
+    // MARK: - Public Properties
+    
+    var visibleCollections: [NFTCollectionItemResponse] {
+        collections.sorted(by: collectionsSortComparator)
+    }
+    
+    // MARK: - Private Properties
+    
+    private var collections: [NFTCollectionItemResponse] = [
+        .mock1,
+        .mock2,
+        .mock3
     ]
     
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
+    
+    private var currentSortOption: SortOption = .name
+    
+    // MARK: - Initializers
     
     init(
         api: ObservedNetworkClient,
@@ -33,15 +41,36 @@ final class CatalogViewModel {
         self.push = push
     }
     
-    func applySortByName() {
-        //TODO: Добавить логику сортировки
-    }
-    
-    func applySortByNFTCount() {
-        //TODO: Добавить логику сортировки
-    }
+    // MARK: - Public Methods
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        //TODO: Добавить логику навигации
+        push(.catalogDetails(nftsIDs: item.nftsIDs))
+    }
+    
+    @Sendable
+    func loadCollections() async {
+        do {
+            try await api.getCollections()
+        } catch {
+            print(error)
+        }
+    }
+    
+    func setSortOption(_ option: SortOption) {
+        currentSortOption = option
+    }
+    
+    // MARK: - Private Methods
+    
+    private func collectionsSortComparator(
+        _ first: NFTCollectionItemResponse,
+        _ second: NFTCollectionItemResponse
+    ) -> Bool {
+        switch currentSortOption {
+        case .name:
+            first.name.localizedStandardCompare(second.name) == .orderedAscending
+        case .nftCount:
+            first.nftsIDs.count > second.nftsIDs.count
+        }
     }
 }

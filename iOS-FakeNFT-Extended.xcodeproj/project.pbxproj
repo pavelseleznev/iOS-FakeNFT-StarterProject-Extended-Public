@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		046A8B722F0255CD005B0183 /* NFTModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 046A8B712F0255CD005B0183 /* NFTModelContainer.swift */; };
 		2D0DD8C22EE00CFD00EB1D66 /* ObservedNetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C12EE00CE100EB1D66 /* ObservedNetworkClient.swift */; };
 		2D0DD8C42EE01BBA00EB1D66 /* DataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C32EE01BBA00EB1D66 /* DataLoader.swift */; };
 		2D0DD8C62EE01C7100EB1D66 /* OrderRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DD8C52EE01C7100EB1D66 /* OrderRequests.swift */; };
@@ -56,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		046A8B712F0255CD005B0183 /* NFTModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTModelContainer.swift; sourceTree = "<group>"; };
 		2D0DD88D2EDEF00400EB1D66 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2D0DD8C12EE00CE100EB1D66 /* ObservedNetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservedNetworkClient.swift; sourceTree = "<group>"; };
 		2D0DD8C32EE01BBA00EB1D66 /* DataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataLoader.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 		ABC5E19E2C31F6C1002B4068 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				046A8B712F0255CD005B0183 /* NFTModelContainer.swift */,
 				2DC8CB182EE2F3DE005A7229 /* NFTModel.swift */,
 				D4D7D34F2EF0803200CC61DE /* ProfileModel.swift */,
 				ABC5E19F2C31F6CB002B4068 /* Network */,
@@ -449,6 +452,7 @@
 				2DC8CB422EE4875A005A7229 /* CollectionRequests.swift in Sources */,
 				2DC8CB402EE4872F005A7229 /* ProfileRequests.swift in Sources */,
 				2DC8CB302EE31C1B005A7229 /* UserListItemResponse.swift in Sources */,
+				046A8B722F0255CD005B0183 /* NFTModelContainer.swift in Sources */,
 				ABC5E1A62C31F815002B4068 /* NetworkRequest.swift in Sources */,
 				ABC5E1A42C31F800002B4068 /* NetworkClient.swift in Sources */,
 				ABC5E1A12C31F6D7002B4068 /* NFTResponse.swift in Sources */,
