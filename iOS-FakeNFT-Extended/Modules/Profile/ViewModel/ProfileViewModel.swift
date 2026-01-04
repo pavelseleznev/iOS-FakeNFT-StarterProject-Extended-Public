@@ -74,11 +74,8 @@ final class ProfileViewModel {
             favoritesTask = Task(priority: .userInitiated) { [weak self] in
                 await self?.loadFavoriteNFTs(ids: profileDTO.likes)
             }
-
-        } catch is CancellationError {
-            return
         } catch {
-            if let urlError = error as? URLError, urlError.code == .cancelled { return }
+            guard !error.isCancellation else { return }
             loadErrorPresented = true
             loadErrorMessage = "Не удалось загрузить данные"
         }
