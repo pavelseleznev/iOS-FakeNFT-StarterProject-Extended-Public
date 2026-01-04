@@ -66,7 +66,7 @@ final class CatalogViewModel {
         case .name:
             first.name.localizedStandardCompare(second.name) == .orderedAscending
         case .nftCount:
-            first.nftsIDs.count > second.nftsIDs.count
+            Set(first.nftsIDs).count > Set(second.nftsIDs).count
         }
     }
 }
