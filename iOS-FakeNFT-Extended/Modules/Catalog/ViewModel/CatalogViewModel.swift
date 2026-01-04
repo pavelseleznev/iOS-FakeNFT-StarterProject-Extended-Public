@@ -20,11 +20,7 @@ final class CatalogViewModel {
     
     // MARK: - Private Properties
     
-    private var collections: [NFTCollectionItemResponse] = [
-        .mock1,
-        .mock2,
-        .mock3
-    ]
+    private var collections: [NFTCollectionItemResponse] = []
     
     private let api: ObservedNetworkClient
     private let push: (Page) -> Void
@@ -44,13 +40,13 @@ final class CatalogViewModel {
     // MARK: - Public Methods
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        push(.catalogDetails(nftsIDs: item.nftsIDs))
+        push(.catalogDetails(catalog: item))
     }
     
     @Sendable
     func loadCollections() async {
         do {
-            try await api.getCollections()
+            collections = try await api.getCollections()
         } catch {
             print(error)
         }
@@ -70,7 +66,7 @@ final class CatalogViewModel {
         case .name:
             first.name.localizedStandardCompare(second.name) == .orderedAscending
         case .nftCount:
-            first.nftsIDs.count > second.nftsIDs.count
+            Set(first.nftsIDs).count > Set(second.nftsIDs).count
         }
     }
 }

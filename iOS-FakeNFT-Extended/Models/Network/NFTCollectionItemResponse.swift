@@ -22,6 +22,10 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
         case nftsIDs = "nfts"
     }
     
+    var coverImageURL: URL? {
+        URL(string: coverImageURLString)
+    }
+    
     static var mock1: Self {
         .init(
             createdAt: "createdAt",
