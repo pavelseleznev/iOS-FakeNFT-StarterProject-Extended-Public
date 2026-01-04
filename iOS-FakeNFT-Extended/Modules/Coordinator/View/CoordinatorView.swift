@@ -27,6 +27,15 @@ struct CoordinatorView: View {
                 }
                 .overlay(content: loadingView)
                 .allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
+                .applyRepeatableAlert(
+                    isPresneted: .constant(coordinator.appContainer.api.loadingState == .error),
+                    message: "Не удалось получить данные", // TODO: move to constants
+                    didTapRepeat: {
+                        Task {
+                            await coordinator.loadUserData()
+                        }
+                    }
+                )
                 .onAppear(perform: checkAuthState)
                 .task {
                     await coordinator.loadUserData()
