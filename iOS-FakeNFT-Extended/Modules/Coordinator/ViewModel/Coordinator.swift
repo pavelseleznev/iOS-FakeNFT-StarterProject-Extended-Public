@@ -11,12 +11,20 @@ import SwiftUI
 @MainActor
 final class Coordinator {
 	let appContainer: AppContainer
+    
+    let myNFTStore: MyNFTViewModel
+    let favoriteNFTStore: FavoriteNFTViewModel
+    
 	var path = NavigationPath()
 	var sheet: Sheet?
 	var fullScreencover: FullScreenCover? = .splash
+    var profileStore: ProfileStore
 	
-	init(appContainer: AppContainer) {
+    init(appContainer: AppContainer, profileStore: ProfileStore) {
 		self.appContainer = appContainer
+        self.profileStore = profileStore
+        self.myNFTStore = MyNFTViewModel(items: [])
+        self.favoriteNFTStore = FavoriteNFTViewModel(items: [], api: appContainer.api)
 	}
 }
 
@@ -29,6 +37,7 @@ extension Coordinator {
 	}
 	
 	func pop() {
+        guard !path.isEmpty else { return }
 		path.removeLast()
 	}
 }
@@ -60,6 +69,8 @@ extension Coordinator {
         case .tabView:
             TabBarView(
                 appContainer: appContainer,
+                myNFTStore: myNFTStore,
+                favoriteNFTStore: favoriteNFTStore,
                 push: push,
                 present: present,
                 dismiss: dismissSheet,
@@ -75,18 +86,22 @@ extension Coordinator {
         case .editProfile(let profile):
             EditProfileView(
                 profile: profile,
-                onSave: { updated in
-                    //TODO: save to your profile service / storage
-                    self.pop()
+                profileStore: profileStore,
+                onSave: { _ in
+                    Task { @MainActor in
+                        self.pop()
+                    }
                 },
                 onCancel: {
-                    self.pop()
+                    Task { @MainActor in
+                        self.pop()
+                    }
                 }
             )
         case .myNFTs:
-            MyNFTView()
+            MyNFTView(viewModel: myNFTStore)
         case .favoriteNFTs:
-            FavoriteNFTView(favoriteStore: appContainer.favoriteStore)
+            FavoriteNFTView(viewModel: favoriteNFTStore)
         }
     }
 	

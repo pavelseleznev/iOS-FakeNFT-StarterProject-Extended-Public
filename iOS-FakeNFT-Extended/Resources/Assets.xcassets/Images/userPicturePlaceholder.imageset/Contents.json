@@ -1,15 +1,16 @@
 {
   "images" : [
     {
-      "filename" : "April.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "userPicturePlaceholder@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "userPicturePlaceholder@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

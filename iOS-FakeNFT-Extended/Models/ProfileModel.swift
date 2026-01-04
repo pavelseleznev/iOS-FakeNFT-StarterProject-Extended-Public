@@ -13,3 +13,7 @@ struct ProfileModel {
     let website: String
     let avatarURL: String
 }
+
+extension ProfileModel {
+    static var preview: ProfileModel { MockProfileProvider().profile() }
+}

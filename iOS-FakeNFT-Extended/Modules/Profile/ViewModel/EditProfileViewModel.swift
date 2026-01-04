@@ -22,18 +22,22 @@ final class EditProfileViewModel {
     var isPhotoURLAlertPresented = false
     var photoURLInput = ""
     var loadingState: LoadingState = .idle
+    var isSaveErrorPresented = false
+    var saveErrorMessage = "Не удалось сохранить данные"
     
     let originalProfile: ProfileModel
     
-    private let placeholderAvatar = "userPickPlaceholder"
+    private let userPicturePlaceholder = "userPicturePlaceholder"
+    private let profileStore: ProfileStore
     
     // MARK: - Init
-    init(profile: ProfileModel) {
+    init(profile: ProfileModel, profileStore: ProfileStore) {
         self.name = profile.name
         self.about = profile.about
         self.website = profile.website
-        self.avatarURL = profile.avatarURL.isEmpty ? placeholderAvatar : profile.avatarURL
+        self.avatarURL = profile.avatarURL.isEmpty ? userPicturePlaceholder : profile.avatarURL
         self.originalProfile = profile
+        self.profileStore = profileStore
     }
     
     // MARK: - Computed flags
@@ -61,19 +65,18 @@ final class EditProfileViewModel {
     func deletePhotoTapped() {
         isPhotoActionsPresented = false
         photoURLInput = ""
-        avatarURL = placeholderAvatar
+        avatarURL = userPicturePlaceholder
     }
     
-    func saveTapped() async throws -> ProfileModel {
-        loadingState = .fetching
-        defer { loadingState = .idle }
-        try await Task.sleep(for: .seconds(3))
-        return ProfileModel(
+    func saveTapped() async throws {
+        let edited = ProfileModel(
             name: name,
             about: about,
             website: website,
             avatarURL: avatarURL
         )
+        
+        try await profileStore.updateProfile(with: edited)
     }
     
     func photoURLSaved(_ url: String) {

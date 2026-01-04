@@ -7,17 +7,38 @@
 
 import Foundation
 
+@MainActor
 @Observable
 final class MyNFTViewModel {
-    var items: [NFTModel]
     
-    init(items: [NFTModel]) {
-        self.items = items
-        sort(by: .name)
+    var count: Int { items.count }
+    private(set) var isLoading = false
+    private(set) var items: [NFTModel] = []
+    private(set) var sortOption: ProfileSortActionsViewModifier.SortOption = .name
+    
+    init(
+        items: [NFTModel] = [],
+        sortOption: ProfileSortActionsViewModifier.SortOption = .name) {
+        self.sortOption = sortOption
+        setItems(items)
     }
     
-    func sort(by option: ProfileSortActionsViewModifier.SortOption) {
-        switch option {
+    func setItems(_ newItems: [NFTModel]) {
+        items = newItems
+        applySort()
+    }
+    
+    func setLoading(_ value: Bool) {
+        isLoading = value
+    }
+    
+    func setSortOption(_ option: ProfileSortActionsViewModifier.SortOption) {
+        sortOption = option
+        applySort()
+    }
+    
+    private func applySort() {
+        switch sortOption {
         case .name:
             items.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         case .cost:

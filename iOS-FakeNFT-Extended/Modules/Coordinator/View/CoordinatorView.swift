@@ -37,21 +37,20 @@ struct CoordinatorView: View {
 		}
 	}
 	
-	init() {
-		let api = ObservedNetworkClient()
-		let nftStorage = NFTStorage()
-        let profileProvider: ProfileProvider = MockProfileProvider()
-		let nft = NFTService(api: api, storage: nftStorage)
-        let networkClient: NetworkClient = DefaultNetworkClient()
-        let profileService: ProfileService = DefaultProfileService(client: networkClient)
-		let appContainer = AppContainer(
-            nft: nft,
-            api: api,
-            profileProvider: profileProvider,
-            profileService: profileService
+    init() {
+        let api = ObservedNetworkClient()
+        let nftStorage = NFTStorage()
+        let nft = NFTService(api: api, storage: nftStorage)
+        let appContainer = AppContainer(
+            nftService: nft,
+            api: api
         )
-		_coordinator = State(initialValue: .init(appContainer: appContainer))
-	}
+        let profileStore = ProfileStore(api: api, initial: ProfileModel.preview)
+        _coordinator = State(initialValue: .init(
+            appContainer: appContainer, profileStore: profileStore
+        )
+        )
+    }
 	
 	private func loadingView() -> some View {
 		LoadingView(loadingState: coordinator.appContainer.api.loadingState)

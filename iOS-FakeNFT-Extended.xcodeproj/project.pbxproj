@@ -14,7 +14,7 @@
 		2DC8CB2C2EE31BBA005A7229 /* NFTCollectionItemResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB2B2EE31BBA005A7229 /* NFTCollectionItemResponse.swift */; };
 		2DC8CB302EE31C1B005A7229 /* UserListItemResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB2F2EE31C1B005A7229 /* UserListItemResponse.swift */; };
 		2DC8CB322EE31C39005A7229 /* ProfileResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB312EE31C34005A7229 /* ProfileResponse.swift */; };
-		2DC8CB342EE31CB0005A7229 /* OrderRepsonse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB332EE31CAA005A7229 /* OrderRepsonse.swift */; };
+		2DC8CB342EE31CB0005A7229 /* OrderResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB332EE31CAA005A7229 /* OrderResponse.swift */; };
 		2DC8CB382EE31DCA005A7229 /* CurrencyResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB372EE31DCA005A7229 /* CurrencyResponse.swift */; };
 		2DC8CB3C2EE31DE0005A7229 /* PaymentResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB3B2EE31DDB005A7229 /* PaymentResponse.swift */; };
 		2DC8CB3E2EE48713005A7229 /* UsersRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC8CB3D2EE48713005A7229 /* UsersRequests.swift */; };
@@ -32,7 +32,6 @@
 		ABC5E1A62C31F815002B4068 /* NetworkRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1A52C31F815002B4068 /* NetworkRequest.swift */; };
 		ABC5E1AB2C31FACD002B4068 /* NFTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1AA2C31FACD002B4068 /* NFTService.swift */; };
 		ABC5E1B02C31FB90002B4068 /* RequestConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC5E1AF2C31FB90002B4068 /* RequestConstants.swift */; };
-		ABC5E1D82C3204A9002B4068 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ABC5E1D72C3204A9002B4068 /* Kingfisher */; };
 		D4D7D3502EF0803300CC61DE /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D7D34F2EF0803200CC61DE /* ProfileModel.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,7 +61,7 @@
 		2DC8CB2B2EE31BBA005A7229 /* NFTCollectionItemResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFTCollectionItemResponse.swift; sourceTree = "<group>"; };
 		2DC8CB2F2EE31C1B005A7229 /* UserListItemResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserListItemResponse.swift; sourceTree = "<group>"; };
 		2DC8CB312EE31C34005A7229 /* ProfileResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileResponse.swift; sourceTree = "<group>"; };
-		2DC8CB332EE31CAA005A7229 /* OrderRepsonse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderRepsonse.swift; sourceTree = "<group>"; };
+		2DC8CB332EE31CAA005A7229 /* OrderResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderResponse.swift; sourceTree = "<group>"; };
 		2DC8CB372EE31DCA005A7229 /* CurrencyResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyResponse.swift; sourceTree = "<group>"; };
 		2DC8CB3B2EE31DDB005A7229 /* PaymentResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentResponse.swift; sourceTree = "<group>"; };
 		2DC8CB3D2EE48713005A7229 /* UsersRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsersRequests.swift; sourceTree = "<group>"; };
@@ -106,7 +105,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABC5E1D82C3204A9002B4068 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,7 +218,7 @@
 			children = (
 				2DC8CB3B2EE31DDB005A7229 /* PaymentResponse.swift */,
 				2DC8CB372EE31DCA005A7229 /* CurrencyResponse.swift */,
-				2DC8CB332EE31CAA005A7229 /* OrderRepsonse.swift */,
+				2DC8CB332EE31CAA005A7229 /* OrderResponse.swift */,
 				2DC8CB312EE31C34005A7229 /* ProfileResponse.swift */,
 				2DC8CB2F2EE31C1B005A7229 /* UserListItemResponse.swift */,
 				2DC8CB2B2EE31BBA005A7229 /* NFTCollectionItemResponse.swift */,
@@ -310,7 +308,6 @@
 			);
 			name = "iOS-FakeNFT-Extended";
 			packageProductDependencies = (
-				ABC5E1D72C3204A9002B4068 /* Kingfisher */,
 			);
 			productName = "iOS-FakeNFT-Extended";
 			productReference = ABC5E1682C31F5AF002B4068 /* iOS-FakeNFT-Extended.app */;
@@ -385,7 +382,6 @@
 			);
 			mainGroup = ABC5E15F2C31F5AF002B4068;
 			packageReferences = (
-				ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = ABC5E1692C31F5AF002B4068 /* Products */;
 			projectDirPath = "";
@@ -434,7 +430,7 @@
 				2DC8CB3E2EE48713005A7229 /* UsersRequests.swift in Sources */,
 				2DC8CB322EE31C39005A7229 /* ProfileResponse.swift in Sources */,
 				2DC8CB3C2EE31DE0005A7229 /* PaymentResponse.swift in Sources */,
-				2DC8CB342EE31CB0005A7229 /* OrderRepsonse.swift in Sources */,
+				2DC8CB342EE31CB0005A7229 /* OrderResponse.swift in Sources */,
 				2DC8CB2C2EE31BBA005A7229 /* NFTCollectionItemResponse.swift in Sources */,
 				2DC8CB192EE2F3DE005A7229 /* NFTModel.swift in Sources */,
 				2DC8CB462EE4878A005A7229 /* CurrenciesRequests.swift in Sources */,
@@ -787,25 +783,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 7.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		ABC5E1D72C3204A9002B4068 /* Kingfisher */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ABC5E1D62C3204A9002B4068 /* XCRemoteSwiftPackageReference "Kingfisher" */;
-			productName = Kingfisher;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = ABC5E1602C31F5AF002B4068 /* Project object */;
 }
