@@ -59,10 +59,8 @@ struct AuthorizationView: View {
 		.navigationModifiers(title: navigationTitle)
 		.keyboardMessageReceive(setFocusState: viewModel.setFocusState)
 		.safeAreaInset(edge: .bottom, content: enterWithResetContent)
-		.onAppear {
-			viewModel.setFocusState(false)
-			debouncer.onDebounce = viewModel.onDebounce
-		}
+		.onAppear(perform: performOnAppear)
+		.onDisappear(perform: performOnDissapear)
 		.onChange(of: viewModel.bindingPassword.wrappedValue) {
 			viewModel.loginResult = nil
 		}
@@ -208,6 +206,17 @@ fileprivate extension AuthorizationView {
 
 // --- helpers ---
 private extension AuthorizationView {
+	func performOnAppear() {
+		viewModel.setFocusState(false)
+		debouncer.onDebounce = viewModel.onDebounce
+	}
+	
+	func performOnDissapear() {
+		viewModel.viewDidDisappeared()
+		debouncer.onDebounce = nil
+		debouncer.text = ""
+	}
+	
 	var keyboardDismissGesture: some Gesture {
 		DragGesture()
 			.onChanged {

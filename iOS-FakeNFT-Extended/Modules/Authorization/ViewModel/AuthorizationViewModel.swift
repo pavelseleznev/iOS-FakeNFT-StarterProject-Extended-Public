@@ -75,6 +75,11 @@ final class AuthorizationViewModel {
 // MARK: - AuthorizationViewModel Extensions
 // --- internal helpers ---
 extension AuthorizationViewModel {
+	func viewDidDisappeared() {
+		password = ""
+		email = ""
+	}
+	
 	func setFocusState(_ state: Bool) {
 		isFocused = state
 	}
@@ -281,7 +286,7 @@ extension AuthorizationViewModel {
 		guard !isLoading else { return }
 		isLoading = true
 		
-		Task(priority: .high) {
+		Task(priority: .userInitiated) {
 			defer { isLoading = false }
 			
 			try? await self.simulateFetching()
