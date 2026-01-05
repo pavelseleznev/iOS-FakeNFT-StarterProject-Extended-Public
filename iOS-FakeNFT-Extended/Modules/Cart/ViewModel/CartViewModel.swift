@@ -27,7 +27,7 @@ final class CartViewModel {
 	private let cartService: CartServiceProtocol
 	private let push: (Page) -> Void
 	
-	private let cartPingInterval: Duration = .seconds(1)
+	private let cartPingInterval: Duration = .seconds(5)
 	
 	init(
 		nftService: NFTServiceProtocol,
@@ -56,91 +56,94 @@ extension CartViewModel {
 		clearNftsLoadTask()
 	}
 	
-	func updateIDs() async {
-		if let idsUpdateTask {
-			await idsUpdateTask.value
-			return
+	func updateIDs(isPolling: Bool) async {
+		do {
+			try Task.checkCancellation()
+			let loadedIDs = await cartService.getCart()
+			
+			let oldIDs = Set(nfts.keys)
+			let newIDs = Set(loadedIDs).subtracting(oldIDs)
+			let idsToRemove = oldIDs.subtracting(Set(loadedIDs))
+			
+			let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
+			
+			guard newCapacity != oldIDs.count else {
+				if isPolling {
+					try await waitPolling()
+				}
+				return
+			}
+			
+			idsToRemove.forEach {
+				nfts.removeValue(forKey: $0)
+			}
+			
+			nfts.reserveCapacity(newCapacity)
+			newIDs.forEach {
+				nfts[$0, default: nil] = nil
+			}
+		} catch {
+			onError(error)
 		}
+	}
+	
+	func startIDsUpdateBackgroundPolling() {
+		guard idsUpdateTask.isNil else { return }
 		
-		let task = Task(priority: .background) {
+		let task = Task(priority: .utility) {
 			defer { clearIdsUpdateTask() }
 			while !Task.isCancelled {
 				do {
-					try Task.checkCancellation()
-					let loadedIDs = await nftService.getAllCart()
-					
-					let oldIDs = Set(nfts.keys)
-					let newIDs = Set(loadedIDs).subtracting(oldIDs)
-					let idsToRemove = oldIDs.subtracting(Set(loadedIDs))
-					
-					let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
-					
-					guard newCapacity != oldIDs.count else {
-						try await waitPolling()
-						continue
-					}
-					
-					idsToRemove.forEach {
-						nfts.removeValue(forKey: $0)
-					}
-					
-					nfts.reserveCapacity(newCapacity)
-					newIDs.forEach {
-						nfts[$0, default: nil] = nil
-					}
-					
+					await updateIDs(isPolling: true)
 					try await waitPolling()
-				} catch {
-					onError(error)
+				} catch is CancellationError {
+					print("\n\(#function) cancelled")
 					break
+				} catch {
+					print("\n\(#function) caught unexpected error: \(error.localizedDescription)")
 				}
 			}
 		}
 		
 		idsUpdateTask = task
-		await task.value
 	}
 	
 	func loadNilNFTs() async {
-		if let nftsLoadTask {
-			await nftsLoadTask.value
-			return
+		do {
+			try Task.checkCancellation()
+			let ids = notLoadedIDs
+			if !ids.isEmpty {
+				try await loadNFTs(using: ids)
+			}
+		} catch {
+			onError(error)
 		}
+	}
+	
+	func startLoadNilNFTsBackgroundPolling() {
+		guard nftsLoadTask.isNil else { return }
 		
-		let task = Task(priority: .background) {
+		let task = Task(priority: .utility) {
 			defer { clearNftsLoadTask() }
 			while !Task.isCancelled {
 				do {
-					try Task.checkCancellation()
-					let ids = notLoadedIDs
-					if !ids.isEmpty {
-						try await loadNFTs(using: ids)
-					}
-					
+					await loadNilNFTs()
 					try await waitPolling()
-				} catch {
-					onError(error)
+				} catch is CancellationError {
+					print("\n\(#function) cancelled")
 					break
+				} catch {
+					print("\n\(#function) caught unexpected error: \(error.localizedDescription)")
 				}
 			}
 		}
 		
 		nftsLoadTask = task
-		await task.value
 	}
 	
 	func reloadCart() {
-		Task(priority: .high) {
-			if idsUpdateTask == nil {
-				await updateIDs()
-			}
-		}
-		
-		Task(priority: .high) {
-			if nftsLoadTask == nil {
-				await loadNilNFTs()
-			}
-		}
+		startIDsUpdateBackgroundPolling()
+		startLoadNilNFTsBackgroundPolling()
 	}
 	
 	func performPayment() {
@@ -279,9 +282,9 @@ extension CartViewModel {
 	func removeNFTFromCart() {
 		guard let modelForRemoval else { return }
 		
-		Task(priority: .high) { @Sendable in
-			await nftService.removeFromCart(id: modelForRemoval.id)
-			nfts.removeValue(forKey: modelForRemoval.id)
+		nfts.removeValue(forKey: modelForRemoval.id)
+		Task(priority: .userInitiated) {
+			try await nftService.removeFromCart(nftID: modelForRemoval.id)
 		}
 	}
 }

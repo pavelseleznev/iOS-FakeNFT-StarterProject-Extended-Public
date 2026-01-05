@@ -49,7 +49,7 @@ struct CartView: View {
 		}
 		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
 		.toolbar(.hidden)
-		.task(priority: .userInitiated) { await viewModel.updateIDs() }
+		.task(priority: .userInitiated) { await viewModel.updateIDs(isPolling: false) }
 		.task(priority: .userInitiated) { await viewModel.loadNilNFTs() }
 		.onChange(of: sortOption, viewModel.setSortOption)
 		.safeAreaTopBackground()
@@ -72,6 +72,7 @@ struct CartView: View {
 		.onAppear {
 			debouncer.onDebounce = viewModel.onDebounce
 			viewModel.setSortOption(sortOption, sortOption)
+			viewModel.reloadCart()
 		}
 	}
 }
