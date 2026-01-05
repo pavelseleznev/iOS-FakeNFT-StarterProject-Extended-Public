@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-enum AsyncImageCachedPhase {
+enum AsyncImageCachedPhase: Equatable {
 	case empty
 	case loaded(UIImage)
 	case error
@@ -25,7 +25,6 @@ struct AsyncImageCached<Content: View>: View {
 	@ViewBuilder private let content: (AsyncImageCachedPhase) -> Content
 	
 	@State private var phase: AsyncImageCachedPhase = .empty
-	@State private var loadingTask: Task<Void, Never>?
 	
 	init(
 		needsCache: Bool = true,
@@ -42,51 +41,57 @@ struct AsyncImageCached<Content: View>: View {
 		self.animation = animation
 		
 		self.content = content
+		
+		
+		if
+			!urlString.isEmpty,
+			let image = service.getFromCache(urlString: urlString)
+		{
+			phase = .loaded(image)
+		}
 	}
 	
 	var body: some View {
-		Group {
-			switch phase {
-			case .empty:
-				content(.empty)
-					.transition(transition.animation(animation))
-			case .loaded(let image):
-				content(.loaded(image))
-					.transition(transition.animation(animation))
-			case .error:
-				content(.error)
-					.transition(transition.animation(animation))
+		content(phase)
+			.id(urlString)
+			.transition(
+				.asymmetric(
+					insertion: .scale.combined(with: .opacity),
+					removal: .opacity
+				).animation(animation)
+			)
+			.task(id: urlString, priority: .userInitiated) {
+				guard
+					!urlString.isEmpty,
+					!Task.isCancelled,
+					[.empty, .error].contains(phase)
+				else {
+					return
+				}
+				
+				if let image = service.getFromCache(urlString: urlString) {
+					phase = .loaded(image)
+					return
+				}
+				
+				phase = await loadImage()
 			}
-		}
-		.task(id: urlString, priority: .userInitiated) {
-			guard !urlString.isEmpty else { return }
-			await loadImage()
-		}
 	}
 	
-	private func loadImage() async {
-		loadingTask?.cancel()
+	private func loadImage() async -> AsyncImageCachedPhase {
+		guard !Task.isCancelled else { return .empty }
 		
-		let task = Task(priority: .userInitiated) { @MainActor in
-			let image = await service.loadImage(
-				urlString: urlString,
-				placeholder: placeholder,
-				needsCache: needsCache
-			)
-			
-			guard !Task.isCancelled else { return }
-			
-			withAnimation(Constants.defaultAnimation) {
-				if let image {
-					phase = .loaded(image)
-				} else {
-					phase = .error
-				}
-			}
+		let result = await service.loadImage(
+			urlString: urlString,
+			placeholder: placeholder,
+			needsCache: needsCache
+		)
+		
+		if let result {
+			return .loaded(result)
+		} else {
+			return .error
 		}
-		
-		loadingTask = task
-		await task.value
 	}
 }
 

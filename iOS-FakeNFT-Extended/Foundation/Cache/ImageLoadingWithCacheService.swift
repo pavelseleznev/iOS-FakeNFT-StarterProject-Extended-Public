@@ -30,13 +30,19 @@ final class ImageLoadingWithCacheService {
 			.store(in: &cancellables)
 	}
 	
+	func getFromCache(
+		urlString: String
+	) -> UIImage? {
+		cache.image(forKey: urlString)
+	}
+	
 	func loadImage(
 		urlString: String,
 		placeholder: UIImage,
 		needsCache: Bool
 	) async -> UIImage? {
 		if needsCache, let cached = cache.image(forKey: urlString) {
-			return cached
+			return cached == placeholder ? nil : cached
 		}
 		
 		guard
@@ -45,18 +51,34 @@ final class ImageLoadingWithCacheService {
 			!host.contains("ipfs") && !host.contains("cloudflare")
 		else {
 			if (urlString.split(separator: "/").first?.contains("ipfs") ?? false) && needsCache {
-				cache.set(placeholder, forKey: urlString)
+				let decoded = await placeholder.byPreparingForDisplay()
+				cache.set(
+					(decoded ?? placeholder).withRenderingMode(.alwaysTemplate)
+						.resizableImage(
+							withCapInsets: .zero,
+							resizingMode: .stretch
+						)
+						.withTintColor(.ypLightGrey),
+					forKey: urlString
+				)
 			}
 			
 			return nil
 		}
 		
 		if let image = await loader.load(from: urlString) {
+			let scale = await MainActor.run { UIScreen.main.scale }
+			let targetSize = CGSize(width: 100 * scale, height: 100 * scale)
+			
+			let decodedThumbnail = await image.byPreparingThumbnail(ofSize: targetSize)
+			
+			let resultImage = decodedThumbnail ?? image
+			
 			if needsCache {
-				cache.set(image, forKey: urlString)
+				cache.set(resultImage, forKey: urlString)
 			}
 			
-			return image
+			return resultImage
 		}
 		
 		return nil
