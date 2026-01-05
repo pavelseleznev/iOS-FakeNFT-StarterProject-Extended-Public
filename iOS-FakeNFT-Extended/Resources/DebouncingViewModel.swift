@@ -11,7 +11,7 @@ import Combine
 @MainActor
 final class DebouncingViewModel: ObservableObject {
 	@Published var text: String = ""
-	var onDebounce: (String) -> Void = {_ in}
+	var onDebounce: ((String) -> Void)?
 	private var cancellables = Set<AnyCancellable>()
 	
 	init() {
@@ -19,7 +19,7 @@ final class DebouncingViewModel: ObservableObject {
 			.removeDuplicates()
 			.debounce(for: 0.3, scheduler: DispatchQueue.main)
 			.sink { [weak self] newValue in
-				self?.onDebounce(newValue)
+				self?.onDebounce?(newValue)
 			}
 			.store(in: &cancellables)
 	}
