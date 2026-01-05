@@ -5,6 +5,7 @@
 //  Created by Superior Warden on 29.12.2025.
 //
 
+import Foundation
 
 struct NFTUpdatePayload {
 	enum ObjectType: String, Codable {
@@ -12,6 +13,7 @@ struct NFTUpdatePayload {
 	}
 	
 	let id: String
+	let screenID: UUID
 	let isCartChanged: Bool
 	let isFavoriteChanged: Bool
 	let fromObject: ObjectType
