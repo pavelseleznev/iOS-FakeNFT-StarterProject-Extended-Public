@@ -24,15 +24,18 @@ final class CartViewModel {
 	var searchText = ""
 	
 	private let nftService: NFTServiceProtocol
+	private let cartService: CartServiceProtocol
 	private let push: (Page) -> Void
 	
 	private let cartPingInterval: Duration = .seconds(1)
 	
 	init(
 		nftService: NFTServiceProtocol,
+		cartService: CartServiceProtocol,
 		push: @escaping (Page) -> Void,
 	) {
 		self.nftService = nftService
+		self.cartService = cartService
 		self.push = push
 	}
 }

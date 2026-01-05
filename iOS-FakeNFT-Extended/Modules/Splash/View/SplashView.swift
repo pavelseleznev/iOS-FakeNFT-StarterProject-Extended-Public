@@ -80,11 +80,10 @@ struct SplashView: View {
 
 #if DEBUG
 #Preview("Splash") {
+	@Previewable let api = ObservedNetworkClient()
+	
 	SplashView(
-		appContainer: .init(
-			nftService: NFTService(api: .mock, storage: NFTStorage()),
-			api: .mock
-		),
+		appContainer: .mock,
 		onComplete: {}
 	)
 }

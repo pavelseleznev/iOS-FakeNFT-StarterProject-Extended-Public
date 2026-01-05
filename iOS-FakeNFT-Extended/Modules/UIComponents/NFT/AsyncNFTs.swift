@@ -10,7 +10,8 @@ import SwiftUI
 @MainActor
 final class AsyncNFTs: ObservableObject {
 	@Published private var nfts = [String : NFTModelContainer?]()
-	private let ids: Set<String>
+	private let authorID: String
+	private let loadAuthor: (String) async throws -> UserListItemResponse
 	var errorIsPresented = false
 	
 	private var currentStream: AsyncThrowingStream<NFTResponse, Error>?
@@ -35,11 +36,16 @@ final class AsyncNFTs: ObservableObject {
 	}
 	
 	init(
+		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
 		nftService: NFTServiceProtocol,
-		ids: Set<String>
+		initialNFTsIDs: [String],
+		authorID: String
 	) {
+		self.loadAuthor = loadAuthor
 		self.nftService = nftService
-		self.ids = ids
+		self.authorID = authorID
+		
+		initialNFTsIDs.forEach { nfts[$0, default: nil] = nil }
 	}
 }
 

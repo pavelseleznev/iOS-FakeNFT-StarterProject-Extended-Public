@@ -226,9 +226,11 @@ extension Coordinator {
 			let authorWebsiteURLString
 		):
 			StatisticsNFTCollectionView(
-				nftsIDs: nftsIDs,
+				initialNFTsIDs: nftsIDs,
+				authorID: authorID,
 				loadingState: appContainer.api.loadingState,
 				nftService: appContainer.nftService,
+				loadAuthor: appContainer.api.getUser,
 				didTapDetail: { [weak self] in
 					self?.didTapDetail(
 						model: $0,
@@ -247,8 +249,8 @@ extension Coordinator {
 			
 		case .paymentMethodChoose:
 			PaymentMethodChooseView(
-				appContainer: appContainer,
-				push: push
+				cartService: appContainer.cartService,
+				push: push(_:)
 			)
 			
 		case .successPayment:
@@ -257,7 +259,9 @@ extension Coordinator {
 		case let .nftDetail(nft, authorID, authorWebsiteURLString):
 			NFTDetailView(
 				model: nft,
-				appContainer: appContainer,
+				nftService: appContainer.nftService,
+				cartService: appContainer.cartService,
+				getUser: appContainer.api.getUser,
 				authorID: authorID,
 				authorWebsiteURLString: authorWebsiteURLString,
 				push: push,

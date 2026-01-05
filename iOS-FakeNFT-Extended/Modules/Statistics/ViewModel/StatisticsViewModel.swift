@@ -12,6 +12,7 @@ import SwiftUI
 final class StatisticsViewModel {
 	typealias SortOption = StatisticsSortActionsViewModifier.SortOption
 	
+	private let imageLoader = ImageLoadingWithCacheService.shared
 	private let api: ObservedNetworkClient
 	private let push: (Page) -> Void
 	

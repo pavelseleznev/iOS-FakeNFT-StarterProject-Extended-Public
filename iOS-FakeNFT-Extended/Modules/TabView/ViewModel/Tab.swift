@@ -63,12 +63,13 @@ enum Tab: String, CaseIterable, Identifiable {
 		case .cart:
 			CartView(
 				nftService: appContainer.nftService,
+				cartService: appContainer.cartService,
 				push: push
 			)
 			
 		case .statistics:
 			StatisticsView(
-				api: appContainer.api,
+				api: .mock,
 				push: push
 			)
 		}

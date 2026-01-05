@@ -16,10 +16,15 @@ struct CartView: View {
 	
 	init(
 		nftService: NFTServiceProtocol,
+		cartService: CartServiceProtocol,
 		push: @escaping (Page) -> Void
 	) {
 		_viewModel = .init(
-			initialValue: .init(nftService: nftService, push: push)
+			initialValue: .init(
+				nftService: nftService,
+				cartService: cartService,
+				push: push
+			)
 		)
 	}
 	
@@ -130,18 +135,40 @@ private extension View {
 #if DEBUG
 #Preview {
 	@Previewable let api = ObservedNetworkClient()
-	@Previewable let storage = NFTStorage()
+	lazy var orderService = NFTsIDsService(
+		api: api,
+		kind: .order
+	)
+	
+	lazy var nftService = NFTService(
+		favouritesService: NFTsIDsService(
+			api: api,
+			kind: .favorites
+		),
+		orderService: orderService,
+		loadNFT: api.getNFT
+	)
 	
 	NavigationStack {
 		CartView(
-			nftService: NFTService(api: api, storage: storage),
+			nftService: NFTService(
+				favouritesService: NFTsIDsService(
+					api: api,
+					kind: .favorites
+				),
+				orderService: orderService,
+				loadNFT: api.getNFT
+			),
+			cartService: CartService(
+				orderService: orderService,
+				api: api
+			),
 			push: {_ in}
 		)
 		.task(priority: .userInitiated) {
 			do {
-				for id in try await api.getOrder().nftsIDs {
-					await storage.addToCart(id: id)
-				}
+				let loaded = try await api.getOrder().nftsIDs
+				await nftService.orderService.replace(withLoaded: loaded)
 			} catch { print(error.localizedDescription) }
 		}
 	}

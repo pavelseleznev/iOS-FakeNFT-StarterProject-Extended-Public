@@ -8,20 +8,26 @@
 import SwiftUI
 
 struct StatisticsNFTCollectionView: View {
-	private let nftsIDs: [String]
+	private let authorID: String
+	private let initialNFTsIDs: [String]
+	private let loadAuthor: (String) async throws -> UserListItemResponse
 	private let nftService: NFTServiceProtocol
 	private let loadingState: LoadingState
 	private let didTapDetail: (NFTModelContainer) -> Void
 	
 	init(
-		nftsIDs: [String],
+		initialNFTsIDs: [String],
+		authorID: String,
 		loadingState: LoadingState,
 		nftService: NFTServiceProtocol,
+		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
 		didTapDetail: @escaping (NFTModelContainer) -> Void
 	) {
-		self.nftsIDs = nftsIDs
+		self.authorID = authorID
+		self.initialNFTsIDs = initialNFTsIDs
 		self.loadingState = loadingState
 		self.nftService = nftService
+		self.loadAuthor = loadAuthor
 		self.didTapDetail = didTapDetail
 	}
 	
@@ -30,8 +36,10 @@ struct StatisticsNFTCollectionView: View {
 			Color.ypWhite.ignoresSafeArea()
 			
 			NFTCollectionView(
-				nftsIDs: nftsIDs,
+				initialNFTsIDs: initialNFTsIDs,
+				authorID: authorID,
 				nftService: nftService,
+				loadAuthor: loadAuthor,
 				didTapDetail: didTapDetail
 			)
 			.safeAreaPadding(.top)
@@ -54,16 +62,15 @@ struct StatisticsNFTCollectionView: View {
 #if DEBUG
 #Preview {
 	StatisticsNFTCollectionView(
-		nftsIDs: [
+		initialNFTsIDs: [
 			"d6a02bd1-1255-46cd-815b-656174c1d9c0",
 			"f380f245-0264-4b42-8e7e-c4486e237504",
 			"c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
 		],
+		authorID: "ab33768d-02ac-4f45-9890-7acf503bde54",
 		loadingState: .idle,
-		nftService: NFTService(
-			api: .mock,
-			storage: NFTStorage()
-		),
+		nftService: NFTService.mock,
+		loadAuthor: ObservedNetworkClient().getUser,
 		didTapDetail: {_ in}
 	)
 }

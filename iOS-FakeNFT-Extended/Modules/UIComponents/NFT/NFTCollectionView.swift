@@ -16,16 +16,20 @@ struct NFTCollectionView: View {
 	@State private var isSearchingState = false
 	
 	init(
-		nftsIDs: [String],
+		initialNFTsIDs: [String],
+		authorID: String,
 		nftService: NFTServiceProtocol,
+		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
 		didTapDetail: @escaping (NFTModelContainer) -> Void,
 	) {
 		self.didTapDetail = didTapDetail
 		
 		_asyncNFTs = .init(
 			wrappedValue: .init(
+				loadAuthor: loadAuthor,
 				nftService: nftService,
-				ids: Set(nftsIDs)
+				initialNFTsIDs: initialNFTsIDs,
+				authorID: authorID
 			)
 		)
 	}
@@ -192,17 +196,12 @@ fileprivate extension View {
 // MARK: - Preview
 #if DEBUG
 #Preview {
-	@Previewable let service = NFTService(
-		api: .init(api: DefaultNetworkClient()),
-			  storage: NFTStorage()
-	  )
-	
 	NavigationStack {
 		ZStack {
 			Color.ypWhite
 				.ignoresSafeArea()
 			NFTCollectionView(
-				nftsIDs: [
+				initialNFTsIDs: [
 					"1fda6f0c-a615-4a1a-aa9c-a1cbd7cc76ae",
 					"77c9aa30-f07a-4bed-886b-dd41051fade2",
 					"b3907b86-37c4-4e15-95bc-7f8147a9a660",
@@ -218,7 +217,9 @@ fileprivate extension View {
 					"de7c0518-6379-443b-a4be-81f5a7655f48",
 					"82570704-14ac-4679-9436-050f4a32a8a0"
 				],
-				nftService: service,
+				authorID: "ab33768d-02ac-4f45-9890-7acf503bde54",
+				nftService: NFTService.mock,
+				loadAuthor: ObservedNetworkClient().getUser,
 				didTapDetail: {_ in}
 			)
 		}

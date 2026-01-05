@@ -12,12 +12,12 @@ struct PaymentMethodChooseView: View {
 	@State private var viewModel: PaymentMethodChooseViewModel
 	
 	init(
-		appContainer: AppContainer,
+		cartService: CartServiceProtocol,
 		push: @escaping (Page) -> Void
 	) {
 		_viewModel = .init(
 			initialValue: .init(
-				appContainer: appContainer,
+				cartService: cartService,
 				push: push
 			)
 		)
@@ -110,14 +110,16 @@ struct PaymentMethodChooseView: View {
 
 #if DEBUG
 #Preview {
+	@Previewable let api = ObservedNetworkClient()
+	
 	NavigationStack {
 		PaymentMethodChooseView(
-			appContainer: .init(
-				nftService: NFTService(
-					api: .mock,
-					storage: NFTStorage()
+			cartService: CartService(
+				orderService: NFTsIDsService(
+					api: api,
+					kind: .order
 				),
-				api: .mock
+				api: api
 			),
 			push: {_ in}
 		)

@@ -10,7 +10,7 @@ import SwiftUI
 @Observable
 @MainActor
 final class PaymentMethodChooseViewModel {
-	private let appContainer: AppContainer
+	private let cartService: CartServiceProtocol
 	private let push: (Page) -> Void
 	
 	private var currencies = [String : CurrencyContainer?]()
@@ -19,10 +19,10 @@ final class PaymentMethodChooseViewModel {
 	var alertIsPresented = false
 	
 	init(
-		appContainer: AppContainer,
+		cartService: CartServiceProtocol,
 		push: @escaping (Page) -> Void,
 	) {
-		self.appContainer = appContainer
+		self.cartService = cartService
 		self.push = push
 	}
 }
@@ -43,13 +43,12 @@ extension PaymentMethodChooseViewModel {
 		guard currencies.isEmpty else { return }
 		
 		do {
-			let _currencies = try await appContainer.api
-				.getCurrencies()
+			let _currencies = try await cartService.loadCurrencies()
 			
 			_currencies.forEach { currencies[$0.id, default: nil] = nil }
 			
 			for currency in _currencies {
-				let _currency = try await appContainer.api.getCurrency(by: currency.id)
+				let _currency = try await cartService.loadCurrency(byID: currency.id)
 				currencies[currency.id] = .init(
 					currency: _currency,
 					id: currency.id
@@ -68,18 +67,7 @@ extension PaymentMethodChooseViewModel {
 					throw NSError(domain: "Currency is nil", code: 0, userInfo: nil)
 				}
 
-				let result = try await appContainer.api.setCurrency(id: selectedCurrency.id)
-				guard result.isSuccess else {
-					throw NSError(domain: "Failed to set currency", code: 0, userInfo: nil)
-				}
-				
-				let nftsIDs = await appContainer.nftService.getAllCart()
-				for nftID in nftsIDs {
-					try await appContainer.api.pay(payload: .init(nfts: nftID))
-				}
-				
-				await appContainer.nftService.didPurchase(ids: nftsIDs)
-				await appContainer.nftService.clearCart()
+				try await cartService.pay(usingCurrencyID: selectedCurrency.id)
 				
 				push(.successPayment)
 			} catch {

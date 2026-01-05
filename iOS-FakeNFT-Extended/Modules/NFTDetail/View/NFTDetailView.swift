@@ -11,6 +11,8 @@ fileprivate let scrollCoordinateSpace = "scroll"
 fileprivate let spacing: CGFloat = 24
 
 struct NFTDetailView: View {
+	private let nftService: NFTServiceProtocol
+	private let getUser: (String) async throws -> UserListItemResponse
 	private let backAction: () -> Void
 	
 	@State private var viewModel: NFTDetailViewModel
@@ -19,17 +21,21 @@ struct NFTDetailView: View {
 	
 	init(
 		model: NFTModelContainer,
-		appContainer: AppContainer,
+		nftService: NFTServiceProtocol,
+		cartService: CartServiceProtocol,
+		getUser: @escaping (String) async throws -> UserListItemResponse,
 		authorID: String,
 		authorWebsiteURLString: String,
 		push: @escaping (Page) -> Void,
 		backAction: @escaping () -> Void
 	) {
+		self.getUser = getUser
+		self.nftService = nftService
 		self.backAction = backAction
 		
 		_viewModel = .init(
 			initialValue: .init(
-				appContainer: appContainer,
+				cartService: cartService,
 				model: model,
 				authorID: authorID,
 				authorWebsiteURLString: authorWebsiteURLString,
@@ -141,18 +147,30 @@ struct NFTDetailView: View {
 #Preview {
 	@Previewable let authorID = "ab33768d-02ac-4f45-9890-7acf503bde54"
 //	@Previewable let authorID = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
-	@Previewable let storage = NFTStorage()
-	@Previewable let api = ObservedNetworkClient()
+	let api = ObservedNetworkClient()
+	lazy var orderService = NFTsIDsService(
+		api: api,
+		kind: .order
+	)
+	lazy var cartService = CartService(
+		orderService: orderService,
+		api: api
+   )
+	
+	lazy var nftService = NFTService(
+		favouritesService: NFTsIDsService(
+			api: api,
+			kind: .favorites
+		),
+		orderService: orderService,
+		loadNFT: api.getNFT
+	)
 	
 	NFTDetailView(
 		model: .mock,
-		appContainer: .init(
-			nftService: NFTService(
-				api: api,
-				storage: storage
-			),
-			api: api
-		),
+		nftService: nftService,
+		cartService: cartService,
+		getUser: api.getUser,
 		authorID: authorID,
 		authorWebsiteURLString: "",
 		push: {_ in},

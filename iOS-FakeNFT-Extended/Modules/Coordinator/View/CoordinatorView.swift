@@ -38,10 +38,31 @@ struct CoordinatorView: View {
 	
 	init() {
 		let api = ObservedNetworkClient()
-		let nftStorage = NFTStorage()
-		let nft = NFTService(api: api, storage: nftStorage)
+		
+//		let nftStorage = NFTStorage()
+		let profileStorage = ProfileStorage()
+		
+		let favouritedNFTsService = NFTsIDsService(api: api, kind: .favorites)
+		let purchasedNFTsService = NFTsIDsService(api: api, kind: .purchased)
+		let orderNFTsService = NFTsIDsService(api: api, kind: .order)
+		
+		let cartService = CartService(
+			orderService: orderNFTsService,
+			api: api
+		)
+		
+		let profileService = ProfileService(api: api, storage: profileStorage)
+		let nftService = NFTService(
+			favouritesService: favouritedNFTsService,
+			orderService: orderNFTsService,
+			loadNFT: api.getNFT
+		)
+		
 		let appContainer = AppContainer(
-			nftService: nft,
+			profileService: profileService,
+			purchasedNFTsService: purchasedNFTsService,
+			cartService: cartService,
+			nftService: nftService,
 			api: api
 		)
 		_coordinator = State(initialValue: .init(appContainer: appContainer))

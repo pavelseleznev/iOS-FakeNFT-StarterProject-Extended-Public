@@ -35,19 +35,18 @@ final class SplashViewModel {
 extension SplashViewModel {
 	func loadUserData() async {
 		do {
-			let profile = try await dependencies.api.getProfile()
-			let cart = try await dependencies.api.getOrder()
-			
-			await dependencies.nftService
-				.didLoadUserData(
-					likes: profile.likes,
-					purchased: profile.nfts,
-					cart: cart.nftsIDs
-				)
+			#warning("TODO: skip this by background long polling updates")
+
+			try await dependencies.purchasedNFTsService.loadAndSave()
+			try await dependencies.nftService.favouritesService.loadAndSave()
+			try await dependencies.nftService.orderService.loadAndSave()
+			try await dependencies.profileService.loadProfileAndSave()
 			
 			onComplete()
+		} catch is CancellationError {
+			print("\(#function) cancelled")
 		} catch {
-			guard !(error is CancellationError) else { return }
+			print("\(#function) failed: \(error)")
 			withAnimation(animation) {
 				dataLoadingErrorIsPresented = true
 			}
