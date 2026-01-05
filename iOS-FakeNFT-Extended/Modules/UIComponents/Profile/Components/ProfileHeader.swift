@@ -32,8 +32,8 @@ struct ProfileHeader: View {
 						Image.profilePerson
 							.resizable()
 							.renderingMode(.template)
-							.foregroundStyle(.ypLightGrey)
-							.aspectRatio(contentMode: .fill)
+							.foregroundStyle(.ypGrayUniversal)
+							.aspectRatio(contentMode: .fit)
 					}
 				}
 				.frame(width: imageSize, height: imageSize)

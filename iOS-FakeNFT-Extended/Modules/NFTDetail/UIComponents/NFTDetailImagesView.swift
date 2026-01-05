@@ -16,7 +16,12 @@ fileprivate let dissapearVelocityThreshold: CGFloat = 2000
 fileprivate let velocityHistoryCapacity: Int = 5
 @MainActor fileprivate let imageStateTransition: AnyTransition = .opacity.animation(.easeInOut(duration: 0.5))
 
-struct NFTDetailImagesView: View {
+struct NFTDetailImagesView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.selection == rhs.selection &&
+		lhs.isFullScreen == rhs.isFullScreen
+	}
+	
 	@State private var nftsImagesURLsStrings: [String : String]
 	private let screenWidth: CGFloat
 	private let isFavourite: Bool

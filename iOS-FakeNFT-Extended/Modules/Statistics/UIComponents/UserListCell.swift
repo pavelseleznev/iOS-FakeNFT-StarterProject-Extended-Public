@@ -9,49 +9,70 @@ import SwiftUI
 
 fileprivate let profileImageSize: CGFloat = 28
 
-struct UserListCell: View {
+struct UserListCell: View, @MainActor Equatable {
 	let model: UserListItemResponse
+	
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model.id == rhs.model.id
+	}
 	
 	var body: some View {
 		HStack {
-			profileImage
+			AsyncImageView(urlString: model.avatarURLString)
 			
 			Group {
 				Text(model.name)
+					.foregroundStyle(.ypBlack)
+					.font(.bold22)
+					.lineLimit(Constants.authorNameLineLimit)
 				
 				Spacer()
 				
 				Text("\(model.nftsIDs.count)")
+					.foregroundStyle(.ypBlack)
+					.font(.bold22)
 					.padding(.leading)
 			}
-			.foregroundStyle(.ypBlack)
-			.font(.bold22)
-			.lineLimit(Constants.authorNameLineLimit)
 		}
 		.padding(.horizontal, 16)
 		.padding(.vertical, 16)
-		.background(
-			RoundedRectangle(cornerRadius: 26)
-				.stroke(
-					LinearGradient(
-						stops: [
-							.init(color: .indigo, location: 0),
-							.init(color: .ypLightGrey, location: 0.1),
-							.init(color: .ypLightGrey, location: 0.9),
-							.init(color: .purple, location: 1),
-						],
-						startPoint: .topLeading,
-						endPoint: .bottomTrailing
-					),
-					lineWidth: 0.5
-				)
-				.fill(.ypLightGrey)
-		)
-		.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 4)
+		.background(.ypLightGrey)
+		.clipShape(RoundedRectangle(cornerRadius: 26))
+		.overlay(BackgroundView())
 	}
 	
-	private var profileImage: some View {
-		AsyncImageCached (urlString: model.avatarURLString) { phase in
+	private var gradientBackground: some View {
+	   RoundedRectangle(cornerRadius: 26)
+		   .fill(.ypLightGrey)
+   }
+}
+
+fileprivate struct BackgroundView: View {
+	var body: some View {
+		RoundedRectangle(cornerRadius: 26)
+			.stroke(
+				LinearGradient(
+					gradient: Gradient(
+						colors: [
+							.indigo,
+							.ypBlackUniversal.opacity(0.2),
+							.purple
+						]
+					),
+					startPoint: .topLeading,
+					endPoint: .bottomTrailing
+				).opacity(0.6),
+				lineWidth: 0.5
+			)
+	}
+}
+
+
+fileprivate struct AsyncImageView: View {
+	let urlString: String
+	
+	var body: some View {
+		AsyncImageCached(urlString: urlString) { phase in
 			switch phase {
 			case .empty:
 				Color.ypLightGrey
@@ -80,16 +101,17 @@ struct UserListCell: View {
 	@Previewable let monitor = NetworkMonitor.shared
 	@Previewable @State var isShown = false
 	
-	ScrollView(.vertical) {
-		LazyVStack(spacing: 16) {
-			if isShown {
-				ForEach(0...100, id: \.self) { _ in
-					UserListCell(model: .mock)
-				}
+	List {
+		if isShown {
+			ForEach(0...100, id: \.self) { _ in
+				UserListCell(model: .mock)
 			}
+			.listRowBackground(Color.clear)
+			.listRowSeparator(.hidden)
 		}
-		.safeAreaPadding(.horizontal)
 	}
+	.listStyle(.plain)
+	.scrollContentBackground(.hidden)
 	.background(.ypWhite)
 	.onAppear {
 		DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

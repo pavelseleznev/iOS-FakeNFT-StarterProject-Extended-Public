@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-struct NFTDetailAboutView: View {
+struct NFTDetailAboutView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.nft.id == rhs.nft.id
+	}
+	
 	let nft: NFTResponse
 	
 	var body: some View {

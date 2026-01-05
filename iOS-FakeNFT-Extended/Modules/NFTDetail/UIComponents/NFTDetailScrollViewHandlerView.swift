@@ -9,7 +9,12 @@ import SwiftUI
 
 fileprivate let threshold: CGFloat = 100
 
-struct NFTDetailScrollViewHandlerView: View {
+struct NFTDetailScrollViewHandlerView: View, @MainActor Equatable {
+	static func ==(lhs: Self, rhs: Self) -> Bool {
+		lhs.isImageDissapeared == rhs.isImageDissapeared &&
+		lhs.isImageFullScreen == rhs.isImageFullScreen
+	}
+	
 	private let mainGeo: GeometryProxy
 	private let scrollCoordinateSpace: String
 

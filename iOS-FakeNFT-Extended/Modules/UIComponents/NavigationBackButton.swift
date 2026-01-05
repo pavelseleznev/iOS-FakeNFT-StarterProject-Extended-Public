@@ -44,7 +44,7 @@ fileprivate struct NavigationBackButton: ViewModifier {
 	
 	func body(content: Content) -> some View {
 		content
-			.task {
+			.task(priority: .userInitiated) {
 				await updateGestureState()
 			}
 			.onChange(of: hasNotBackButton) {

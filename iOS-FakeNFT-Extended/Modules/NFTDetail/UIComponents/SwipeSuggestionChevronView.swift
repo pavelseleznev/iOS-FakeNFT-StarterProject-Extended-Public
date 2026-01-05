@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-struct SwipeSuggestionChevronView: View {
+struct SwipeSuggestionChevronView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.isImageFullScreen == rhs.isImageFullScreen
+	}
+	
 	let isImageFullScreen: Bool
 	let screenWidth: CGFloat
 	var body: some View {

@@ -214,7 +214,7 @@ fileprivate extension View {
 			)
 		}
 		.padding(.horizontal)
-		.task {
+		.task(priority: .userInitiated) {
 			try? await Task.sleep(for: .seconds(1))
 			withAnimation(Constants.defaultAnimation) {
 				loginResult = .failure("Some error")

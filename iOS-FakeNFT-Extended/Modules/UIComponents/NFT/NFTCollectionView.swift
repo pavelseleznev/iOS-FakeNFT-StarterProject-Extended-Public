@@ -49,21 +49,19 @@ struct NFTCollectionView: View {
 					spacing: 28,
 					pinnedViews: .sectionHeaders
 				) {
-					ForEach(
-						Array(asyncNFTs.visibleNFTs.enumerated()),
-						id: \.offset
-					) { index, model in
+					ForEach(asyncNFTs.visibleNFTs, id: \.key) { element in
 						NFTVerticalCell(
-							model: model,
+							model: element.value,
 							didTapDetail: didTapDetail,
 							likeAction: {
-								asyncNFTs.didTapLikeButton(for: model)
+								asyncNFTs.didTapLikeButton(for: element.value)
 							},
 							cartAction: {
-								asyncNFTs.didTapCartButton(for: model)
+								asyncNFTs.didTapCartButton(for: element.value)
 							}
 						)
-						.transition(.scale.combined(with: .blurReplace))
+						.transition(.scale(scale: 0, anchor: .center))
+						.id(element.key)
 					}
 					.scrollTransition { content, phase in
 						content
@@ -74,7 +72,6 @@ struct NFTCollectionView: View {
 							.blur(radius: phase.isIdentity ? 0 : 1, opaque: false)
 							.opacity(phase.isIdentity ? 1 : 0.7)
 					}
-					.animation(Constants.defaultAnimation, value: asyncNFTs.visibleNFTs)
 				}
 				.collectionSearchable(
 					text: $debouncingViewModel.text,

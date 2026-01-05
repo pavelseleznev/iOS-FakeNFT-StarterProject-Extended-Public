@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-struct NFTDetailCostWithAddToCartView: View {
+struct NFTDetailCostWithAddToCartView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model.isInCart == rhs.model.isInCart
+	}
+	
 	let model: NFTModelContainer
 	let cartAction: () -> Void
 	let modelUpdateTriggerID: UUID

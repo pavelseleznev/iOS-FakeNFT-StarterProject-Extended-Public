@@ -25,32 +25,33 @@ struct StatisticsView: View {
 			)
 		)
 		
-		viewModel.setSortOption(sortOption)
+		if sortOption != viewModel.currenctSortOption {
+			viewModel.setSortOption(sortOption)
+		}
 	}
 	
 	var body: some View {
 		ZStack(alignment: .top) {
 			Color.ypWhite.ignoresSafeArea()
 			
-			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { index, user in
+			List(viewModel.visibleUsers, id: \.id) { user in
 				UserListCell(model: user)
-					.id(user.id)
-					.task(priority: .userInitiated) {
+					.onAppear {
 						if user == viewModel.visibleUsers.last {
-							await viewModel.loadNextUsersPage()
+							Task(name: user.id, priority: .userInitiated) {
+								await viewModel.loadNextUsersPage()
+							}
 						}
 					}
-					.onTapGesture {
-						viewModel.didTapUserCell(for: user)
-					}
+					.onTapGesture { viewModel.didTapUserCell(for: user) }
 					.listCellModifiers()
+					.id(user.id)
 			}
+			.animation(.default, value: viewModel.visibleUsers)
 			.refreshable {
 				await viewModel.updateUsers()
 			}
-			.padding(.top, viewModel.isRefreshing ? -16 : 0)
 			.listModifiers()
-			.animation(Constants.defaultAnimation, value: viewModel.visibleUsers)
 			.overlay(content: loadingView)
 		}
 		.task(priority: .userInitiated) {
@@ -63,7 +64,10 @@ struct StatisticsView: View {
 			activeSortOption: $sortOption,
 			searchText: $debouncer.text
 		)
-		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+		.onChange(of: sortOption) { oldValue, newValue in
+			guard oldValue != sortOption else { return }
+			viewModel.setSortOption(sortOption)
+		}
 		.onAppear {
 			debouncer.onDebounce = viewModel.onDebounce
 		}
@@ -99,6 +103,7 @@ private extension View {
 			.safeAreaPadding(.bottom)
 			.listRowSpacing(16)
 			.scrollContentBackground(.hidden)
+			.environment(\.defaultMinListRowHeight, 0)
 			.listStyle(.plain)
 	}
 }

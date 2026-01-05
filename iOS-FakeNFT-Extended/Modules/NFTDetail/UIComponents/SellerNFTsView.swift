@@ -9,7 +9,11 @@ import SwiftUI
 
 fileprivate let nftWidth: CGFloat = 108
 
-struct SellerNFTsView: View {
+struct SellerNFTsView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.viewModel.visibleNFTs.first?.value == rhs.viewModel.visibleNFTs.first?.value
+	}
+	
 	@State private var viewModel: SellerNFTsViewModel
 	
 	private let didTapDetail: (NFTModelContainer) -> Void
@@ -36,24 +40,20 @@ struct SellerNFTsView: View {
 	var body: some View {
 		ScrollView(.horizontal) {
 			LazyHStack(alignment: .top, spacing: 8) {
-				ForEach(
-					Array(viewModel.visibleNFTs.enumerated()),
-					id: \.offset
-				) { _, model in
+				ForEach(viewModel.visibleNFTs, id: \.key) { element in
 					NFTVerticalCell(
-						model: model,
+						model: element.value,
 						didTapDetail: didTapDetail,
-						likeAction: { viewModel.didTapLikeButton(for: model) },
-						cartAction: { viewModel.didTapCartButton(for: model) }
+						likeAction: { viewModel.didTapLikeButton(for: element.value) },
+						cartAction: { viewModel.didTapCartButton(for: element.value) }
 					)
-					.id((model?.id ?? UUID().uuidString) + viewModel.modelUpdateTriggerID.uuidString)
 					.frame(width: nftWidth)
 					.cellModifiers()
+					.id(element.key + viewModel.modelUpdateTriggerID.uuidString)
 				}
 			}
 			.padding(.horizontal)
 		}
-		.animation(Constants.defaultAnimation, value: viewModel.visibleNFTs)
 		.scrollIndicators(.hidden)
 		.applyRepeatableAlert(
 			isPresneted: $viewModel.showAuthorLoadingError,
@@ -104,7 +104,6 @@ fileprivate extension View {
 #if DEBUG
 #Preview {
 	@Previewable let api = ObservedNetworkClient()
-	@Previewable let storage = NFTStorage()
 	@Previewable @State var path: [Page] = [
 		.nftDetail(
 			model: .mock,
@@ -132,7 +131,7 @@ fileprivate extension View {
 						)
 				},
 				excludingNFTID: excludingNFTID,
-				nftService: NFTService(api: api, storage: storage),
+				nftService: NFTService.mock,
 				loadAuthor: api.getUser
 			)
 		}

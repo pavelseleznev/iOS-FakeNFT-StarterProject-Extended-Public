@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-struct NFTDetailGoToSellerSiteButtonView: View {
+struct NFTDetailGoToSellerSiteButtonView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.spacing == rhs.spacing
+	}
+	
 	let action: () -> Void
 	let spacing: CGFloat
 	

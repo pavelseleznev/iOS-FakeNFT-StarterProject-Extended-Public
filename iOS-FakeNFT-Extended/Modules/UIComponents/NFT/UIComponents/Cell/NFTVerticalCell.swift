@@ -7,7 +7,11 @@
 
 import SwiftUI
 
-struct NFTVerticalCell: View {
+struct NFTVerticalCell: View, @MainActor Equatable {
+	
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model?.id == rhs.model?.id
+	}
 	
 	let model: NFTModelContainer?
 	let didTapDetail: (NFTModelContainer) -> Void
@@ -70,14 +74,14 @@ struct NFTVerticalCell: View {
 	}
 	
 	private var formatterPriceString: String {
-		let string = "\(model?.nft.price ?? 99.99)"
-		if let double = Double(string) {
-			return String(format: "%.2f", double)
-				.replacingOccurrences(of: ".", with: ",")
-			+ " ETH"
-		} else {
+		guard
+			let price = model?.nft.price,
+			let double = Double("\(price)")
+		else {
 			return "0,0 ETH"
 		}
+		
+		return String(format: "%.2f", double).replacingOccurrences(of: ".", with: ",") + " ETH"
 	}
 }
 

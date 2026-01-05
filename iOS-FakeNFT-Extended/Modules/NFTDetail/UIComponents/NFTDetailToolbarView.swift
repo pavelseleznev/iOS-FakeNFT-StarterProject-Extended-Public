@@ -7,7 +7,13 @@
 
 import SwiftUI
 
-struct NFTDetailToolbarView: View {
+struct NFTDetailToolbarView: View, @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model.id == rhs.model.id &&
+		lhs.isImageFullScreen == rhs.isImageFullScreen &&
+		lhs.isImageDissapeared == rhs.isImageDissapeared
+	}
+	
 	let model: NFTModelContainer
 	@Binding var isImageFullScreen: Bool
 	let isImageDissapeared: Bool

@@ -16,7 +16,12 @@ final class StatisticsViewModel {
 	private let api: ObservedNetworkClient
 	private let push: (Page) -> Void
 	
-	private(set) var users = Set<UserListItemResponse>()
+	private(set) var users = Set<UserListItemResponse>() {
+		didSet {
+			updateVisibleUsersBySortingAndFiltering()
+		}
+	}
+	private(set) var visibleUsers = [UserListItemResponse]()
 	
 	private(set) var isRefreshing = false
 	private var currentPage = 0
@@ -24,8 +29,6 @@ final class StatisticsViewModel {
 	var searchText = ""
 	
 	var currenctSortOption: SortOption = .name
-	
-	private var updateTask: Task<Void, Never>?
 	
 	init(
 		api: ObservedNetworkClient,
@@ -36,17 +39,12 @@ final class StatisticsViewModel {
 	}
 }
 
+// MARK: - StatisticsViewModel Extensions
+// --- internal helpers ---
 extension StatisticsViewModel {
 	@inline(__always)
 	var loadingState: LoadingState {
 		isRefreshing ? .idle : api.loadingState
-	}
-	
-	@inline(__always)
-	var visibleUsers: [UserListItemResponse] {
-		users
-			.sorted(by: usersSortComparator)
-			.filter(filterApplier)
 	}
 	
 	func didTapUserCell(for user: UserListItemResponse) {
@@ -61,11 +59,10 @@ extension StatisticsViewModel {
 	func loadNextUsersPage(onAppear: Bool = false) async {
 		guard (onAppear && currentPage == 0) || !onAppear else { return }
 		do {
-			try await api
+			let newUsers = try await api
 				.getUsers(page: currentPage, sortOption: currenctSortOption)
-				.forEach {
-					users.insert($0)
-				}
+				
+			users.formUnion(newUsers)
 			currentPage += 1
 		} catch { onError(error) }
 	}
@@ -110,10 +107,18 @@ extension StatisticsViewModel {
 	
 	func setSortOption(_ option: SortOption) {
 		currenctSortOption = option
+		updateVisibleUsersBySortingAndFiltering()
 	}
 }
 
+// --- private helpers ---
 private extension StatisticsViewModel {
+	func updateVisibleUsersBySortingAndFiltering() {
+		visibleUsers = users
+			.sorted(by: usersSortComparator)
+			.filter(filterApplier)
+	}
+	
 	func usersSortComparator(_ lhs: UserListItemResponse, _ rhs: UserListItemResponse) -> Bool {
 		switch currenctSortOption {
 		case .rate:
@@ -139,6 +144,15 @@ private extension StatisticsViewModel {
 		guard !(error is CancellationError) else { return }
 		withAnimation(Constants.defaultAnimation) {
 			dataLoadingErrorIsPresented = true
+		}
+	}
+}
+
+
+extension Array {
+	func chunked(into size: Int) -> [[Element]] {
+		stride(from: 0, to: count, by: size).map {
+			Array(self[$0..<Swift.min($0 + size, count)])
 		}
 	}
 }

@@ -19,6 +19,8 @@ final class SellerNFTsViewModel {
 	private let excludingNFTID: String
 	private let nftService: NFTServiceProtocol
 	private let loadAuthor: (String) async throws -> UserListItemResponse
+	@ObservationIgnored
+	private let screenID = UUID()
 	
 	private let pollingInterval: Duration = .seconds(1)
 	
@@ -30,13 +32,11 @@ final class SellerNFTsViewModel {
 	var showAuthorLoadingError = false
 	var showNFTsLoadingError = false
 	
-	@inline(__always)
-	var visibleNFTs: [NFTModelContainer?] {
+	var visibleNFTs: [Dictionary<String, NFTModelContainer?>.Element] {
 		nfts
 			.sorted {
 				$0.key.localizedStandardCompare($1.key) == .orderedAscending
 			}
-			.map(\.value)
 	}
 	
 	init(
@@ -77,11 +77,10 @@ extension SellerNFTsViewModel {
 	func handleNFTChangeNotification(notification: Notification) {
 		if
 			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
-			payload.fromObject != .sellerNFTs,
+			payload.screenID != screenID,
 			payload.hasChanges,
 			let model = nfts[payload.id]
 		{
-			
 			if payload.isCartChanged {
 				didTapCartButton(for: model)
 			}
@@ -124,6 +123,7 @@ private extension SellerNFTsViewModel {
 	) {
 		let payload = NFTUpdatePayload(
 			id: nftID,
+			screenID: screenID,
 			isCartChanged: isCartChanged,
 			isFavoriteChanged: isFavoriteChanged,
 			fromObject: .sellerNFTs
@@ -141,10 +141,13 @@ private extension SellerNFTsViewModel {
 	func loadNFTs() async throws {
 		let unloadedIDs = nfts.filter(\.value.isNil).map(\.key)
 		
+		let favourites = await nftService.favouritesService.get()
+		let order = await nftService.orderService.get()
+		
 		for id in unloadedIDs {
 			let nft = try await nftService.loadNFT(id: id)
-			let isFavorite = await nftService.isFavourite(id: id)
-			let isInCart = await nftService.isInCart(id: id)
+			let isFavorite = favourites.contains(id)
+			let isInCart = order.contains(id)
 			
 			nfts[id] = .init(
 				nft: nft,
@@ -237,7 +240,7 @@ private extension SellerNFTsViewModel {
 			return pollingTask
 		}
 		
-		let task = Task(priority: .background) {
+		let task = Task(priority: .utility) {
 			defer { clear() }
 			repeat {
 				do {

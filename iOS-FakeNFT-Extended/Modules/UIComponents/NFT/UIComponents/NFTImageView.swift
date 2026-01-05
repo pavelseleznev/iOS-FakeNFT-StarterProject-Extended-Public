@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-struct NFTImageView: View {
+struct NFTImageView: View, @MainActor Equatable {
+	
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model?.id == rhs.model?.id
+	}
 	
 	let model: NFTResponse?
 	let isFavourited: Bool?
 	let layout: NFTCellLayout
 	let likeAction: () -> Void
-	
-	@State private var imageIndex: Int = 0
 	
 	var body: some View {
 		Group {
@@ -34,7 +36,6 @@ struct NFTImageView: View {
 								Text("?")
 									.font(.bold22)
 									.foregroundStyle(.ypWhiteUniversal)
-									.onAppear(perform: tryNextImage)
 							}
 						}
 					}
@@ -53,22 +54,7 @@ struct NFTImageView: View {
 	}
 	
 	private var imageURLString: String {
-		guard
-			let model,
-			!model.imagesURLsStrings.isEmpty,
-			model.imagesURLsStrings.indices.contains(imageIndex)
-		else { return "" }
-		
-		return model.imagesURLsStrings[imageIndex]
-	}
-	
-	private func tryNextImage() {
-		guard
-			let model,
-			!model.imagesURLsStrings.isEmpty
-		else { return }
-		
-		imageIndex = (imageIndex + 1) % model.imagesURLsStrings.count
+		model?.imagesURLsStrings.first ?? ""
 	}
 	
 	private var favouriteImage: some View {

@@ -63,7 +63,7 @@ struct NFTDetailView: View {
 						)
 					}
 					
-					VStack(spacing: spacing) {
+					LazyVStack(spacing: spacing) {
 						NFTDetailAboutView(nft: viewModel.model.nft)
 						
 						Divider().padding(.horizontal)
@@ -88,8 +88,8 @@ struct NFTDetailView: View {
 							authorID: viewModel.authorID,
 							didTapDetail: viewModel.didTapDetail,
 							excludingNFTID: viewModel.model.id,
-							nftService: viewModel.appContainer.nftService,
-							loadAuthor: viewModel.appContainer.api.getUser
+							nftService: nftService,
+							loadAuthor: getUser
 						)
 					}
 					.scaleEffect(y: isImageFullScreen ? 0 : 1, anchor: .bottom)
@@ -128,7 +128,7 @@ struct NFTDetailView: View {
 			isPresneted: $viewModel.currenciesLoadErrorIsPresented,
 			message: .cantGetCurrencies,
 			didTapRepeat: {
-				Task(priority: .high) {
+				Task(priority: .userInitiated) {
 					await viewModel.loadCurrencies()
 				}
 			}
