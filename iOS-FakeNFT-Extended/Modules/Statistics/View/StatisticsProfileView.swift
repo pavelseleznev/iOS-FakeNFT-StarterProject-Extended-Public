@@ -10,12 +10,15 @@ import SwiftUI
 struct StatisticsProfileView: View {
 	@State private var viewModel: StatisticsProfileViewModel
 	
+	private let nftsIDsCount: Int
+	
 	init(
 		api: ObservedNetworkClient,
 		push: @escaping (Page) -> Void,
 		model: UserListItemResponse
 	) {
 		_viewModel = .init(initialValue: .init(api: api, model: model, push: push))
+		nftsIDsCount = model.nftsIDs.count
 	}
 	
 	var body: some View {
@@ -25,15 +28,13 @@ struct StatisticsProfileView: View {
 			ProfileContainer(
 				model: viewModel.model,
 				link: {
-					Button(.goToUserSite){
-						viewModel.didTapAuthLinkButton()
-					}
-					.nftButtonStyle(filled: false)
+					Button(.goToUserSite, action: viewModel.didTapAuthLinkButton)
+						.nftButtonStyle(filled: false)
 				},
 				actions: {
 					[
 						ProfileActionCell(
-							title: .nftCollection(count: viewModel.model.nftsIDs.count)
+							title: .nftCollection(count: nftsIDsCount)
 						) {
 							viewModel.didTapProfileActionCell()
 						}
