@@ -15,40 +15,106 @@ protocol ProfileStorageProtocol: Sendable, AnyObject {
 	func updateFully(with model: ProfileResponse) async
 }
 
-fileprivate let profileStorageNameKey: String = "ProfileStorage.name"
-fileprivate let profileStorageAvatarURLStringKey: String = "ProfileStorage.avatarURLString"
-fileprivate let profileStorageDescriptionKey: String = "ProfileStorage.description"
-fileprivate let profileStorageWebsiteURLStringKey: String = "ProfileStorage.websiteURLString"
+
+enum ProfileStorageKey {
+	case name, avatarURLString, description, websiteURLString
+	
+	var key: String {
+		switch self {
+		case .name:
+			"ProfileStorage.name"
+		case .avatarURLString:
+			"ProfileStorage.avatarURLString"
+		case .description:
+			"ProfileStorage.description"
+		case .websiteURLString:
+			"ProfileStorage.websiteURLString"
+		}
+	}
+	
+	var notificationName: Notification.Name {
+		switch self {
+		case .name:
+			.profileNameDidChange
+		case .avatarURLString:
+			.profileAvatarDidChange
+		case .description:
+			.profileDescriptionDidChange
+		case .websiteURLString:
+			.profileWebsiteDidChange
+		}
+	}
+}
+
+
 
 actor ProfileStorage: ProfileStorageProtocol {
-	private var name: String {
-		didSet {
-			storage.set(name, forKey: profileStorageNameKey)
-		}
-	}
-	private var avatarURLString: String {
-		didSet {
-			storage.set(avatarURLString, forKey: profileStorageAvatarURLStringKey)
-		}
-	}
-	private var description: String {
-		didSet {
-			storage.set(description, forKey: profileStorageDescriptionKey)
-		}
-	}
-	private var websiteURLString: String {
-		didSet {
-			storage.set(websiteURLString, forKey: profileStorageWebsiteURLStringKey)
-		}
-	}
+	private var name = ""
+	private var avatarURLString = ""
+	private var description = ""
+	private var websiteURLString = ""
 	
-	private let storage = UserDefaults.standard // hardcode
+	private let storage = StorageActor.shared
+	private var saveTasks = [ProfileStorageKey : Task<Void, Never>]()
 	
 	init() {
-		name = storage.string(forKey: profileStorageNameKey) ?? ""
-		avatarURLString = storage.string(forKey: profileStorageAvatarURLStringKey) ?? ""
-		description = storage.string(forKey: profileStorageDescriptionKey) ?? ""
-		websiteURLString = storage.string(forKey: profileStorageWebsiteURLStringKey) ?? ""
+		Task(priority: .userInitiated) {
+			await self.restoreFromStorage()
+		}
+	}
+	
+	private func restoreFromStorage() async {
+		async let _name: String? = await storage.value(
+			forKey: ProfileStorageKey.name.key
+		)
+		async let _avatar: String? = await storage.value(
+			forKey: ProfileStorageKey.avatarURLString.key
+		)
+		async let _dscr: String? = await storage.value(
+			forKey: ProfileStorageKey.description.key
+		)
+		async let _web: String? = await storage.value(
+			forKey: ProfileStorageKey.websiteURLString.key
+		)
+		
+		let (n, a, d, w) = await (_name, _avatar, _dscr, _web)
+		
+		if let n { name = n }
+		if let a { avatarURLString = a }
+		if let d { description = d }
+		if let w { websiteURLString = w }
+		
+		print("\nProfileStorage restored from storage")
+	}
+
+	private func notifyForUpdates(newValue: String, kind: ProfileStorageKey) {
+		Task { @MainActor in
+			NotificationCenter.default.post(
+				name: kind.notificationName,
+				object: nil,
+				userInfo: [kind.key : newValue]
+			)
+		}
+	}
+	
+	private func scheduleSave(newValue: String, kind: ProfileStorageKey) {
+		saveTasks[kind]?.cancel()
+		saveTasks[kind] = Task {
+			try? await Task.sleep(for: .seconds(0.5))
+			guard !Task.isCancelled else { return }
+			
+			await storage.set(newValue, forKey: kind.key)
+			print("Saved: \(kind.key)")
+		}
+	}
+	
+	private func updateField(_ currenctValue: inout String, newValue: String, kind: ProfileStorageKey) {
+		guard currenctValue != newValue else { return }
+		
+		currenctValue = newValue
+		
+		notifyForUpdates(newValue: newValue, kind: kind)
+		scheduleSave(newValue: newValue, kind: kind)
 	}
 }
 
@@ -68,16 +134,43 @@ extension ProfileStorage {
 // --- updates ---
 extension ProfileStorage {
 	func update(with model: ProfilePayload) async {
-		name = model.name ?? name
-		avatarURLString = model.avatar ?? avatarURLString
-		websiteURLString = model.website ?? websiteURLString
-		description = model.description ?? description
+		if let _name = model.name {
+			updateField(&name, newValue: _name, kind: .name)
+		}
+		
+		if let _avatarURLString = model.avatar {
+			updateField(&avatarURLString, newValue: _avatarURLString, kind: .avatarURLString)
+		}
+		
+		if let _websiteURLString = model.website {
+			updateField(&websiteURLString, newValue: _websiteURLString, kind: .websiteURLString)
+		}
+		
+		if let _description = model.description {
+			updateField(&description, newValue: _description, kind: .description)
+		}
 	}
 	
 	func updateFully(with model: ProfileResponse) async {
-		name = model.name
-		avatarURLString = model.avatar
-		websiteURLString = model.website
-		description = model.description
+		updateField(
+			&name,
+			newValue: model.name,
+			kind: .name
+		)
+		updateField(
+			&avatarURLString,
+			newValue: model.avatar,
+			kind: .avatarURLString
+		)
+		updateField(
+			&websiteURLString,
+			newValue: model.website,
+			kind: .websiteURLString
+		)
+		updateField(
+			&description,
+			newValue: model.description,
+			kind: .description
+		)
 	}
 }
