@@ -17,13 +17,13 @@ struct CartView: View {
 	init(
 		nftService: NFTServiceProtocol,
 		cartService: CartServiceProtocol,
-		push: @escaping (Page) -> Void
+		onSubmit: @escaping () -> Void
 	) {
 		_viewModel = .init(
 			initialValue: .init(
 				nftService: nftService,
 				cartService: cartService,
-				push: push
+				onSubmit: onSubmit
 			)
 		)
 	}
@@ -49,7 +49,13 @@ struct CartView: View {
 		}
 		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
 		.toolbar(.hidden)
-		.task(priority: .userInitiated) { await viewModel.updateIDs(isPolling: false) }
+		.task(priority: .userInitiated) {
+			await viewModel.performCartUpdateIfNeeded()
+		}
+		.onReceive(
+			NotificationCenter.default.publisher(for: .cartDidUpdate),
+			perform: viewModel.update
+		)
 		.task(priority: .userInitiated) { await viewModel.loadNilNFTs() }
 		.onChange(of: sortOption, viewModel.setSortOption)
 		.safeAreaTopBackground()
@@ -91,7 +97,7 @@ private extension CartView {
 		CartBottomToolbar(
 			nftCount: viewModel.nftCount,
 			costLabel: viewModel.cartCostLabel,
-			performPayment: viewModel.performPayment,
+			performPayment: viewModel.onSubmmit,
 			isLoaded: viewModel.isLoaded
 		)
 	}
@@ -164,7 +170,7 @@ private extension View {
 				orderService: orderService,
 				api: api
 			),
-			push: {_ in}
+			onSubmit: {}
 		)
 		.task(priority: .userInitiated) {
 			do {

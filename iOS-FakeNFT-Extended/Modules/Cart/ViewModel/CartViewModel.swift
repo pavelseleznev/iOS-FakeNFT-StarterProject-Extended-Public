@@ -15,7 +15,6 @@ final class CartViewModel {
 	private var sortOption: SortOption = .cost
 	private var nfts = [String : NFTModelContainer?]()
 
-	private var idsUpdateTask: Task<Void, Never>?
 	private var nftsLoadTask: Task<Void, Never>?
 	
 	private(set) var removalApproveAlertIsPresented = false
@@ -25,18 +24,18 @@ final class CartViewModel {
 	
 	private let nftService: NFTServiceProtocol
 	private let cartService: CartServiceProtocol
-	private let push: (Page) -> Void
+	let onSubmmit: () -> Void
 	
 	private let cartPingInterval: Duration = .seconds(5)
 	
 	init(
 		nftService: NFTServiceProtocol,
 		cartService: CartServiceProtocol,
-		push: @escaping (Page) -> Void,
+		onSubmit: @escaping () -> Void,
 	) {
 		self.nftService = nftService
 		self.cartService = cartService
-		self.push = push
+		self.onSubmmit = onSubmit
 	}
 }
 
@@ -52,62 +51,41 @@ extension CartViewModel {
 	}
 	
 	func viewDidDissappear() {
-		clearIdsUpdateTask()
 		clearNftsLoadTask()
 	}
 	
-	func updateIDs(isPolling: Bool) async {
-		do {
-			try Task.checkCancellation()
-			let loadedIDs = await cartService.getCart()
-			
-			let oldIDs = Set(nfts.keys)
-			let newIDs = Set(loadedIDs).subtracting(oldIDs)
-			let idsToRemove = oldIDs.subtracting(Set(loadedIDs))
-			
-			let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
-			
-			guard newCapacity != oldIDs.count else {
-				if isPolling {
-					try await waitPolling()
-				}
-				return
-			}
-			
-			idsToRemove.forEach {
-				nfts.removeValue(forKey: $0)
-			}
-			
-			nfts.reserveCapacity(newCapacity)
-			newIDs.forEach {
-				nfts[$0, default: nil] = nil
-			}
-		} catch {
-			onError(error)
+	func performCartUpdateIfNeeded(with ids: [String] = []) async {
+		let newCartIDs: Set<String>
+		if ids.isEmpty {
+			newCartIDs = await cartService.getCart()
+		} else {
+			newCartIDs = Set(ids)
+		}
+		guard nfts.keys.sorted() != newCartIDs.sorted() else { return }
+		
+		let idsToRemove = Set(nfts.keys).subtracting(Set(newCartIDs))
+		let idsToAdd = Set(newCartIDs).subtracting(nfts.keys)
+		
+		let newCapacity = nfts.count + idsToAdd.count - idsToRemove.count
+		nfts.reserveCapacity(newCapacity)
+		
+		idsToRemove.forEach {
+			nfts.removeValue(forKey: $0)
+		}
+		
+		idsToAdd.forEach {
+			nfts[$0, default: nil] = nil
 		}
 	}
 	
-	func startIDsUpdateBackgroundPolling() {
-		guard idsUpdateTask.isNil else { return }
+	func update(with notification: Notification) {
+		guard let ids = notification.userInfo?["ids"] as? [String] else { return }
 		
-		let task = Task(priority: .utility) {
-			defer { clearIdsUpdateTask() }
-			while !Task.isCancelled {
-				do {
-					await updateIDs(isPolling: true)
-					try await waitPolling()
-				} catch is CancellationError {
-					print("\n\(#function) cancelled")
-					break
-				} catch {
-					print("\n\(#function) caught unexpected error: \(error.localizedDescription)")
-				}
-			}
+		Task(priority: .userInitiated) {
+			await performCartUpdateIfNeeded(with: ids)
 		}
-		
-		idsUpdateTask = task
 	}
-	
+
 	func loadNilNFTs() async {
 		do {
 			try Task.checkCancellation()
@@ -142,12 +120,7 @@ extension CartViewModel {
 	}
 	
 	func reloadCart() {
-		startIDsUpdateBackgroundPolling()
 		startLoadNilNFTsBackgroundPolling()
-	}
-	
-	func performPayment() {
-		push(.paymentMethodChoose)
 	}
 }
 
@@ -190,11 +163,6 @@ private extension CartViewModel {
 		withAnimation(Constants.defaultAnimation) {
 			dataLoadingErrorIsPresented = true
 		}
-	}
-	
-	func clearIdsUpdateTask() {
-		idsUpdateTask?.cancel()
-		idsUpdateTask = nil
 	}
 	
 	func clearNftsLoadTask() {
