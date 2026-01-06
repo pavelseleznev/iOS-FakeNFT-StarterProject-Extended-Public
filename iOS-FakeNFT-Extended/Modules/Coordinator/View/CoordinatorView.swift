@@ -10,27 +10,29 @@ import SwiftUI
 struct CoordinatorView: View {
 	@State private var coordinator: Coordinator
 	
-	var body: some View {
-		NavigationStack(path: $coordinator.path) {
-			coordinator.build(.tabView)
-				.navigationDestination(for: Page.self) { page in
-					coordinator.build(page)
-						.customNavigationBackButton(backAction: coordinator.pop)
-						.overlay(content: loadingView)
-				}
-				.sheet(item: $coordinator.sheet) { sheet in
-					coordinator.build(sheet)
-				}
-				.fullScreenCover(
-					item: $coordinator.fullScreencover
-				) { fullScreenCover in
-					coordinator.build(fullScreenCover)
-				}
-				.overlay(content: loadingView)
-				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
-				.onAppear(perform: checkAuthState)
-		}
-	}
+    var body: some View {
+        NavigationStack(path: $coordinator.path) {
+            coordinator.build(.tabView)
+                .navigationDestination(for: Page.self) { page in
+                    coordinator.build(page)
+                        .customNavigationBackButton(backAction: coordinator.pop)
+                }
+                .sheet(item: $coordinator.sheet) { sheet in
+                    coordinator.build(sheet)
+                }
+                .fullScreenCover(
+                    item: $coordinator.fullScreencover
+                ) { fullScreenCover in
+                    coordinator.build(fullScreenCover)
+                }
+                .overlay(content: loadingView)
+                .allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
+                .onAppear(perform: checkAuthState)
+                .task(priority: .userInitiated) {
+                    await coordinator.loadUserData()
+                }
+        }
+    }
 	
 	init() {
 		let api = ObservedNetworkClient()
