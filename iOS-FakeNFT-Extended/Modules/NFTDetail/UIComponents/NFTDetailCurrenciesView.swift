@@ -9,10 +9,10 @@ import SwiftUI
 
 struct NFTDetailCurrenciesView: View, @MainActor Equatable {
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.currencies.elementsEqual(rhs.currencies, by: { $0.value == $1.value })
+		lhs.currencies.map(\.id) == rhs.currencies.map(\.id)
 	}
 	
-	let currencies: [Dictionary<String, CurrencyContainer?>.Element]
+	let currencies: [CurrencyContainer]
 	let cost: Float
 	
 	var body: some View {
@@ -23,8 +23,9 @@ struct NFTDetailCurrenciesView: View, @MainActor Equatable {
 					.transition(.scale.combined(with: .opacity))
 			}
 			
-			ForEach(currencies, id: \.key) { element in
-				NFTDetailCurrencyCell(model: element.value, cost: cost)
+			ForEach(currencies, id: \.id) { container in
+				NFTDetailCurrencyCell(model: container, cost: cost)
+					.id(container.id)
 					.listRowBackground(Color.clear)
 					.listRowInsets(.init())
 					.listRowSeparator(.hidden)
@@ -45,14 +46,14 @@ struct NFTDetailCurrenciesView: View, @MainActor Equatable {
 		
 		NFTDetailCurrenciesView(
 			currencies: [
-				"0" : .init(currency: .mock, id: "0"),
-				"1" : .init(currency: .mock, id: "1"),
-				"2" : .init(currency: .mock, id: "2"),
-				"3" : .init(currency: .mock, id: "3"),
-				"4" : nil,
-				"5" : .init(currency: .mock, id: "5"),
-				"6" : .init(currency: .mock, id: "6"),
-			].sorted { $0.key < $1.key },
+				.init(currency: .mock, id: "0"),
+				.init(currency: .mock, id: "1"),
+				.init(currency: .mock, id: "2"),
+				.init(currency: .mock, id: "3"),
+				.init(currency: .mock, id: "4"),
+				.init(currency: .mock, id: "5"),
+				.init(currency: .mock, id: "6"),
+			],
 			cost: 41.78
 		)
 	}
