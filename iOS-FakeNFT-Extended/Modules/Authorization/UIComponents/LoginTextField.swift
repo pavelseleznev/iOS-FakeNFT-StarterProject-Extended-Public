@@ -54,7 +54,6 @@ struct LoginTextField: View {
 			content: messageView
 		)
 		.animation(.easeInOut(duration: 0.15), value: result)
-		.onChange(of: messageAlignment) { print(messageAlignment) }
 	}
 }
 
