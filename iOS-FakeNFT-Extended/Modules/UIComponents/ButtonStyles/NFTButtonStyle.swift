@@ -38,6 +38,7 @@ private struct NFTButtonStyle: ButtonStyle {
 						lineWidth: filled ? 1 : 0.3
 					)
 			)
+			.background(.ypWhite)
 			.opacity(configuration.isPressed ? 0.5 : 1)
 			.brightness(brightness)
 			.padding(.top, 16)
@@ -68,7 +69,7 @@ extension View {
 #if DEBUG
 #Preview {
 	
-	@Previewable @State var isEnabled = false
+	@Previewable @State var isEnabled = true
 	
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
@@ -89,7 +90,7 @@ extension View {
 	}
 	.onAppear {
 		withAnimation(.easeInOut(duration: 0.15).repeatForever().speed(0.5)) {
-			isEnabled.toggle()
+//			isEnabled.toggle()
 		}
 	}
 }
