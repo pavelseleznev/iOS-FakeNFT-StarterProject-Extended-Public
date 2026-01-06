@@ -47,10 +47,10 @@ struct NFTDetailView: View {
 	var body: some View {
 		GeometryReader { geo in
 			ScrollView(.vertical) {
-				LazyVStack(spacing: spacing) {
+				VStack(spacing: spacing) {
 					NFTDetailImagesView(
 						nftsImagesURLsStrings: viewModel.model.nft.imagesURLsStrings,
-						screenWidth: geo.size.width,
+						screenWidth: screenWidth(geo: geo),
 						isFavourite: viewModel.model.isFavorite,
 						isFullScreen: $isImageFullScreen
 					)
@@ -59,47 +59,51 @@ struct NFTDetailView: View {
 					.overlay(alignment: .top) {
 						SwipeSuggestionChevronView(
 							isImageFullScreen: isImageFullScreen,
-							screenWidth: geo.size.width
+							screenWidth: screenWidth(geo: geo)
 						)
 					}
 					
-					LazyVStack(spacing: spacing) {
-						NFTDetailAboutView(nft: viewModel.model.nft)
-						
-						Divider().padding(.horizontal)
-						
-						NFTDetailCostWithAddToCartView(
-							model: viewModel.model,
-							cartAction: viewModel.didTapCartButton,
-							modelUpdateTriggerID: viewModel.modelUpdateTriggerID
-						)
-						
-						NFTDetailCurrenciesView(
-							currencies: viewModel.visibleCurrencies,
-							cost: viewModel.model.nft.price
-						)
-						
-						NFTDetailGoToSellerSiteButtonView(
-							action: viewModel.didTapGoToSellerSite,
-							spacing: spacing
-						)
-						
-						SellerNFTsView(
-							authorID: viewModel.authorID,
-							didTapDetail: viewModel.didTapDetail,
-							excludingNFTID: viewModel.model.id,
-							nftService: nftService,
-							loadAuthor: getUser
+					if !isImageFullScreen {
+						VStack(spacing: spacing) {
+							NFTDetailAboutView(nft: viewModel.model.nft)
+							
+							Divider().padding(.horizontal)
+							
+							NFTDetailCostWithAddToCartView(
+								model: viewModel.model,
+								cartAction: viewModel.didTapCartButton,
+								modelUpdateTriggerID: viewModel.modelUpdateTriggerID
+							)
+							
+							NFTDetailCurrenciesView(
+								currencies: viewModel.currencies,
+								cost: viewModel.model.nft.price
+							)
+							
+							NFTDetailGoToSellerSiteButtonView(
+								action: viewModel.didTapGoToSellerSite,
+								spacing: spacing
+							)
+							
+							SellerNFTsView(
+								authorID: viewModel.authorID,
+								authorCollection: viewModel.authorCollection,
+								didTapDetail: viewModel.didTapDetail,
+								excludingNFTID: viewModel.model.id,
+								nftService: nftService,
+								loadAuthor: getUser
+							)
+						}
+						.transition(
+							.move(edge: .bottom)
+							.combined(with: .opacity)
+							.animation(Constants.defaultAnimation)
 						)
 					}
-					.scaleEffect(y: isImageFullScreen ? 0 : 1, anchor: .bottom)
 				}
 				.overlay(alignment: .top) {
 					NFTDetailScrollViewHandlerView(
-						mainGeo: geo,
-						scrollCoordinateSpace: scrollCoordinateSpace,
-						isImageFullScreen: $isImageFullScreen,
-						isImageDissapeared: $isImageDissapeared
+						scrollCoordinateSpace: scrollCoordinateSpace
 					)
 				}
 			}
@@ -110,7 +114,6 @@ struct NFTDetailView: View {
 			.scrollDisabled(isImageFullScreen)
 			.scrollIndicators(.hidden)
 			.scrollContentBackground(.hidden)
-			.coordinateSpace(name: scrollCoordinateSpace)
 			.ignoresSafeArea(edges: .top)
 			.background(.ypWhite)
 			.overlay(alignment: .top) {
@@ -168,8 +171,19 @@ struct NFTDetailView: View {
 
 #if DEBUG
 #Preview {
-	@Previewable let authorID = "ab33768d-02ac-4f45-9890-7acf503bde54"
-//	@Previewable let authorID = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
+	@Previewable @State var nfts = [
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+	]
+	.map { (key: $0.id, value: $0) }
+	
+	@Previewable let authorIDWithNFTs = "ab33768d-02ac-4f45-9890-7acf503bde54"
+	@Previewable let authorIDWithoutNFTs = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
+	@Previewable let needsNFTs = true
+	
 	let api = ObservedNetworkClient()
 	lazy var orderService = NFTsIDsService(
 		api: api,

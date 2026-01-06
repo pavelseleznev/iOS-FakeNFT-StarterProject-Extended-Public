@@ -100,8 +100,6 @@ struct NFTDetailImagesView: View, @MainActor Equatable {
 				tabSelectorsView
 			}
 		}
-		.animation(Constants.defaultAnimation, value: isDismissing)
-		.animation(Constants.defaultAnimation, value: nftsImagesURLsStrings)
 		.onChange(of: isFullScreen) { resetScale() }
 		.simultaneousGesture(tapGestures)
 	}
@@ -232,11 +230,15 @@ private extension NFTDetailImagesView {
 	var dismissGesture: some Gesture {
 		DragGesture()
 			.onChanged { value in
+				let noAnimationTransaction = Transaction(animation: nil)
+				
 				let isBottomToTopDrag = value.translation.height < 0
 				guard isBottomToTopDrag else { return }
 				
 				if !isDismissing {
-					resetScale()
+					withTransaction(noAnimationTransaction) {
+						resetScale()
+					}
 				}
 				
 				let newScale = abs(value.translation.height / screenWidth * dismissScaleRatio) + 1
@@ -246,7 +248,9 @@ private extension NFTDetailImagesView {
 				}
 				
 				isDismissing = true
-				scale = (baseScale ?? 1) * newScale
+				withTransaction(noAnimationTransaction) {
+					scale = (baseScale ?? 1) * newScale
+				}
 				
 				let rawVelocty = value.velocity.height
 				
@@ -266,20 +270,27 @@ private extension NFTDetailImagesView {
 	}
 	
 	var tapGestures: some Gesture {
-		SimultaneousGesture(
-			SpatialTapGesture(count: 2, coordinateSpace: imageCoordinateSpace)
-				.onEnded { _ in
-					withAnimation(Constants.defaultAnimation) {
-						scale = 1
-					}
-				},
-			SpatialTapGesture(count: 1, coordinateSpace: wholeViewCoordinateSpace)
-				.onEnded { _ in
-					withAnimation(Constants.defaultAnimation) {
-						isFullScreen = true
-					}
-				}
+		let doubleTap = SpatialTapGesture(
+			count: 2,
+			coordinateSpace: imageCoordinateSpace
 		)
+			.onEnded { event in
+				withAnimation(.default) {
+					scale = 1
+				}
+			}
+		
+		let singleTap = SpatialTapGesture(
+			count: 1,
+			coordinateSpace: wholeViewCoordinateSpace
+		)
+		.onEnded { event in
+			withAnimation(.default) {
+				isFullScreen = true
+			}
+		}
+		
+		return doubleTap.exclusively(before: singleTap)
 	}
 }
 
