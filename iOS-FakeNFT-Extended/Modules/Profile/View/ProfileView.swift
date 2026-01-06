@@ -62,7 +62,7 @@ struct ProfileView: View {
                 await viewModel.retryLoad()
             }
         }
-        .onAppear {
+        .task {
             Task(priority: .userInitiated) {
                 await viewModel.retryLoad()
             }

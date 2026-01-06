@@ -83,7 +83,7 @@ struct FavoriteNFTView: View {
         } message: {
             Text(viewModel.loadErrorMessage)
         }
-        .onAppear {
+        .task {
             Task(priority: .userInitiated) { await viewModel.loadFavorites() }
         }
     }
