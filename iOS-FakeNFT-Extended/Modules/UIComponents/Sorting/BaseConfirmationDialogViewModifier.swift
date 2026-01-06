@@ -65,13 +65,17 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 	}
 	
 	private var content: some View {
-		HStack {
+		VStack(spacing: 0) {
+			HStack {
+				Spacer()
+				sortView
+			}
+			.offset(x: placement == .toolbar ? 8 : 0)
+			.padding(.trailing, placement == .safeAreaTop ? 8 : 0)
+			.padding(.leading)
+			
 			searchBar
-			Spacer()
-			sortView
 		}
-		.offset(x: placement == .toolbar ? 8 : 0)
-		.padding(.leading)
 	}
 	
 	private var textMightBeCleared: Bool {
@@ -93,8 +97,7 @@ private extension BaseConfirmationDialogViewModifier {
 	private func safeAreaTopContent() -> some View {
 		if case .safeAreaTop = placement {
 			content
-				.padding(.bottom, 16)
-				.padding(.trailing, 8)
+				.padding(.bottom, 32)
 		}
 	}
 }
@@ -128,10 +131,10 @@ private extension BaseConfirmationDialogViewModifier {
 					.transition(.opacity.combined(with: .scale))
 				}
 			}
-			.padding(3)
-			.background(.ypLightGrey)
+			.padding(6)
+			.background(.quinary)
 			.clipShape(RoundedRectangle(cornerRadius: 8))
-			.shadow(color: .ypBlack.opacity(0.2), radius: 3)
+			.padding(.horizontal)
 			.textInputAutocapitalization(.never)
 			.autocorrectionDisabled()
 		}
