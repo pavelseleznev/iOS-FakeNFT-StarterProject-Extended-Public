@@ -26,7 +26,7 @@ struct PaymentMethodChooseView: View {
 	}
 	
 	private let columns: [GridItem] = [
-		.init(.flexible()),
+		.init(.flexible(), spacing: 8),
 		.init(.flexible())
 	]
 	
@@ -75,8 +75,7 @@ struct PaymentMethodChooseView: View {
 			if !viewModel.currencies.isEmpty {
 				LazyVGrid(
 					columns: columns,
-					alignment: .center,
-					spacing: 7
+					spacing: 8
 				) {
 					ForEach(viewModel.currencies, id: \.id) { model in
 						PaymentMethodChooseCell(

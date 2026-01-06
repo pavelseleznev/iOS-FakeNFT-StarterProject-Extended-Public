@@ -11,18 +11,45 @@ fileprivate let imageSize: CGFloat = 32
 fileprivate let currencyPair_ETH_UDS_ratio: Float = 2957.66
 
 struct NFTDetailCurrencyCell: View {
-	let model: CurrencyContainer?
+	let model: CurrencyContainer
 	let cost: Float
 	
 	var body: some View {
 		HStack(spacing: 10) {
-			image
+			ImageView(urlString: model.currency.image)
+			
 			nameAndDollarCost
+			
 			Spacer()
+			
 			cryptoCost
 		}
 	}
+}
+
+// MARK: - NFTDetailCurrencyCell Extenion
+// --- subviews ---
+private extension NFTDetailCurrencyCell {
+	private var cryptoCost: some View {
+		Text("\(cryptoCostLabel) (\(model.currency.id))")
+			.font(.regular13)
+			.foregroundStyle(.ypGreenUniversal)
+	}
 	
+	private var nameAndDollarCost: some View {
+		VStack(alignment: .leading, spacing: 2) {
+			Text("\(model.currency.title) (\(model.currency.id))")
+				.font(.regular13)
+			
+			Text("$\(costLabel)")
+				.font(.regular15)
+		}
+		.foregroundStyle(.ypBlack)
+	}
+}
+
+// --- getters ---
+private extension NFTDetailCurrencyCell {
 	private var cryptoCostLabel: String {
 		getString(from: cost, format: "%.1f")
 	}
@@ -39,30 +66,14 @@ struct NFTDetailCurrencyCell: View {
 			return "0,0"
 		}
 	}
-	
-	private var cryptoCost: some View {
-		Text("\(cryptoCostLabel) (\(model?.currency.id ?? "BTC"))")
-			.font(.regular13)
-			.foregroundStyle(.ypGreenUniversal)
-			.applySkeleton(model)
-	}
-	
-	private var nameAndDollarCost: some View {
-		VStack(alignment: .leading, spacing: 2) {
-			Text("\(model?.currency.title ?? "Bitcoin") (\(model?.currency.id ?? "BTC"))")
-				.font(.regular13)
-				.applySkeleton(model)
-			
-			Text("$\(costLabel)")
-				.font(.regular15)
-				.applySkeleton(model)
-		}
-		.foregroundStyle(.ypBlack)
-	}
-	
-	private var image: some View {
+}
+
+// MARK: - Helper
+fileprivate struct ImageView: View {
+	let urlString: String
+	var body: some View {
 		AsyncImageCached(
-			urlString: model?.currency.image ?? "",
+			urlString: urlString,
 			placeholder: .vector
 		) { phase in
 			switch phase {
@@ -85,6 +96,5 @@ struct NFTDetailCurrencyCell: View {
 		}
 		.frame(width: imageSize, height: imageSize)
 		.clipShape(RoundedRectangle(cornerRadius: 6))
-		.applySkeleton(model)
 	}
 }

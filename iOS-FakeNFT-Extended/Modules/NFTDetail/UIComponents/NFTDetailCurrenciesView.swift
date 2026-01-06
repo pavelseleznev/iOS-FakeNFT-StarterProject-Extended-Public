@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NFTDetailCurrenciesView: View, @MainActor Equatable {
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.currencies.map(\.id) == rhs.currencies.map(\.id)
+		lhs.currencies.elementsEqual(rhs.currencies)
 	}
 	
 	let currencies: [CurrencyContainer]
@@ -33,7 +33,7 @@ struct NFTDetailCurrenciesView: View, @MainActor Equatable {
 		}
 		.padding()
 		.background(.ypLightGrey)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
+		.clipShape(RoundedRectangle(cornerRadius: 28))
 		.padding(.horizontal)
 		.shadow(color: .ypBlackUniversal.opacity(0.3), radius: 10)
 	}
