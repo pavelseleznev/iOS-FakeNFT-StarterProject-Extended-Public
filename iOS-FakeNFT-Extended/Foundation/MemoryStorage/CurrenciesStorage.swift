@@ -60,9 +60,9 @@ actor CurrenciesStorage: CurrenciesStorageProtocol {
 			let _currencies = await Array(currencies)
 			
 			NotificationCenter.default.post(
-				name: .currentUserDidUpdate,
+				name: .currenciesDidUpdate,
 				object: nil,
-				userInfo: ["currencies" : _currencies]
+				userInfo: [Notification.Name.currenciesDidUpdate : _currencies]
 			)
 			
 			print("\nupdate notificaiton send for currencies")

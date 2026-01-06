@@ -15,7 +15,7 @@ extension Notification.Name {
 	static let cartDidUpdate = Notification.Name("cartDidUpdate")
 	static let favoritesDidUpdate = Notification.Name("favoritesDidUpdate")
 	static let purchasedDidUpdate = Notification.Name("purchasedDidUpdate")
-	static let currentUserDidUpdate = Notification.Name("currentUserDidUpdate")
+	static let currenciesDidUpdate = Notification.Name("currenciesDidUpdate")
 
 	static let profileNameDidChange = Notification.Name("profileNameDidChange")
 	static let profileAvatarDidChange = Notification.Name("profileAvatarDidChange")

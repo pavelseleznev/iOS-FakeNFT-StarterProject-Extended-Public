@@ -134,7 +134,7 @@ struct NFTDetailView: View {
 			await viewModel.loadCurrencies()
 		}
 		.onReceive(
-			NotificationCenter.default.publisher(for: .currentUserDidUpdate),
+			NotificationCenter.default.publisher(for: .currenciesDidUpdate),
 			perform: viewModel.updateCurrencies
 		)
 	}

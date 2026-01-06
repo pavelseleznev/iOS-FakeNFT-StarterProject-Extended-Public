@@ -49,7 +49,7 @@ extension NFTDetailViewModel {
 	}
 	
 	func updateCurrencies(_ notfication: Notification) {
-		guard let currencies = notfication.userInfo?["currencies"] as? [CurrencyContainer] else { return }
+		guard let currencies = notfication.userInfo?[Notification.Name.currenciesDidUpdate] as? [CurrencyContainer] else { return }
 		self.currencies = currencies
 	}
 }

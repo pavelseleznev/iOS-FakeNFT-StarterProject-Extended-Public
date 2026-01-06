@@ -47,7 +47,7 @@ extension PaymentMethodChooseViewModel {
 	}
 	
 	func updatePaymentMethods(_ notification: Notification) {
-		guard let currencies = notification.userInfo?["currencies"] as? [CurrencyContainer] else { return }
+		guard let currencies = notification.userInfo?[Notification.Name.currenciesDidUpdate] as? [CurrencyContainer] else { return }
 		self.currencies = currencies
 	}
 	
