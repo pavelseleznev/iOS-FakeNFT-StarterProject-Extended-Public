@@ -28,17 +28,10 @@ final class SellerNFTsViewModel {
 	@ObservationIgnored private var nftsUpdateTask: Task<Void, Never>?
 	
 	private(set) var modelUpdateTriggerID = UUID()
-	private var nfts = [String : NFTModelContainer?]()
+	private(set) var nfts = [Dictionary<String, NFTModelContainer?>.Element]()
 	var showAuthorLoadingError = false
 	var showNFTsLoadingError = false
-	
-	var visibleNFTs: [Dictionary<String, NFTModelContainer?>.Element] {
-		nfts
-			.sorted {
-				$0.key.localizedStandardCompare($1.key) == .orderedAscending
-			}
-	}
-	
+
 	init(
 		authorID: String,
 		excludingNFTID: String,
@@ -79,7 +72,7 @@ extension SellerNFTsViewModel {
 			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
 			payload.screenID != screenID,
 			payload.hasChanges,
-			let model = nfts[payload.id]
+			let model = nfts.first(where: { $0.key == payload.id })?.value
 		{
 			if payload.isCartChanged {
 				didTapCartButton(for: model)
@@ -99,7 +92,8 @@ private extension SellerNFTsViewModel {
 		isFavoriteChanged: Bool = false,
 		isCartChanged: Bool = false
 	) {
-		nfts[model.id] = .init(
+		guard let index = nfts.firstIndex(where: { $0.key == model.id }) else { return }
+		nfts[index].value = .init(
 			nft: model.nft,
 			isFavorite: isFavoriteChanged ? !model.isFavorite : model.isFavorite,
 			isInCart: isCartChanged ? !model.isInCart : model.isInCart
@@ -149,7 +143,8 @@ private extension SellerNFTsViewModel {
 			let isFavorite = favourites.contains(id)
 			let isInCart = order.contains(id)
 			
-			nfts[id] = .init(
+			guard let index = nfts.firstIndex(where: { $0.key == id }) else { continue }
+			nfts[index].value = .init(
 				nft: nft,
 				isFavorite: isFavorite,
 				isInCart: isInCart

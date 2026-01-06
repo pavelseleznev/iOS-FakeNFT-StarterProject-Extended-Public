@@ -40,7 +40,7 @@ struct SellerNFTsView: View, @MainActor Equatable {
 	var body: some View {
 		ScrollView(.horizontal) {
 			LazyHStack(alignment: .top, spacing: 8) {
-				ForEach(viewModel.visibleNFTs, id: \.key) { element in
+				ForEach(viewModel.nfts, id: \.key) { element in
 					NFTVerticalCell(
 						model: element.value,
 						didTapDetail: didTapDetail,
@@ -77,7 +77,7 @@ struct SellerNFTsView: View, @MainActor Equatable {
 	
 	@ViewBuilder
 	private func noNFTsView() -> some View {
-		if viewModel.visibleNFTs.isEmpty {
+		if viewModel.nfts.isEmpty {
 			EmptyContentView(type: .nfts)
 				.transition(.scale.combined(with: .opacity))
 		}
