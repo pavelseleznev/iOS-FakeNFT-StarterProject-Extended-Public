@@ -12,13 +12,15 @@ struct PaymentMethodChooseView: View {
 	@State private var viewModel: PaymentMethodChooseViewModel
 	
 	init(
+		currenciesService: CurrenciesServiceProtocol,
 		cartService: CartServiceProtocol,
-		push: @escaping (Page) -> Void
+		onComplete: @escaping () -> Void
 	) {
 		_viewModel = .init(
 			initialValue: .init(
+				currenciesService: currenciesService,
 				cartService: cartService,
-				push: push
+				onComplete: onComplete
 			)
 		)
 	}
@@ -40,16 +42,19 @@ struct PaymentMethodChooseView: View {
 				
 				PaymentMethodChooseBottomBar(
 					didTapBuyButton: viewModel.didTapBuyButton,
-					isLoaded: viewModel.isLoaded,
+					isLoaded: !viewModel.currencies.isEmpty,
 					currencyAtLeastOneSelected: viewModel.selectedCurrency != nil,
 					paymentInProgress: viewModel.paymentInProgress
 				)
 			}
 		}
-		.animation(Constants.defaultAnimation, value: viewModel.visibleCurrencies)
 		.task(priority: .userInitiated) {
 			await viewModel.loadPaymentMethods()
 		}
+		.onReceive(
+			NotificationCenter.default.publisher(for: .currentUserDidUpdate),
+			perform: viewModel.updatePaymentMethods
+		)
 		.toolbar {
 			ToolbarItem(placement: .title) {
 				Text(.choosePaymentMethod)
@@ -67,23 +72,21 @@ struct PaymentMethodChooseView: View {
 	@ViewBuilder
 	private var content: some View {
 		ScrollView(.vertical) {
-			if !viewModel.visibleCurrencies.isEmpty {
+			if !viewModel.currencies.isEmpty {
 				LazyVGrid(
 					columns: columns,
 					alignment: .center,
 					spacing: 7
 				) {
-					ForEach(
-						Array(viewModel.visibleCurrencies.enumerated()),
-						id: \.offset
-					) { _, model in
+					ForEach(viewModel.currencies, id: \.id) { model in
 						PaymentMethodChooseCell(
-							currency: model?.currency,
-							selected: viewModel.selectedCurrency == model && model != nil
+							currency: model.currency,
+							selected: viewModel.selectedCurrency == model
 						)
 						.onTapGesture {
 							viewModel.setCurrency(model)
 						}
+						.id(model.id)
 					}
 				}
 				.padding(.horizontal)
@@ -97,7 +100,7 @@ struct PaymentMethodChooseView: View {
 	
 	@ViewBuilder
 	private func emptyView() -> some View {
-		if viewModel.visibleCurrencies.isEmpty {
+		if viewModel.currencies.isEmpty {
 			EmptyContentView(type: .currencies)
 				.transition(
 					.scale
@@ -114,6 +117,7 @@ struct PaymentMethodChooseView: View {
 	
 	NavigationStack {
 		PaymentMethodChooseView(
+			currenciesService: CurrenciesService(api: api),
 			cartService: CartService(
 				orderService: NFTsIDsService(
 					api: api,
@@ -121,7 +125,7 @@ struct PaymentMethodChooseView: View {
 				),
 				api: api
 			),
-			push: {_ in}
+			onComplete: {}
 		)
 	}
 }
