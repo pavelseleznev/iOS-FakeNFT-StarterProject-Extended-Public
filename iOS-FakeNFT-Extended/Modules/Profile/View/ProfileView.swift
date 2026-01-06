@@ -10,17 +10,15 @@ import SwiftUI
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     init(
-        profile: ProfileModel,
-        router: ProfileRouting,
-        service: ProfileService,
-        favoriteStore: FavoriteNFTViewModel) {
+        appContainer: AppContainer,
+        push: @escaping (Page) -> Void,
+    ) {
         _viewModel = State(
             initialValue: ProfileViewModel(
-            profile: profile,
-            router: router,
-            service: service,
-            favoriteStore: favoriteStore
-        ))
+                appContainer: appContainer,
+                push: push
+                )
+            )
     }
     
 	var body: some View {
@@ -39,7 +37,7 @@ struct ProfileView: View {
             } actions: {
                 [
                     ProfileActionCell(
-                        title: "Мои NFT (3)",
+                        title: viewModel.myNFTTitle,
                         action: {
                             viewModel.myNFTsTapped()
                         }
@@ -51,16 +49,21 @@ struct ProfileView: View {
                         })
                 ]
             }
-
 		}
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
-        .overlay {
-            LoadingView(loadingState: viewModel.loadingState)
+        .task(priority: .userInitiated) { await viewModel.load() }
+        .applyRepeatableAlert(
+            isPresented: $viewModel.loadErrorPresented,
+            message: viewModel.loadErrorMessage
+        ) {
+            Task(priority: .userInitiated) {
+                await viewModel.retryLoad()
+            }
         }
-        .task {
-            await viewModel.load()
+        .task(priority: .userInitiated) {
+            await viewModel.retryLoad()
         }
 	}
 }

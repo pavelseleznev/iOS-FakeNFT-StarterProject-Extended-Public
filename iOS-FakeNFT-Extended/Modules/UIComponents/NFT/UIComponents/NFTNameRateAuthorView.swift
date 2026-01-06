@@ -16,6 +16,7 @@ struct NFTNameRateAuthorView: View {
 		VStack(alignment: .leading, spacing: 6) {
 			Text(model.name)
 				.foregroundStyle(.ypBlack)
+                .lineLimit(2)
 				.font(.bold17)
 			
 			RatingPreview(rating: model.rate)

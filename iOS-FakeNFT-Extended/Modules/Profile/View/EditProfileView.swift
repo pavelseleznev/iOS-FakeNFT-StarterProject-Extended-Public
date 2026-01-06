@@ -17,10 +17,14 @@ struct EditProfileView: View {
 
     init(
         profile: ProfileModel,
+        profileService: ProfileServiceProtocol,
         onSave: @Sendable @escaping (ProfileModel) -> Void,
         onCancel: @escaping () -> Void
     ) {
-        _viewModel = State(initialValue: EditProfileViewModel(profile: profile))
+        _viewModel = State(initialValue: EditProfileViewModel(
+            profile: profile,
+            profileService: profileService)
+        )
         self.onSave = onSave
         self.onCancel = onCancel
     }
@@ -53,14 +57,8 @@ struct EditProfileView: View {
                 EditProfileFooter(
                     isVisible: viewModel.canSave,
                     onSave: {
-                        Task {
-                            do {
-                                let updatedProfile = try await viewModel.saveTapped()
-                                onSave(updatedProfile)
-                            } catch {
-                                // TODO: Handle error (alert, log, etc.)
-                                print(error)
-                            }
+                        Task(priority: .userInitiated) {
+                            await performSave()
                         }
                     }
                 )
@@ -84,36 +82,34 @@ struct EditProfileView: View {
                 viewModel.photoURLCancelled()
             }
         )
+        .applyRepeatableAlert(
+            isPresented: $viewModel.isSaveErrorPresented,
+            message: viewModel.saveErrorMessage,
+            didTapRepeat: {
+                Task(priority: .userInitiated) {
+                    await performSave()
+                }
+            }
+        )
         .overlay {
             LoadingView(loadingState: viewModel.loadingState)
         }
     }
-}
-
-struct EditProfileView_Preview: PreviewProvider {
-    static var mockProvider = MockProfileProvider()
     
-    static var previews: some View {
-        let sampleProfile = mockProvider.profile()
-        Group {
-            EditProfileView(
-                profile: sampleProfile,
-                onSave: { newProfile in print("Saved: \(newProfile)")
-                },
-                onCancel: {
-                    print("Cancelled")
-                }
-            )
-            .previewDisplayName("Light")
-            .environment(\.colorScheme, .light)
-            
-            EditProfileView(
-                profile: sampleProfile,
-                onSave: { _ in },
-                onCancel: {}
-            )
-            .previewDisplayName("Dark")
-            .environment(\.colorScheme, .dark)
+    @MainActor
+    private func performSave() async {
+        do {
+            try await viewModel.saveTapped()
+            onSave(ProfileModel(
+                name: viewModel.name,
+                about: viewModel.about,
+                website: viewModel.website,
+                avatarURL: viewModel.avatarURL
+            ))
+        } catch {
+            guard !(error is CancellationError) else { return }
+            print("Save profile failed:", error)
+            viewModel.isSaveErrorPresented = true
         }
     }
 }

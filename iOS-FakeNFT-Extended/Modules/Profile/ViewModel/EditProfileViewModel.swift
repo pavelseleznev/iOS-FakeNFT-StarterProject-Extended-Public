@@ -22,17 +22,26 @@ final class EditProfileViewModel {
     var isPhotoURLAlertPresented = false
     var photoURLInput = ""
     var loadingState: LoadingState = .idle
+    var isSaveErrorPresented = false
+    var saveErrorMessage = "Не удалось сохранить данные"
     
     let originalProfile: ProfileModel
     
-    private let placeholderAvatar = "userPickPlaceholder"
+    private let profileService: ProfileServiceProtocol
+    private let userPicturePlaceholder = "userPicturePlaceholder"
+
     
     // MARK: - Init
-    init(profile: ProfileModel) {
+    init(
+        profile: ProfileModel,
+        profileService: ProfileServiceProtocol
+    ) {
+        self.profileService = profileService
+        
         self.name = profile.name
         self.about = profile.about
         self.website = profile.website
-        self.avatarURL = profile.avatarURL.isEmpty ? placeholderAvatar : profile.avatarURL
+        self.avatarURL = profile.avatarURL.isEmpty ? userPicturePlaceholder : profile.avatarURL
         self.originalProfile = profile
     }
     
@@ -61,19 +70,31 @@ final class EditProfileViewModel {
     func deletePhotoTapped() {
         isPhotoActionsPresented = false
         photoURLInput = ""
-        avatarURL = placeholderAvatar
+        avatarURL = userPicturePlaceholder
     }
     
-    func saveTapped() async throws -> ProfileModel {
-        loadingState = .fetching
-        defer { loadingState = .idle }
-        try await Task.sleep(for: .seconds(3))
-        return ProfileModel(
+    func saveTapped() async throws {
+        let avatarToSend = (avatarURL == userPicturePlaceholder) ? "" : avatarURL
+        
+        let payload = ProfilePayload(
             name: name,
-            about: about,
+            description: about,
+            avatar: avatarToSend,
             website: website,
-            avatarURL: avatarURL
+            likes: nil
         )
+        
+        loadingState = .fetching
+        
+        do {
+            defer { loadingState = .idle }
+            try await profileService.update(with: payload)
+        } catch {
+            guard !error.isCancellation else { return }
+            isSaveErrorPresented = true
+            saveErrorMessage = "Не удалось сохранить данные"
+            throw error
+        }
     }
     
     func photoURLSaved(_ url: String) {

@@ -30,5 +30,6 @@ extension Image {
 	static let starFill = Image(systemName: "star.fill")
     
     // profile
-    static let userPickMockEdit = Image("userPickMockEdit")
+    static let userPicturePlaceholder = Image(.userPicturePlaceholder)
+    static let frameCamera = Image(.frameCamera)
 }

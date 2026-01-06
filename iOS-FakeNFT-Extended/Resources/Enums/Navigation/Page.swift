@@ -7,17 +7,14 @@
 
 
 enum Page: Identifiable {
+    case splash
 	case tabView
     case aboutAuthor(urlString: String)
 	
-    // statistics
     case statNFTCollection(nfts: [NFTModel])
     case statProfile(profile: UserListItemResponse)
     
-    // profile
-    case editProfile(ProfileModel)
-    case myNFTs
-    case favoriteNFTs
+    case profile(ProfilePage)
     
     var id: String { .init(describing: self)}
 }
@@ -30,4 +27,11 @@ extension Page: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
+}
+
+enum ProfilePage {
+    // profile
+    case editProfile(ProfileModel)
+    case myNFTs
+    case favoriteNFTs
 }

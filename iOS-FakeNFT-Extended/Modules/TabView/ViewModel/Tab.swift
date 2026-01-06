@@ -44,13 +44,11 @@ enum Tab: String, CaseIterable, Identifiable {
 		dismiss: @escaping () -> Void
 	) -> some View {
 		switch self {
-		case .profile:
-			ProfileView(
-                profile: appContainer.profileProvider.profile(),
-                router: TabProfileRouter(push: push),
-                service: appContainer.profileService,
-                favoriteStore: appContainer.favoriteStore
-			)
+        case .profile:
+            ProfileView(
+                appContainer: appContainer,
+                push: push
+            )
 		case .catalog:
 			CatalogView(
 				appContainer: appContainer,

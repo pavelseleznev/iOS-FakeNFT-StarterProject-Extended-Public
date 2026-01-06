@@ -8,16 +8,15 @@
 import SwiftUI
 
 struct MyNFTView: View {
+    @State private var viewModel: MyNFTViewModel
     
     private let sortPlacement: BaseConfirmationDialogTriggerPlacement = .toolbar
     private static let myNFTSortOptionKey: String = "myNFTSortOptionKey"
     
     @AppStorage(myNFTSortOptionKey) private var sortOption: ProfileSortActionsViewModifier.SortOption = .name
     
-    @State private var viewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])
-    
-    init(viewModel: MyNFTViewModel = MyNFTViewModel(items: [.mock1, .mock2, .mock3])) {
-        _viewModel = State(wrappedValue: viewModel)
+    init(appContainer: AppContainer) {
+        _viewModel = State(initialValue: MyNFTViewModel(appContainer: appContainer))
     }
     
     var body: some View {
@@ -25,18 +24,28 @@ struct MyNFTView: View {
             Color.ypWhite.ignoresSafeArea()
             
             if viewModel.items.isEmpty {
-                VStack {
-                    Spacer()
-                    Text("У Вас ещё нет NFT")
-                        .font(.bold17)
-                        .multilineTextAlignment(.center)
-                    Spacer()
+                if viewModel.isLoading {
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(0..<6, id: \.self) { _ in
+                                MyNFTShimmerRow()
+                            }
+                        }
+                    }
+                } else {
+                    VStack {
+                        Spacer()
+                        Text("У Вас ещё нет NFT")
+                            .font(.bold17)
+                            .multilineTextAlignment(.center)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(viewModel.items) { nft in
+                        ForEach(viewModel.items, id: \.id) { nft in
                             myRow(for: nft)
                         }
                     }
@@ -53,19 +62,22 @@ struct MyNFTView: View {
                             ProfileSortActionsViewModifier(
                                 activeSortOption: $sortOption,
                                 placement: sortPlacement,
-                                didTapCost: { viewModel.sort(by: .cost) },
-                                didTapRate: { viewModel.sort(by: .rate) },
-                                didTapName: { viewModel.sort(by: .name) }
+                                didTapCost: { sortOption = .cost },
+                                didTapRate: { sortOption = .rate },
+                                didTapName: { sortOption = .name }
                             )
                         )
                 }
             }
         }
         .onAppear() {
-            viewModel.sort(by: sortOption)
+            viewModel.setSortOption(sortOption)
         }
         .onChange(of: sortOption) {
-            viewModel.sort(by: sortOption)
+            viewModel.setSortOption(sortOption)
+        }
+        .task(priority: .userInitiated) {
+            await viewModel.loadPurchasedNFTs()
         }
     }
     
@@ -81,16 +93,57 @@ struct MyNFTView: View {
         }
         .background(Color.ypWhite)
     }
-}
+    
+    private struct MyNFTShimmerRow: View {
+        var body: some View {
+            VStack(spacing: 0) {
+                HStack(alignment: .top, spacing: 16) {
 
-#Preview("With NFTs") {
-    NavigationStack {
-        MyNFTView()
-    }
-}
+                    // Image placeholder (approx)
+                    LoadingShimmerPlaceholderView()
+                        .frame(width: 108, height: 108)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
 
-#Preview("Empty Preview") {
-    NavigationStack {
-        MyNFTView(viewModel: MyNFTViewModel(items: []))
+                    VStack(alignment: .leading, spacing: 10) {
+
+                        // Title line
+                        LoadingShimmerPlaceholderView()
+                            .frame(width: 170, height: 16)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                        // Subtitle line (author)
+                        LoadingShimmerPlaceholderView()
+                            .frame(width: 120, height: 12)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                        Spacer(minLength: 0)
+
+                        HStack {
+                            // Stars / rating placeholder
+                            LoadingShimmerPlaceholderView()
+                                .frame(width: 90, height: 12)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                            Spacer()
+
+                            // Price placeholder
+                            LoadingShimmerPlaceholderView()
+                                .frame(width: 70, height: 14)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+                }
+                .padding(16)
+                .frame(height: 140)
+
+                // Divider like your cell bottom border
+                Rectangle()
+                    .fill(Color.ypBlackUniversal.opacity(0.08))
+                    .frame(height: 1)
+            }
+            .background(Color.ypWhite)
+        }
     }
 }
