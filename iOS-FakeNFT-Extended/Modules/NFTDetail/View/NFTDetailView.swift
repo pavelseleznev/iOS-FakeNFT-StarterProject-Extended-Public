@@ -103,6 +103,10 @@ struct NFTDetailView: View {
 					)
 				}
 			}
+			.coordinateSpace(name: scrollCoordinateSpace)
+			.onPreferenceChange(ScrollOffsetPreferenceKey.self) {
+				handlePreferenceOffsetChange($0, screenWidth: screenWidth(geo: geo))
+			}
 			.scrollDisabled(isImageFullScreen)
 			.scrollIndicators(.hidden)
 			.scrollContentBackground(.hidden)
@@ -136,8 +140,27 @@ struct NFTDetailView: View {
 	}
 	
 	func imageViewHeight(geo: GeometryProxy) -> CGFloat {
-		withAnimation(Constants.defaultAnimation) {
-			isImageFullScreen ? geo.size.height + geo.safeAreaInsets.bottom : geo.size.width
+		let height = isImageFullScreen ? geo.size.height + geo.safeAreaInsets.bottom : geo.size.width
+		return height
+	}
+	
+	func screenWidth(geo: GeometryProxy) -> CGFloat {
+		let width = geo.size.width
+		return width
+	}
+	
+	func handlePreferenceOffsetChange(_ offset: CGFloat, screenWidth: CGFloat) {
+		let threshold: CGFloat = 100
+		
+		if offset > threshold {
+			withAnimation(.default) {
+				isImageFullScreen = true
+			}
+		}
+		
+		let shouldDissaper = offset < -screenWidth + threshold
+		if isImageDissapeared != shouldDissaper {
+			isImageDissapeared = shouldDissaper
 		}
 	}
 }
