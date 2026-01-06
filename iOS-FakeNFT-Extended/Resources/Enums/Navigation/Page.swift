@@ -15,7 +15,7 @@ enum Page: Identifiable {
     
     case profile(ProfilePage)
     
-    case catalogDetails(nftsIDs: [String])
+    case catalogDetails(catalog: NFTCollectionItemResponse)
     
     var id: String { .init(describing: self)}
 }
