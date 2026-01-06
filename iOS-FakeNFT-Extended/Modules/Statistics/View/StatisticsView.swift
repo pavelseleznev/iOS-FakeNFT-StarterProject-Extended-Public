@@ -49,7 +49,7 @@ struct StatisticsView: View {
 			}
 			.animation(.default, value: viewModel.visibleUsers)
 			.refreshable {
-				await viewModel.updateUsers()
+				await viewModel.resetUsers()
 			}
 			.listModifiers()
 			.overlay(content: loadingView)

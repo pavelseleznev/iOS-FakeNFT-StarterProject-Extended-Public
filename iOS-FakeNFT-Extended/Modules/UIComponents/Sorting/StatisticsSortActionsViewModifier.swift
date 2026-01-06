@@ -22,7 +22,7 @@ struct StatisticsSortActionsViewModifier: ViewModifier {
 		var parameter: String {
 			switch self {
 			case .rate:
-				"rating,asc"
+				"rating,desc"
 			case .name:
 				"name,asc"
 			}

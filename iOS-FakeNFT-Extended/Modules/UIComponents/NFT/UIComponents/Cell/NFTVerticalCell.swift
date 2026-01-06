@@ -10,7 +10,9 @@ import SwiftUI
 struct NFTVerticalCell: View, @MainActor Equatable {
 	
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.model?.id == rhs.model?.id
+		lhs.model?.id == rhs.model?.id &&
+		lhs.model?.isFavorite == rhs.model?.isFavorite &&
+		lhs.model?.isInCart == rhs.model?.isInCart
 	}
 	
 	let model: NFTModelContainer?
@@ -26,6 +28,7 @@ struct NFTVerticalCell: View, @MainActor Equatable {
 				layout: .my,
 				likeAction: likeAction,
 			)
+			.id(model?.isFavorite)
 			
 			RatingPreview(rating: model?.nft.rating)
 			

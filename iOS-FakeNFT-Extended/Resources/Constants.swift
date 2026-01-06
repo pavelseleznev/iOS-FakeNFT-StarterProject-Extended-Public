@@ -26,6 +26,7 @@ enum Constants {
 	
 	static let nftNameLineLimit = 2
 	static let authorNameLineLimit = 2
+	static let statisticsAuthorCellNameLineLimit = 1
 	
 	static let defaultAnimation: Animation = .easeInOut(duration: 0.25)
 	
