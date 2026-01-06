@@ -13,4 +13,13 @@ enum StatisticsPage {
 		authorWebsiteURLString: String
 	)
 	case profile(profile: UserListItemResponse)
+	
+	var debugDescription: String {
+		switch self {
+		case .nftCollection:
+			"nftCollection"
+		case .profile:
+			"profile"
+		}
+	}
 }

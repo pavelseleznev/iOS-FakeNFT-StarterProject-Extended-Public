@@ -28,13 +28,34 @@ enum Page {
 
 // MARK: - Page extensions
 // --- properties ---
-extension Page {
+extension Page: CustomDebugStringConvertible {
 	var hasNotBackButton: Bool {
 		switch self {
 		case .splash, .tabView, .cart(.successPayment), .onboarding, .authorization(.login):
 			true
 		default:
 			false
+		}
+	}
+	
+	var debugDescription: String {
+		switch self {
+		case .splash:
+			"splash"
+		case .onboarding:
+			"onboarding"
+		case .authorization(let authorizationPage):
+			"authorization(\(authorizationPage))"
+		case .tabView:
+			"tabView"
+		case .nftDetail:
+			"nftDetail"
+		case .aboutAuthor:
+			"aboutAuthor"
+		case .cart(let cartPage):
+			"cart(\(cartPage))"
+		case .statistics(let statisticsPage):
+			"statistics(\(statisticsPage.debugDescription))"
 		}
 	}
 }

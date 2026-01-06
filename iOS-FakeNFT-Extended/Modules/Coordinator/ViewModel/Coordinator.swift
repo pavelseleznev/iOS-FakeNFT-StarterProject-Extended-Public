@@ -58,7 +58,7 @@ extension Coordinator {
 // --- private updaters ---
 private extension Coordinator {
 	func updatePath(_ newValue: [Page]) {
-		print("Navigation path updated to: \(newValue)")
+		print("Navigation path updated to: \(newValue.debugDescription)")
 		var transaction = Transaction()
 		transaction.disablesAnimations = true
 		withTransaction(transaction) {
