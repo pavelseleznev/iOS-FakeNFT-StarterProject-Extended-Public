@@ -13,7 +13,7 @@ struct StatisticsNFTCollectionView: View {
 	private let loadAuthor: (String) async throws -> UserListItemResponse
 	private let nftService: NFTServiceProtocol
 	private let loadingState: LoadingState
-	private let didTapDetail: (NFTModelContainer) -> Void
+	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	
 	init(
 		initialNFTsIDs: [String],
@@ -21,7 +21,7 @@ struct StatisticsNFTCollectionView: View {
 		loadingState: LoadingState,
 		nftService: NFTServiceProtocol,
 		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
-		didTapDetail: @escaping (NFTModelContainer) -> Void
+		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	) {
 		self.authorID = authorID
 		self.initialNFTsIDs = initialNFTsIDs
@@ -42,6 +42,7 @@ struct StatisticsNFTCollectionView: View {
 				loadAuthor: loadAuthor,
 				didTapDetail: didTapDetail
 			)
+			
 			.safeAreaPadding(.top)
 		}
 		.toolbar {
@@ -71,7 +72,7 @@ struct StatisticsNFTCollectionView: View {
 		loadingState: .idle,
 		nftService: NFTService.mock,
 		loadAuthor: ObservedNetworkClient().getUser,
-		didTapDetail: {_ in}
+		didTapDetail: {_, _ in}
 	)
 }
 #endif

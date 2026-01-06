@@ -19,12 +19,10 @@ final class SellerNFTsViewModel {
 	private let excludingNFTID: String
 	private let nftService: NFTServiceProtocol
 	private let loadAuthor: (String) async throws -> UserListItemResponse
-	@ObservationIgnored
-	private let screenID = UUID()
+	@ObservationIgnored private let screenID = UUID()
 	
 	private let pollingInterval: Duration = .seconds(1)
 	
-	@ObservationIgnored private var authorUpdateTask: Task<Void, Never>?
 	@ObservationIgnored private var nftsUpdateTask: Task<Void, Never>?
 	
 	private(set) var modelUpdateTriggerID = UUID()
@@ -34,10 +32,12 @@ final class SellerNFTsViewModel {
 
 	init(
 		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
 		excludingNFTID: String,
 		nftService: NFTServiceProtocol,
 		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
 	) {
+		nfts = authorCollection
 		self.authorID = authorID
 		self.excludingNFTID = excludingNFTID
 		self.nftService = nftService
@@ -48,13 +48,11 @@ final class SellerNFTsViewModel {
 // --- internal methods ---
 extension SellerNFTsViewModel {
 	func startPolling() {
-		startAuthorUpdatePolling()
 		startNFTsUpdatePolling()
 	}
 	
 	func clearAllTasks() {
 		clearNFTsUpdateTask()
-		clearAuthorUpdateTask()
 	}
 	
 	func didTapCartButton(for model: NFTModelContainer?) {
@@ -151,31 +149,6 @@ private extension SellerNFTsViewModel {
 			)
 		}
 	}
-	
-	func updateAuthor() async throws {
-		let author = try await loadAuthor(authorID)
-		
-		let loadedIDs: Set<String> = {
-			var rawLoadedIDs = Set(author.nftsIDs)
-			rawLoadedIDs.remove(excludingNFTID)
-			return rawLoadedIDs
-		}()
-		let oldIDs = Set(nfts.keys)
-		
-		let newIDs = loadedIDs.subtracting(oldIDs)
-		let idsToRemove = oldIDs.subtracting(loadedIDs)
-		
-		let newCapacity = oldIDs.count - idsToRemove.count + newIDs.count
-		guard newCapacity != oldIDs.count else { return }
-		nfts.reserveCapacity(newCapacity)
-		
-		newIDs.forEach {
-			nfts[$0, default: nil] = nil
-		}
-		idsToRemove.forEach {
-			nfts.removeValue(forKey: $0)
-		}
-	}
 }
 
 // --- errors handlers ---
@@ -186,26 +159,10 @@ private extension SellerNFTsViewModel {
 			showNFTsLoadingError = true
 		}
 	}
-	
-	func onAuthorError(_ error: Error) {
-		guard !(error is CancellationError) else { return }
-		withAnimation(Constants.defaultAnimation) {
-			showAuthorLoadingError = true
-		}
-	}
 }
 
 // --- polling lifecycle ---
 private extension SellerNFTsViewModel {
-	func startAuthorUpdatePolling() {
-		authorUpdateTask = startSafeTaskPolling(
-			pollingTask: authorUpdateTask,
-			operation: updateAuthor,
-			clear: clearAuthorUpdateTask,
-			onError: onAuthorError
-		)
-	}
-	
 	func startNFTsUpdatePolling()  {
 		nftsUpdateTask = startSafeTaskPolling(
 			pollingTask: nftsUpdateTask,
@@ -219,12 +176,7 @@ private extension SellerNFTsViewModel {
 		nftsUpdateTask?.cancel()
 		nftsUpdateTask = nil
 	}
-	
-	func clearAuthorUpdateTask() {
-		authorUpdateTask?.cancel()
-		authorUpdateTask = nil
-	}
-	
+
 	func startSafeTaskPolling(
 		pollingTask: Task<Void, Never>?,
 		operation: @escaping () async throws -> Void,

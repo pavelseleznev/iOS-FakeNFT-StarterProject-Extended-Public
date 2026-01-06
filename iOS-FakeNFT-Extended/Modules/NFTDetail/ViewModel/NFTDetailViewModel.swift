@@ -10,38 +10,31 @@ import SwiftUI
 @Observable
 @MainActor
 final class NFTDetailViewModel {
-	private let cartService: CartServiceProtocol
+	private let currenciesService: CurrenciesServiceProtocol
 	private let push: (Page) -> Void
 	@ObservationIgnored
 	private let screenID = UUID()
+	let authorCollection: [Dictionary<String, NFTModelContainer?>.Element]
 	
 	let authorID: String
 	let authorWebsiteURLString: String
 	
 	private(set) var model: NFTModelContainer
 	private(set) var modelUpdateTriggerID = UUID()
-	private var currencies = [String : CurrencyContainer?]()
-	var currenciesLoadErrorIsPresented = false
-	
-	var visibleCurrencies: [Dictionary<String, CurrencyContainer?>.Element] {
-		withAnimation(.default) {
-			currencies
-				.sorted {
-					$0.key.localizedStandardCompare($1.key) == .orderedAscending
-				}
-		}
-	}
+	private(set) var currencies = [CurrencyContainer]()
 	
 	init(
-		cartService: CartServiceProtocol,
+		currenciesService: CurrenciesServiceProtocol,
 		model: NFTModelContainer,
 		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
 		authorWebsiteURLString: String,
 		push: @escaping (Page) -> Void
 	) {
-		self.cartService = cartService
+		self.currenciesService = currenciesService
 		self.push = push
 		self.authorID = authorID
+		self.authorCollection = authorCollection
 		self.authorWebsiteURLString = authorWebsiteURLString
 		self.model = model
 	}
@@ -52,25 +45,12 @@ final class NFTDetailViewModel {
 // --- internal helpers ---
 extension NFTDetailViewModel {
 	func loadCurrencies() async {
-		do {
-			let _currencies = try await cartService.loadCurrencies()
-			_currencies.forEach {
-				currencies[$0.id, default: nil] = nil
-			}
-			
-			for currency in _currencies {
-				let loadedCurrency = try await cartService.loadCurrency(byID: currency.id)
-				currencies[currency.id] = .init(
-					currency: loadedCurrency,
-					id: currency.id
-				)
-			}
-		} catch {
-			guard !(error is CancellationError) else { return }
-			withAnimation(Constants.defaultAnimation) {
-				currenciesLoadErrorIsPresented = true
-			}
-		}
+		currencies = await currenciesService.get()
+	}
+	
+	func updateCurrencies(_ notfication: Notification) {
+		guard let currencies = notfication.userInfo?["currencies"] as? [CurrencyContainer] else { return }
+		self.currencies = currencies
 	}
 }
 
@@ -81,6 +61,7 @@ extension NFTDetailViewModel {
 			.nftDetail(
 				model: model,
 				authorID: authorID,
+				authorCollection: authorCollection,
 				authorWebsiteURLString: authorWebsiteURLString
 			)
 		)

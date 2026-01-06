@@ -11,7 +11,12 @@ fileprivate let nftWidth: CGFloat = 108
 
 struct SellerNFTsView: View, @MainActor Equatable {
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.viewModel.visibleNFTs.first?.value == rhs.viewModel.visibleNFTs.first?.value
+		guard lhs.viewModel.nfts.count == rhs.viewModel.nfts.count else { return false }
+		return lhs.viewModel.nfts.elementsEqual(rhs.viewModel.nfts) { l, r in
+			l.key == r.key &&
+			l.value?.isFavorite == r.value?.isFavorite &&
+			l.value?.isInCart == r.value?.isInCart
+		}
 	}
 	
 	@State private var viewModel: SellerNFTsViewModel
@@ -20,6 +25,7 @@ struct SellerNFTsView: View, @MainActor Equatable {
 	
 	init(
 		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
 		didTapDetail: @escaping (NFTModelContainer) -> Void,
 		excludingNFTID: String,
 		nftService: NFTServiceProtocol,
@@ -30,6 +36,7 @@ struct SellerNFTsView: View, @MainActor Equatable {
 		_viewModel = .init(
 			initialValue: .init(
 				authorID: authorID,
+				authorCollection: authorCollection,
 				excludingNFTID: excludingNFTID,
 				nftService: nftService,
 				loadAuthor: loadAuthor
@@ -49,17 +56,12 @@ struct SellerNFTsView: View, @MainActor Equatable {
 					)
 					.frame(width: nftWidth)
 					.cellModifiers()
-					.id(element.key + viewModel.modelUpdateTriggerID.uuidString)
+					.id(element.key)
 				}
 			}
 			.padding(.horizontal)
 		}
 		.scrollIndicators(.hidden)
-		.applyRepeatableAlert(
-			isPresneted: $viewModel.showAuthorLoadingError,
-			message: .cantGetAuthor,
-			didTapRepeat: viewModel.startPolling
-		)
 		.applyRepeatableAlert(
 			isPresneted: $viewModel.showNFTsLoadingError,
 			message: .cantGetNFTs,
@@ -102,30 +104,48 @@ fileprivate extension View {
 
 // MARK: - Preview
 #if DEBUG
+
+fileprivate let nfts = {
+	[
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+		NFTModelContainer.mock,
+	]
+	.map { (key: $0.id, value: $0) }
+}()
 #Preview {
 	@Previewable let api = ObservedNetworkClient()
+	
 	@Previewable @State var path: [Page] = [
 		.nftDetail(
 			model: .mock,
 			authorID: "ab33768d-02ac-4f45-9890-7acf503bde54",
+			authorCollection: nfts,
 			authorWebsiteURLString: ""
 		)
 	]
 	
 	@Previewable @State var excludingNFTID = ""
-	let authorIDWithSomeNFTs = "ab33768d-02ac-4f45-9890-7acf503bde54"
-	let authorIDWithEmptyNFTs = "ef96b1c3-c495-4de5-b20f-1c1e73122b7d"
+	let isEmptyAuthorNFTs = false
+	
+	lazy var authorID: String = {
+		isEmptyAuthorNFTs ? "ef96b1c3-c495-4de5-b20f-1c1e73122b7d" :  "ab33768d-02ac-4f45-9890-7acf503bde54"
+	}()
 	
 	NavigationStack(path: $path) {
 		ZStack {
 			SellerNFTsView(
-				authorID: authorIDWithSomeNFTs,
+				authorID: authorID,
+				authorCollection: nfts,
 				didTapDetail: {
 					path
 						.append(
 							.nftDetail(
 								model: $0,
-								authorID: authorIDWithSomeNFTs,
+								authorID: authorID,
+								authorCollection: nfts,
 								authorWebsiteURLString: ""
 							)
 						)
@@ -137,7 +157,7 @@ fileprivate extension View {
 		}
 		.task(priority: .userInitiated) {
 			do {
-				excludingNFTID = try await api.getUser(by: authorIDWithSomeNFTs).nftsIDs.first ?? ""
+				excludingNFTID = try await api.getUser(by: authorID).nftsIDs.first ?? ""
 			} catch { print(error.localizedDescription) }
 		}
 	}

@@ -22,9 +22,10 @@ struct NFTDetailView: View {
 	init(
 		model: NFTModelContainer,
 		nftService: NFTServiceProtocol,
-		cartService: CartServiceProtocol,
+		currenciesService: CurrenciesServiceProtocol,
 		getUser: @escaping (String) async throws -> UserListItemResponse,
 		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
 		authorWebsiteURLString: String,
 		push: @escaping (Page) -> Void,
 		backAction: @escaping () -> Void
@@ -35,9 +36,10 @@ struct NFTDetailView: View {
 		
 		_viewModel = .init(
 			initialValue: .init(
-				cartService: cartService,
+				currenciesService: currenciesService,
 				model: model,
 				authorID: authorID,
+				authorCollection: authorCollection,
 				authorWebsiteURLString: authorWebsiteURLString,
 				push: push
 			)
@@ -131,14 +133,9 @@ struct NFTDetailView: View {
 		.task(priority: .userInitiated) {
 			await viewModel.loadCurrencies()
 		}
-		.applyRepeatableAlert(
-			isPresneted: $viewModel.currenciesLoadErrorIsPresented,
-			message: .cantGetCurrencies,
-			didTapRepeat: {
-				Task(priority: .userInitiated) {
-					await viewModel.loadCurrencies()
-				}
-			}
+		.onReceive(
+			NotificationCenter.default.publisher(for: .currentUserDidUpdate),
+			perform: viewModel.updateCurrencies
 		)
 	}
 	
@@ -189,10 +186,7 @@ struct NFTDetailView: View {
 		api: api,
 		kind: .order
 	)
-	lazy var cartService = CartService(
-		orderService: orderService,
-		api: api
-   )
+	lazy var currenciesService = CurrenciesService(api: api)
 	
 	lazy var nftService = NFTService(
 		favouritesService: NFTsIDsService(
@@ -206,9 +200,10 @@ struct NFTDetailView: View {
 	NFTDetailView(
 		model: .mock,
 		nftService: nftService,
-		cartService: cartService,
+		currenciesService: currenciesService,
 		getUser: api.getUser,
-		authorID: authorID,
+		authorID: needsNFTs ? authorIDWithNFTs : authorIDWithoutNFTs,
+		authorCollection: nfts,
 		authorWebsiteURLString: "",
 		push: {_ in},
 		backAction: {}
