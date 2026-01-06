@@ -12,17 +12,15 @@ struct NFTCollectionCell: View {
     
     var body: some View {
         VStack(spacing: .zero) {
-            Group {
-                AsyncImage(url: model.coverImageURL) { image in
-                    image
-                        .resizable()
-                } placeholder: {
-                    Color.ypBackgroundUniversal
-                        .overlay {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                        }
-                }
+            AsyncImage(url: model.coverImageURL) { image in
+                image
+                    .resizable()
+            } placeholder: {
+                Color.ypBackgroundUniversal
+                    .overlay {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    }
             }
             .scaledToFill()
             .frame(height: 140)

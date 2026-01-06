@@ -38,17 +38,15 @@ struct CatalogNFTCollectionView: View {
             Color.ypWhite
             
             VStack(spacing: .zero) {
-                Group {
-                    AsyncImage(url: catalog.coverImageURL) { image in
-                        image
-                            .resizable()
-                    } placeholder: {
-                        Color.ypBackgroundUniversal
-                            .overlay {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                            }
-                    }
+                AsyncImage(url: catalog.coverImageURL) { image in
+                    image
+                        .resizable()
+                } placeholder: {
+                    Color.ypBackgroundUniversal
+                        .overlay {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                        }
                 }
                 .scaledToFill()
                 .frame(height: 310)
