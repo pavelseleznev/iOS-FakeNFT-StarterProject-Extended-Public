@@ -7,19 +7,12 @@
 
 import SwiftUI
 
-fileprivate let loadingCommentDuration: TimeInterval = 4
-
 @MainActor
 @Observable
 final class SplashViewModel {
 	private let dependencies: AppContainer
 	private let onComplete: () -> Void
-	
 	private(set) var currentLoadingComment: SplashLoadingComment = .allCases.randomElement()!
-	private(set) var updateID = UUID()
-	private(set) var dataLoadingErrorIsPresented = false
-	
-	let animation: Animation = .easeInOut(duration: 0.25)
 	
 	init(
 		appContainer: AppContainer,
@@ -33,43 +26,20 @@ final class SplashViewModel {
 // MARK: - SplashViewModel Extensions
 // --- internal methods ---
 extension SplashViewModel {
-	func loadUserData() async {
+	func waitAnimations() async {
 		do {
-			#warning("TODO: skip this by background long polling updates")
-
-			try await dependencies.purchasedNFTsService.loadAndSave()
-			try await dependencies.nftService.favouritesService.loadAndSave()
-			try await dependencies.nftService.orderService.loadAndSave()
-			try await dependencies.profileService.loadProfileAndSave()
-			
+			try await Task.sleep(for: Constants.splashPresentationDuration)
 			onComplete()
 		} catch is CancellationError {
 			print("\(#function) cancelled")
 		} catch {
-			print("\(#function) failed: \(error)")
-			withAnimation(animation) {
-				dataLoadingErrorIsPresented = true
-			}
+			print("\(#function) unexpected error: \(error)")
 		}
 	}
 	
-	func performLoadingCommentRolling() {
-		let _animation = animation
-		
-		Timer.scheduledTimer(withTimeInterval: loadingCommentDuration, repeats: true) { _ in
-			DispatchQueue.main.async {
-				withAnimation(_animation) { [weak self] in
-					guard let self else { return }
-					currentLoadingComment = currentLoadingComment.next
-					updateID = .init()
-				}
-			}
-		}
-	}
-	
-	func dismissError(_ state: Bool) {
-		withAnimation(animation) {
-			dataLoadingErrorIsPresented = state
+	func timerTick(_: Date) {
+		withAnimation(Constants.defaultAnimation) {
+			currentLoadingComment = currentLoadingComment.next
 		}
 	}
 }

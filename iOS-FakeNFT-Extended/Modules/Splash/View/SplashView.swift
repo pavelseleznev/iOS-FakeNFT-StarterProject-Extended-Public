@@ -7,8 +7,15 @@
 
 import SwiftUI
 
+fileprivate let loadingCommentDuration: TimeInterval = 4
+
 struct SplashView: View {
 	@State private var viewModel: SplashViewModel
+	private let timer = Timer.publish(
+		every: loadingCommentDuration,
+		on: .main,
+		in: .common
+	).autoconnect()
 	
 	init(
 		appContainer: AppContainer,
@@ -39,24 +46,10 @@ struct SplashView: View {
 			}
 			.scaleEffect(state != .idle ? 1 : 0)
 		}
-		.animation(viewModel.animation, value: viewModel.loadingState)
-		.onAppear(perform: viewModel.performLoadingCommentRolling)
-		.task(priority: .userInitiated) {
-			await viewModel.loadUserData()
-		}
-		.applyRepeatableAlert(
-			isPresneted: Binding(
-				get: { viewModel.dataLoadingErrorIsPresented },
-				set: { viewModel.dismissError($0) }
-			),
-			message: .cantGetProfileData,
-			didTapRepeat: {
-				Task(priority: .userInitiated) {
-					await viewModel.loadUserData()
-				}
-			}
-		)
+		.animation(Constants.defaultAnimation, value: viewModel.loadingState)
+		.task(priority: .utility) { await viewModel.waitAnimations() }
 		.transition(.opacity)
+		.onReceive(timer, perform: viewModel.timerTick)
 	}
 	
 	private var loadingCommentText: some View {
@@ -64,7 +57,7 @@ struct SplashView: View {
 			.font(.bold17)
 			.foregroundStyle(.ypBlack)
 			.transition(viewModel.randomTransition)
-			.id(viewModel.updateID)
+			.id(viewModel.currentLoadingComment.id)
 	}
 	
 	private var loadingCommentView: some View {

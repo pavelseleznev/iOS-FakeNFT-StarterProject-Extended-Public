@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SplashLoadingComment: String, CaseIterable {
+enum SplashLoadingComment: String, CaseIterable, Identifiable {
 	case phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8
 	
 	var title: LocalizedStringResource {
@@ -36,4 +36,6 @@ enum SplashLoadingComment: String, CaseIterable {
 		set.remove(self)
 		return set.randomElement() ?? .phase1
 	}
+	
+	var id: String { rawValue }
 }
