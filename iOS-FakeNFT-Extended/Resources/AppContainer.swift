@@ -7,6 +7,7 @@
 
 
 struct AppContainer {
+	let currenciesService: CurrenciesServiceProtocol
 	let profileService: ProfileServiceProtocol
 	let purchasedNFTsService: NFTsIDsServiceProtocol
 	let cartService: CartServiceProtocol
@@ -19,6 +20,7 @@ struct AppContainer {
 		let orderService = NFTsIDsService(api: api, kind: .order)
 		
 		return .init(
+			currenciesService: CurrenciesService(api: api),
 			profileService: ProfileService(
 				api: api,
 				storage: ProfileStorage()

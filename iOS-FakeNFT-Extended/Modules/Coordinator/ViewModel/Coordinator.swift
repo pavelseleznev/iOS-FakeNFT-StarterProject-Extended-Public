@@ -12,6 +12,7 @@ import SwiftUI
 final class Coordinator {
 	private let secureStorage = AuthSecureStorage(service: Constants.userDataKeychainService)
 	private let appContainer: AppContainer
+	private let localStorage = StorageActor.shared
 	private var path = [Page]()
 	private var sheet: Sheet?
 	private var fullScreenCover: FullScreenCover?
@@ -20,18 +21,6 @@ final class Coordinator {
 	init(appContainer: AppContainer) {
 		self.appContainer = appContainer
 	}
-	
-	let rootPage: Page = {
-		if UserDefaults.standard.bool(forKey: Constants.isOnboardingCompleteKey) {
-			if UserDefaults.standard.bool(forKey: Constants.isAuthedKey) {
-				.splash
-			} else {
-				.authorization(.login)
-			}
-		} else {
-			.onboarding
-		}
-	}()
 }
 
 // MARK: - Coordinator Extensions
@@ -100,33 +89,47 @@ private extension Coordinator {
 	}
 	
 	func onSplashComplete() {
-		var transaction = Transaction()
-		transaction.disablesAnimations = true
-		withTransaction(transaction) {
-			path = [.tabView]
+		// no lifecycle handler 'cause of onSplashComplete calls once, user cannot call onSplashComplete by himself
+		Task(priority: .userInitiated) {
+			async let isOnboardingComplete: Bool? = localStorage.value(forKey: Constants.isOnboardingCompleteKey)
+			async let isAuthed: Bool? = localStorage.value(forKey: Constants.isAuthedKey)
+
+			let (onboarded, authed) = await (isOnboardingComplete ?? false, isAuthed ?? false)
+			
+			let newPage: Page
+			if onboarded {
+				if authed {
+					newPage = .tabView
+				} else {
+					newPage = .authorization(.login)
+				}
+			} else {
+				newPage = .onboarding
+			}
+			
+			await MainActor.run {
+				var transaction = Transaction()
+				transaction.disablesAnimations = true
+				
+				withTransaction(transaction) {
+					path = [newPage]
+				}
+			}
 		}
 	}
 	
-	func didTapDetail(
-		model: NFTModelContainer,
-		authorID: String,
-		authorWebsiteURLString: String
-	) {
-		push(
-			.nftDetail(
-				model: model,
-				authorID: authorID,
-				authorWebsiteURLString: authorWebsiteURLString
-			)
-		)
-	}
-	
 	func onOnboardingComplete() {
-		UserDefaults.standard.set(true, forKey: Constants.isOnboardingCompleteKey)
-		var transaction = Transaction()
-		transaction.disablesAnimations = true
-		withTransaction(transaction) {
-			path = [.authorization(.login)]
+		Task(priority: .userInitiated) {
+			await localStorage.set(true, forKey: Constants.isOnboardingCompleteKey)
+			
+			await MainActor.run {
+				var transaction = Transaction()
+				transaction.disablesAnimations = true
+				
+				withTransaction(transaction) {
+					path = [.authorization(.login)]
+				}
+			}
 		}
 	}
 	
@@ -139,11 +142,17 @@ private extension Coordinator {
 	}
 	
 	func onAuthorizationComplete() {
-		UserDefaults.standard.set(true, forKey: Constants.isAuthedKey)
-		var transaction = Transaction()
-		transaction.disablesAnimations = true
-		withTransaction(transaction) {
-			path = [.splash]
+		Task(priority: .userInitiated) {
+			await self.localStorage.set(true, forKey: Constants.isAuthedKey)
+			
+			await MainActor.run {
+				var transaction = Transaction()
+				transaction.disablesAnimations = true
+				
+				withTransaction(transaction) {
+					path = [.tabView]
+				}
+			}
 		}
 	}
 }
@@ -187,6 +196,12 @@ extension Coordinator {
 	@ViewBuilder
 	func build(_ page: Page) -> some View {
 		switch page {
+		case .splash:
+			SplashView(
+				appContainer: appContainer,
+				onComplete: onSplashComplete
+			)
+			
 		case .authorization(let page):
 			AuthorizationView(
 				page: page,
@@ -199,12 +214,6 @@ extension Coordinator {
 			
 		case .onboarding:
 			OnboardingView(onComplete: onOnboardingComplete)
-			
-		case .splash:
-			SplashView(
-				appContainer: appContainer,
-				onComplete: onSplashComplete
-			)
 			
 		case .tabView:
 			TabBarView(
@@ -220,53 +229,24 @@ extension Coordinator {
 				onLoadingStateChange: onLoadingStateFromWebsite
 			)
 			
-		case .statNFTCollection(
-			let nftsIDs,
-			let authorID,
-			let authorWebsiteURLString
-		):
-			StatisticsNFTCollectionView(
-				initialNFTsIDs: nftsIDs,
-				authorID: authorID,
-				loadingState: appContainer.api.loadingState,
-				nftService: appContainer.nftService,
-				loadAuthor: appContainer.api.getUser,
-				didTapDetail: { [weak self] in
-					self?.didTapDetail(
-						model: $0,
-						authorID: authorID,
-						authorWebsiteURLString: authorWebsiteURLString
-					)
-				}
-			)
-			
-		case .statProfile(profile: let profile):
-			StatisticsProfileView(
-				api: appContainer.api,
-				push: push,
-				model: profile
-			)
-			
-		case .paymentMethodChoose:
-			PaymentMethodChooseView(
-				cartService: appContainer.cartService,
-				push: push(_:)
-			)
-			
-		case .successPayment:
-			SuccessPaymentView(backToCart: popToRoot)
-			
-		case let .nftDetail(nft, authorID, authorWebsiteURLString):
+		case let .nftDetail(nft, authorID, authorCollection, authorWebsiteURLString):
 			NFTDetailView(
 				model: nft,
 				nftService: appContainer.nftService,
-				cartService: appContainer.cartService,
+				currenciesService: appContainer.currenciesService,
 				getUser: appContainer.api.getUser,
 				authorID: authorID,
+				authorCollection: authorCollection,
 				authorWebsiteURLString: authorWebsiteURLString,
 				push: push,
 				backAction: pop
 			)
+			
+		case .statistics(let statisticsFlow):
+			buildFlow(statisticsFlow)
+			
+		case .cart(let cartFlow):
+			buildFlow(cartFlow)
 		}
 	}
 	
@@ -283,6 +263,62 @@ extension Coordinator {
 		switch fullScreenCover {
 		case .empty:
 			EmptyView()
+		}
+	}
+}
+
+// -- statistics flow builder
+extension Coordinator {
+	@ViewBuilder
+	func buildFlow(_ page: StatisticsPage) -> some View {
+		switch page {
+		case .nftCollection(
+			let nftsIDs,
+			let authorID,
+			let authorWebsiteURLString
+		):
+			StatisticsNFTCollectionView(
+				initialNFTsIDs: nftsIDs,
+				authorID: authorID,
+				loadingState: appContainer.api.loadingState,
+				nftService: appContainer.nftService,
+				loadAuthor: appContainer.api.getUser,
+				didTapDetail: { [weak self] model, authorCollection in
+					self?.push(
+						.nftDetail(
+							model: model,
+							authorID: authorID,
+							authorCollection: authorCollection,
+							authorWebsiteURLString: authorWebsiteURLString
+						)
+					)
+				}
+			)
+			
+		case .profile(let profile):
+			StatisticsProfileView(
+				api: appContainer.api,
+				push: push,
+				model: profile
+			)
+		}
+	}
+}
+
+// --- cart flow builder ---
+extension Coordinator {
+	@ViewBuilder
+	func buildFlow(_ page: CartPage) -> some View {
+		switch page {
+		case .paymentMethodChoose:
+			PaymentMethodChooseView(
+				currenciesService: appContainer.currenciesService,
+				cartService: appContainer.cartService,
+				onComplete: { [weak self] in self?.push(.cart(.successPayment)) }
+			)
+			
+		case .successPayment:
+			SuccessPaymentView(backToCart: popToRoot)
 		}
 	}
 }

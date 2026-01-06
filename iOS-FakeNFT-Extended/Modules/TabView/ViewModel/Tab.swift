@@ -64,7 +64,7 @@ enum Tab: String, CaseIterable, Identifiable {
 			CartView(
 				nftService: appContainer.nftService,
 				cartService: appContainer.cartService,
-				push: push
+				onSubmit: { push(.cart(.paymentMethodChoose)) }
 			)
 			
 		case .statistics:

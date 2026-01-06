@@ -10,11 +10,12 @@ import SwiftUI
 struct CoordinatorView: View {
 	@AppStorage(Constants.appLaunchCountKey) private var launchCount = 0
 	@AppStorage(Constants.ratingIsAlreadyPresentedThisLaunchKey) private var ratingIsAlreadyPresentedThisLaunch = false
+	
 	@State private var coordinator: Coordinator
 	
 	var body: some View {
 		NavigationStack(path: coordinator.bindingPath) {
-			coordinator.build(coordinator.rootPage)
+			coordinator.build(.splash)
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
 						.customNavigationBackButton(
@@ -36,35 +37,7 @@ struct CoordinatorView: View {
 		}
 	}
 	
-	init() {
-		let api = ObservedNetworkClient()
-		
-//		let nftStorage = NFTStorage()
-		let profileStorage = ProfileStorage()
-		
-		let favouritedNFTsService = NFTsIDsService(api: api, kind: .favorites)
-		let purchasedNFTsService = NFTsIDsService(api: api, kind: .purchased)
-		let orderNFTsService = NFTsIDsService(api: api, kind: .order)
-		
-		let cartService = CartService(
-			orderService: orderNFTsService,
-			api: api
-		)
-		
-		let profileService = ProfileService(api: api, storage: profileStorage)
-		let nftService = NFTService(
-			favouritesService: favouritedNFTsService,
-			orderService: orderNFTsService,
-			loadNFT: api.getNFT
-		)
-		
-		let appContainer = AppContainer(
-			profileService: profileService,
-			purchasedNFTsService: purchasedNFTsService,
-			cartService: cartService,
-			nftService: nftService,
-			api: api
-		)
+	init(appContainer: AppContainer) {
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
 		
 		launchCount += 1
@@ -96,5 +69,5 @@ struct CoordinatorView: View {
 }
 
 #Preview {
-	CoordinatorView()
+	CoordinatorView(appContainer: .mock)
 }

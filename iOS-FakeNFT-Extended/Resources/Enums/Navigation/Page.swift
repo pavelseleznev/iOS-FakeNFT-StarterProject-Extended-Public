@@ -7,41 +7,41 @@
 
 import Foundation
 
-enum Page: Identifiable {
+enum Page {
+	case splash
+	case onboarding
+	case authorization(AuthorizationPage)
+	case tabView
+	
 	case nftDetail(
 		model: NFTModelContainer,
 		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
 		authorWebsiteURLString: String
 	)
 	
-	case authorization(AuthorizationPage)
-	case onboarding
-	case splash
-	case tabView
 	case aboutAuthor(urlString: String)
 	
-	// statistics
-	case statNFTCollection(
-		nftsIDs: [String],
-		authorID: String,
-		authorWebsiteURLString: String
-	)
-	case statProfile(profile: UserListItemResponse)
-	
-	// cart
-	case paymentMethodChoose
-	case successPayment
-	
-	var id: String { "\(self)" }
-	
+	case cart(CartPage)
+	case statistics(StatisticsPage)
+}
+
+// MARK: - Page extensions
+// --- properties ---
+extension Page {
 	var hasNotBackButton: Bool {
 		switch self {
-		case .splash, .tabView, .successPayment, .onboarding, .authorization(.login):
+		case .splash, .tabView, .cart(.successPayment), .onboarding, .authorization(.login):
 			true
 		default:
 			false
 		}
 	}
+}
+
+// --- conformances
+extension Page: Identifiable {
+	var id: String { "\(self)" }
 }
 
 extension Page: Hashable {
