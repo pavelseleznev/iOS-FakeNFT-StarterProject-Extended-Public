@@ -77,7 +77,7 @@ struct MyNFTView: View {
             viewModel.setSortOption(sortOption)
         }
         .task(priority: .userInitiated) {
-                await viewModel.loadPurchasedNFTs()
+            await viewModel.loadPurchasedNFTs()
         }
     }
     
