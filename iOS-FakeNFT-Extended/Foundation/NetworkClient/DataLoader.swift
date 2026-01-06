@@ -18,10 +18,10 @@ enum LoadingState: Equatable {
 @Observable
 final class DataLoader {
 	private(set) var loadingState: LoadingState = .idle
-	private let cancelErrorsDscr = ["отменено", "cancelled"]
 	private let monitor = NetworkMonitor.shared
 	
 	func fetchData<T: Decodable>(
+		function: String = #function,
 		_ operation: @escaping @Sendable () async throws -> T
 	) async throws -> T {
 		guard monitor.isOnline else {
@@ -35,17 +35,16 @@ final class DataLoader {
 				resetState()
 			}
 			return try await operation()
+		} catch let error where error is CancellationError ||
+			error.localizedDescription.lowercased().contains("cancelled") ||
+			error.localizedDescription.lowercased().contains("отменено")
+		{
+			print("\(function) was cancelled")
+			loadingState = .idle
+			throw CancellationError()
 		} catch {
-			let isCancellation = cancelErrorsDscr.contains(error.localizedDescription.lowercased()) ||
-			error is CancellationError
-
-			loadingState = isCancellation ? .idle : .error
-			if isCancellation {
-				throw CancellationError()
-			} else {
-				print("[DataLoader] fetch error: \(error.localizedDescription)")
-				throw error
-			}
+			print("[DataLoader] fetch error: \(error.localizedDescription)")
+			throw error
 		}
 	}
 	
