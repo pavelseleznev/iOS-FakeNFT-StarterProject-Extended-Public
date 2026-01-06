@@ -27,17 +27,22 @@ final class EditProfileViewModel {
     
     let originalProfile: ProfileModel
     
+    private let profileService: ProfileServiceProtocol
     private let userPicturePlaceholder = "userPicturePlaceholder"
-    private let profileStore: ProfileStore
+
     
     // MARK: - Init
-    init(profile: ProfileModel, profileStore: ProfileStore) {
+    init(
+        profile: ProfileModel,
+        profileService: ProfileServiceProtocol
+    ) {
+        self.profileService = profileService
+        
         self.name = profile.name
         self.about = profile.about
         self.website = profile.website
         self.avatarURL = profile.avatarURL.isEmpty ? userPicturePlaceholder : profile.avatarURL
         self.originalProfile = profile
-        self.profileStore = profileStore
     }
     
     // MARK: - Computed flags
@@ -69,14 +74,27 @@ final class EditProfileViewModel {
     }
     
     func saveTapped() async throws {
-        let edited = ProfileModel(
+        let avatarToSend = (avatarURL == userPicturePlaceholder) ? "" : avatarURL
+        
+        let payload = ProfilePayload(
             name: name,
-            about: about,
+            description: about,
+            avatar: avatarToSend,
             website: website,
-            avatarURL: avatarURL
+            likes: nil
         )
         
-        try await profileStore.updateProfile(with: edited)
+        loadingState = .fetching
+        
+        do {
+            defer { loadingState = .idle }
+            try await profileService.update(with: payload)
+        } catch {
+            guard !error.isCancellation else { return }
+            isSaveErrorPresented = true
+            saveErrorMessage = "Не удалось сохранить данные"
+            throw error
+        }
     }
     
     func photoURLSaved(_ url: String) {

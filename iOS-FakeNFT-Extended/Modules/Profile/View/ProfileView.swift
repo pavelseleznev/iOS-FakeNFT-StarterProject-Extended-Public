@@ -12,14 +12,10 @@ struct ProfileView: View {
     init(
         appContainer: AppContainer,
         push: @escaping (Page) -> Void,
-        myNFTStore: MyNFTViewModel,
-        favoriteNFTStore: FavoriteNFTViewModel
     ) {
         _viewModel = State(
             initialValue: ProfileViewModel(
                 appContainer: appContainer,
-                myNFTStore: myNFTStore,
-                favoriteNFTStore: favoriteNFTStore,
                 push: push
                 )
             )
@@ -53,7 +49,6 @@ struct ProfileView: View {
                         })
                 ]
             }
-
 		}
 		.safeAreaInset(edge: .top) {
 			editButton
@@ -63,6 +58,11 @@ struct ProfileView: View {
             isPresented: $viewModel.loadErrorPresented,
             message: viewModel.loadErrorMessage
         ) {
+            Task(priority: .userInitiated) {
+                await viewModel.retryLoad()
+            }
+        }
+        .onAppear {
             Task(priority: .userInitiated) {
                 await viewModel.retryLoad()
             }

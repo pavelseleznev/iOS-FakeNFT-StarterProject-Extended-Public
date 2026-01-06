@@ -17,13 +17,13 @@ struct EditProfileView: View {
 
     init(
         profile: ProfileModel,
-        profileStore: ProfileStore,
+        profileService: ProfileServiceProtocol,
         onSave: @Sendable @escaping (ProfileModel) -> Void,
         onCancel: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: EditProfileViewModel(
             profile: profile,
-            profileStore: profileStore)
+            profileService: profileService)
         )
         self.onSave = onSave
         self.onCancel = onCancel
@@ -110,30 +110,6 @@ struct EditProfileView: View {
             guard !(error is CancellationError) else { return }
             print("Save profile failed:", error)
             viewModel.isSaveErrorPresented = true
-        }
-    }
-}
-
-struct EditProfileView_Preview: PreviewProvider {
-    static var previews: some View {
-        Group {
-            EditProfileView(
-                profile: .preview,
-                profileStore: .preview,
-                onSave: { _ in },
-                onCancel: {}
-            )
-            .previewDisplayName("Light")
-            .environment(\.colorScheme, .light)
-            
-            EditProfileView(
-                profile: .preview,
-                profileStore: ProfileStore.preview,
-                onSave: { _ in },
-                onCancel: {}
-            )
-            .previewDisplayName("Dark")
-            .environment(\.colorScheme, .dark)
         }
     }
 }

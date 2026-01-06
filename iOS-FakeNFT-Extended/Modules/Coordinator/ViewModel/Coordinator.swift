@@ -11,20 +11,12 @@ import SwiftUI
 @MainActor
 final class Coordinator {
 	let appContainer: AppContainer
-    
-    let myNFTStore: MyNFTViewModel
-    let favoriteNFTStore: FavoriteNFTViewModel
-    
 	var path = NavigationPath()
 	var sheet: Sheet?
-	var fullScreencover: FullScreenCover? = .splash
-    var profileStore: ProfileStore
-	
-    init(appContainer: AppContainer, profileStore: ProfileStore) {
+	var fullScreenCover: FullScreenCover? = .splash
+	    
+    init(appContainer: AppContainer) {
 		self.appContainer = appContainer
-        self.profileStore = profileStore
-        self.myNFTStore = MyNFTViewModel(items: [])
-        self.favoriteNFTStore = FavoriteNFTViewModel(items: [], api: appContainer.api)
 	}
 }
 
@@ -53,12 +45,19 @@ extension Coordinator {
 	}
 	
 	func present(_ fullScreenCover: FullScreenCover) {
-		self.fullScreencover = fullScreenCover
+		self.fullScreenCover = fullScreenCover
 	}
 	
 	func dismissFullScreenCover() {
-		self.fullScreencover = nil
+		self.fullScreenCover = nil
 	}
+}
+
+// --- private helpers ---
+private extension Coordinator {
+    func onSplashComplete() {
+        dismissFullScreenCover()
+    }
 }
 
 // --- internal view builders ---
@@ -69,12 +68,16 @@ extension Coordinator {
         case .tabView:
             TabBarView(
                 appContainer: appContainer,
-                myNFTStore: myNFTStore,
-                favoriteNFTStore: favoriteNFTStore,
                 push: push,
                 present: present,
                 dismiss: dismissSheet,
                 pop: pop
+            )
+            
+        case .splash:
+            SplashView(
+                appContainer: appContainer,
+                onComplete: onSplashComplete
             )
             
         case let .aboutAuthor(urlString):
@@ -83,25 +86,24 @@ extension Coordinator {
             EmptyView()
         case .statProfile(profile: let profile):
             EmptyView()
-        case .editProfile(let profile):
-            EditProfileView(
+        case .profile(let profilePage):
+            switch profilePage {
+            case .editProfile(let profile):
+                EditProfileView(
                 profile: profile,
-                profileStore: profileStore,
-                onSave: { _ in
-                    Task { @MainActor in
-                        self.pop()
-                    }
+                profileService: appContainer.profileService,
+                onSave: { [weak self] updated in
+                    self?.pop()
                 },
-                onCancel: {
-                    Task { @MainActor in
-                        self.pop()
-                    }
+                onCancel: { [weak self] in
+                    self?.pop()
                 }
             )
         case .myNFTs:
-            MyNFTView(viewModel: myNFTStore)
+            MyNFTView(appContainer: appContainer)
         case .favoriteNFTs:
-            FavoriteNFTView(viewModel: favoriteNFTStore)
+            FavoriteNFTView(appContainer: appContainer)
+        }
         }
     }
 	
@@ -117,7 +119,12 @@ extension Coordinator {
 	func build(_ fullScreenCover: FullScreenCover) -> some View {
 		switch fullScreenCover {
 		case .splash:
-			SplashView()
+			SplashView(
+                appContainer: appContainer,
+                onComplete: { [weak self] in
+                    self?.dismissFullScreenCover()
+                }
+            )
 		}
 	}
 }

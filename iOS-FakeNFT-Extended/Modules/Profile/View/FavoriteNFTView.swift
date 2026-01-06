@@ -9,7 +9,11 @@ import SwiftUI
 
 struct FavoriteNFTView: View {
     
-    @Bindable var viewModel: FavoriteNFTViewModel
+    @State private var viewModel: FavoriteNFTViewModel
+    
+    init(appContainer: AppContainer) {
+        _viewModel = State(initialValue: FavoriteNFTViewModel(appContainer: appContainer))
+    }
     
     private let columns: [GridItem] = [
         GridItem(.flexible(), spacing: 20),
@@ -21,19 +25,25 @@ struct FavoriteNFTView: View {
             Color.ypWhite.ignoresSafeArea()
             
             if viewModel.items.isEmpty {
-                VStack {
-                    Spacer()
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                    } else {
+                if viewModel.isLoading {
+                    ScrollView(.vertical) {
+                        LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(0..<8, id: \.self) { _ in
+                                FavoriteNFTShimmerCell()
+                            }
+                        }
+                        .padding([.horizontal, .top], 16)
+                    }
+                } else {
+                    VStack {
+                        Spacer()
                         Text("У Вас ещё нет избранных NFT")
                             .font(.bold17)
                             .multilineTextAlignment(.center)
+                        Spacer()
                     }
-                    Spacer()
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             } else {
                 ScrollView(.vertical) {
                     LazyVGrid(
@@ -72,6 +82,30 @@ struct FavoriteNFTView: View {
             Button("ОК", role: .cancel) { }
         } message: {
             Text(viewModel.loadErrorMessage)
+        }
+        .onAppear {
+            Task(priority: .userInitiated) { await viewModel.loadFavorites() }
+        }
+    }
+    
+    private struct FavoriteNFTShimmerCell: View {
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                // square image placeholder
+                LoadingShimmerPlaceholderView()
+                    .aspectRatio(1, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                // title
+                LoadingShimmerPlaceholderView()
+                    .frame(height: 14)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                
+                // price line
+                LoadingShimmerPlaceholderView()
+                    .frame(width: 80, height: 12)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ struct CoordinatorView: View {
 				.navigationDestination(for: Page.self) { page in
                     let built = coordinator.build(page).overlay(content: loadingView)
                     switch page {
-                    case .editProfile:
+                    case .profile(.editProfile):
                         built
                     default:
                         built.customNavigationBackButton(backAction: coordinator.pop)
@@ -27,29 +27,46 @@ struct CoordinatorView: View {
 					coordinator.build(sheet)
 				}
 				.fullScreenCover(
-					item: $coordinator.fullScreencover
+					item: $coordinator.fullScreenCover
 				) { fullScreenCover in
 					coordinator.build(fullScreenCover)
 				}
 				.overlay(content: loadingView)
 				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
-				.onAppear(perform: checkAuthState)
+                //TODO: Uncomment for merge
+				//.onAppear(perform: checkAuthState)
 		}
 	}
 	
     init() {
         let api = ObservedNetworkClient()
-        let nftStorage = NFTStorage()
-        let nft = NFTService(api: api, storage: nftStorage)
+        let profileStorage = ProfileStorage()
+        
+        let favouritedNFTsService = NFTsIDsService(api: api, kind: .favorites)
+        let purchasedNFTsService = NFTsIDsService(api: api, kind: .purchased)
+        let orderNFTsService = NFTsIDsService(api: api, kind: .order)
+        
+//        let cartService = CartService(
+//            orderService: orderNFTsService,
+//            api: api
+//        )
+        
+        let profileService = ProfileService(api: api, storage: profileStorage)
+        let nftService = NFTService(
+            favouritesService: favouritedNFTsService,
+            orderService: orderNFTsService,
+            loadNFT: api.getNFT
+        )
+        
         let appContainer = AppContainer(
-            nftService: nft,
+            profileService: profileService,
+            purchasedNFTsService: purchasedNFTsService,
+            //TODO: Uncomment for merge
+            //cartService: cartService,
+            nftService: nftService,
             api: api
         )
-        let profileStore = ProfileStore(api: api, initial: ProfileModel.preview)
-        _coordinator = State(initialValue: .init(
-            appContainer: appContainer, profileStore: profileStore
-        )
-        )
+        _coordinator = State(initialValue: .init(appContainer: appContainer))
     }
 	
 	private func loadingView() -> some View {
