@@ -45,7 +45,7 @@ struct UserListItemResponse: Decodable, Identifiable, Hashable {
 				"de7c0518-6379-443b-a4be-81f5a7655f48",
 				"82570704-14ac-4679-9436-050f4a32a8a0"
 			],
-			rating: "2",
+			rating: String((1...5).randomElement() ?? 1),
 			id: UUID().uuidString
 		)
 	}
