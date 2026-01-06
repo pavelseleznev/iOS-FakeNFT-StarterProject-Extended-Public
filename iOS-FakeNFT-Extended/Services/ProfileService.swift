@@ -6,9 +6,9 @@
 //
 
 protocol ProfileServiceProtocol: Sendable {
+	func performUpdatesIfNeeded() async throws -> ProfileResponse
 	func get() async -> ProfilePayload
 	func update(with model: ProfilePayload) async throws
-	func loadProfileAndSave() async throws
 	func loadProfile() async throws -> ProfileResponse
 }
 
@@ -34,9 +34,19 @@ extension ProfileService {
 		await storage.get()
 	}
 	
-	func loadProfileAndSave() async throws {
-		let profile = try await loadProfile()
-		await storage.updateFully(with: profile)
+	func performUpdatesIfNeeded() async throws -> ProfileResponse {
+		let loadedProfile = try await loadProfile()
+		let currentProfile = await get()
+		
+		guard
+			loadedProfile.name != currentProfile.name ||
+			loadedProfile.avatar != currentProfile.avatar ||
+			loadedProfile.website != currentProfile.website ||
+			loadedProfile.description != currentProfile.description
+		else { return loadedProfile }
+		
+		await storage.updateFully(with: loadedProfile)
+		return loadedProfile
 	}
 	
 	func loadProfile() async throws -> ProfileResponse {

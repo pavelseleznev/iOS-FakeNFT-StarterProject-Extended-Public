@@ -10,6 +10,8 @@ import SwiftUI
 enum Constants {
 	static let userDataKeychainService = "com.fakeNFT.auth"
 	
+	static let currenciesStorageKey = "currenciesStorageKey"
+	
 	static let nftChangePayloadKey = "nftChangePayloadKey"
 	
 	static let isAuthedKey = "isAuthedKey"
@@ -32,4 +34,6 @@ enum Constants {
 	static let imageCacheOnMemoryWarningOldestCountRemoval = 100
 	static let imageCacheCountLimit = 300
 	static let imageCacheTotalCostLimit = 75 * 1024 * 1024 // 75 MB
+	
+	static let bgTaskRefreshInterval: TimeInterval = 15 * 60 // 15 mins
 }

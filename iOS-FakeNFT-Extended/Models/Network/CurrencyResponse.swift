@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CurrencyResponse: Decodable, Equatable {
+struct CurrencyResponse: Codable, Hashable {
 	let title: String
 	let name: String
 	let image: String
@@ -23,7 +23,7 @@ struct CurrencyResponse: Decodable, Equatable {
 	}
 }
 
-struct CurrencyContainer: Identifiable, Equatable {
+struct CurrencyContainer: Codable, Identifiable, Hashable {
 	let currency: CurrencyResponse
 	let id: String
 }

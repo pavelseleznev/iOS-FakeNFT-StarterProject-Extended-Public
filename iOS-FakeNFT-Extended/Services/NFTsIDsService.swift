@@ -22,9 +22,22 @@ enum NFTsIDsKind {
 			"nfts.purchased.IDs"
 		}
 	}
+	
+	var notificationName: Notification.Name {
+		switch self {
+		case .order:
+			.cartDidUpdate
+		case .favorites:
+			.favoritesDidUpdate
+		case .purchased:
+			.purchasedDidUpdate
+		}
+	}
 }
 
 protocol NFTsIDsServiceProtocol: Sendable {
+	func performUpdatesIfNeeded(with loadedIDs: [String]) async
+	
 	func get() async -> Set<String>
 	
 	func loadAndSave() async throws
@@ -49,12 +62,21 @@ actor NFTsIDsService: NFTsIDsServiceProtocol {
 		kind: NFTsIDsKind
 	) {
 		self.api = api
-		self.storage = NFTsIDsStorage(userDefaultsKey: kind.userDefaultsKey)
+		self.storage = NFTsIDsStorage(kind: kind)
 		self.kind = kind
 	}
 }
 
 extension NFTsIDsService {
+	func performUpdatesIfNeeded(with loadedIDs: [String]) async {
+		let currentIDs = await get()
+		let loadedIDs = Set(loadedIDs)
+		
+		guard currentIDs != loadedIDs else { return }
+		
+		await replace(withLoaded: loadedIDs)
+	}
+	
 	func get() async -> Set<String> {
 		await storage.get()
 	}
@@ -105,12 +127,13 @@ extension NFTsIDsService {
 		await storage.remove(id)
 		
 		let newIDs = Array(await get().subtracting([id]))
+		let formatted = newIDs.isEmpty ? nil : newIDs
 		
 		switch kind {
 		case .order:
-			try await api.putOrder(payload: .init(nfts: newIDs))
+			try await api.putOrder(payload: .init(nfts: formatted))
 		case .favorites:
-			try await api.updateProfile(payload: .init(likes: newIDs))
+			try await api.updateProfile(payload: .init(likes: formatted))
 		default:
 			break
 		}
@@ -120,59 +143,5 @@ extension NFTsIDsService {
 	func removeAll() async {
 		guard case .order = kind else { return }
 		await storage.clear()
-	}
-}
-
-protocol CatalogServiceProtocol: Sendable {}
-
-protocol StatisticsServiceProtocol: Sendable {
-	func getUsers(page: Int) async -> [UserListItemResponse]
-	var nftService: NFTServiceProtocol { get }
-}
-
-
-
-protocol CartServiceProtocol: Sendable {
-	func getCart() async -> Set<String>
-	func loadCurrencies() async throws -> [CurrencyResponse]
-	func loadCurrency(byID id: String) async throws -> CurrencyResponse
-	func pay(usingCurrencyID: String) async throws
-}
-
-actor CartService: CartServiceProtocol {
-	private let orderService: NFTsIDsServiceProtocol
-	private let api: ObservedNetworkClient
-	
-	init(orderService: NFTsIDsServiceProtocol, api: ObservedNetworkClient) {
-		self.orderService = orderService
-		self.api = api
-	}
-}
-
-extension CartService {
-	func getCart() async -> Set<String> {
-		await orderService.get()
-	}
-	
-	func loadCurrencies() async throws -> [CurrencyResponse] {
-		try await api.getCurrencies()
-	}
-	
-	func loadCurrency(byID id: String) async throws -> CurrencyResponse {
-		try await api.getCurrency(by: id)
-	}
-	
-	func pay(usingCurrencyID id: String) async throws {
-		let result = try await api.setCurrency(id: id)
-		
-		if result.isSuccess {
-			for id in await orderService.get() {
-				try await api.pay(payload: .init(nfts: id))
-			}
-			
-			await orderService.removeAll()
-		} else {
-			throw NSError(domain: "PaymentError. Failed to set currency", code: 0, userInfo: nil)
-		}
 	}
 }
