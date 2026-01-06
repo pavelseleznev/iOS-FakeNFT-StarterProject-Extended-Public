@@ -21,17 +21,17 @@ struct RatingPreview: View {
 				}
 			}
 			.font(.startIcon)
-			.shadow(
-				color: shadowColor,
-				radius: 1
-			)
 	}
 	
 	private var content: some View {
 		HStack(spacing: 0) {
 			ForEach(0..<5) { index in
 				Image.starFill
-					.foregroundStyle(index < (rating ?? 0) ? .ypYellowUniversal : .ypLightGrey)
+					.foregroundStyle(
+						index < (rating ?? 0) ?
+						Color(uiColor: #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)) :
+						.ypBackgroundUniversal.opacity(0.3)
+					)
 			}
 		}
 	}
@@ -47,7 +47,19 @@ struct RatingPreview: View {
 
 #if DEBUG
 #Preview {
-	RatingPreview(rating: 3)
-		.scaleEffect(5)
+	VStack {
+		RatingPreview(rating: 3)
+			.scaleEffect(5)
+			.frame(height: 100)
+		
+		VStack(alignment: .leading) {
+			Text("Bla bla bla")
+				.font(.bold22)
+			RatingPreview(rating: 3)
+		}
+		.padding()
+		.background(.ypLightGrey)
+		.clipShape(.capsule)
+	}
 }
 #endif

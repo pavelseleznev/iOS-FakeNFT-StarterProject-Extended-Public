@@ -53,6 +53,7 @@ struct ProfileHeader: View {
 						.font(.bold22)
 					if !rating.isEmpty {
 						RatingPreview(rating: Int(rating) ?? 0)
+							.scaleEffect(1.3, anchor: .leading)
 							.frame(height: 24)
 					}
 				}

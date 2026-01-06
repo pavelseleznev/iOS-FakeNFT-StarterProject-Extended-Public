@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-fileprivate let profileImageSize: CGFloat = 48
+fileprivate let profileImageSize: CGFloat = 36
 
 struct UserListCell: View, @MainActor Equatable {
 	let model: UserListItemResponse
@@ -27,7 +27,6 @@ struct UserListCell: View, @MainActor Equatable {
 						.font(.bold22)
 						.lineLimit(Constants.statisticsAuthorCellNameLineLimit)
 					RatingPreview(rating: Int(model.rating) ?? 0)
-						.frame(height: 24)
 				}
 				Spacer()
 				
@@ -39,7 +38,7 @@ struct UserListCell: View, @MainActor Equatable {
 		.padding(.horizontal, 16)
 		.padding(.vertical, 12)
 		.background(.ypLightGrey)
-		.clipShape(RoundedRectangle(cornerRadius: 38))
+		.clipShape(.capsule)
 		.overlay(BackgroundView())
 		.fixedSize(horizontal: false, vertical: true)
 	}
