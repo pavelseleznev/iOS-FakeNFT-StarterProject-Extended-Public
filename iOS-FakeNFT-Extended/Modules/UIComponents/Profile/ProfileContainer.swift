@@ -19,7 +19,8 @@ struct ProfileContainer<Link: View>: View {
 				ProfileHeader(
 					name: model.name,
 					imageURLString: model.avatarURLString,
-					about: model.description ?? ""
+					about: model.description ?? "",
+					rating: model.rating
 				)
 				
 				link()

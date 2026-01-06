@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-fileprivate let profileImageSize: CGFloat = 28
+fileprivate let profileImageSize: CGFloat = 48
 
 struct UserListCell: View, @MainActor Equatable {
 	let model: UserListItemResponse
@@ -17,39 +17,37 @@ struct UserListCell: View, @MainActor Equatable {
 	}
 	
 	var body: some View {
-		HStack {
+		HStack(spacing: 12) {
 			AsyncImageView(urlString: model.avatarURLString)
 			
 			Group {
-				Text(model.name)
-					.foregroundStyle(.ypBlack)
-					.font(.bold22)
-					.lineLimit(Constants.authorNameLineLimit)
-				
+				VStack(alignment: .leading, spacing: 2) {
+					Text(model.name)
+						.foregroundStyle(.ypBlack)
+						.font(.bold22)
+						.lineLimit(Constants.statisticsAuthorCellNameLineLimit)
+					RatingPreview(rating: Int(model.rating) ?? 0)
+						.frame(height: 24)
+				}
 				Spacer()
 				
 				Text("\(model.nftsIDs.count)")
 					.foregroundStyle(.ypBlack)
 					.font(.bold22)
-					.padding(.leading)
 			}
 		}
 		.padding(.horizontal, 16)
-		.padding(.vertical, 16)
+		.padding(.vertical, 12)
 		.background(.ypLightGrey)
-		.clipShape(RoundedRectangle(cornerRadius: 26))
+		.clipShape(RoundedRectangle(cornerRadius: 38))
 		.overlay(BackgroundView())
+		.fixedSize(horizontal: false, vertical: true)
 	}
-	
-	private var gradientBackground: some View {
-	   RoundedRectangle(cornerRadius: 26)
-		   .fill(.ypLightGrey)
-   }
 }
 
 fileprivate struct BackgroundView: View {
 	var body: some View {
-		RoundedRectangle(cornerRadius: 26)
+		RoundedRectangle(cornerRadius: 38)
 			.stroke(
 				LinearGradient(
 					gradient: Gradient(

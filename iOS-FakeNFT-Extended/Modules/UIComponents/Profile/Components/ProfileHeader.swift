@@ -11,8 +11,16 @@ struct ProfileHeader: View {
 	let name: String
 	let imageURLString: String
 	let about: String
+	let rating: String
 	
 	private let imageSize: CGFloat = 70
+	
+	init(name: String, imageURLString: String, about: String, rating: String = "") {
+		self.name = name
+		self.imageURLString = imageURLString
+		self.about = about
+		self.rating = rating
+	}
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
@@ -39,9 +47,15 @@ struct ProfileHeader: View {
 				.frame(width: imageSize, height: imageSize)
 				.clipShape(.circle)
 				
-				Text(name)
-					.foregroundStyle(.ypBlack)
-					.font(.bold22)
+				VStack(alignment: .leading, spacing: 4) {
+					Text(name)
+						.foregroundStyle(.ypBlack)
+						.font(.bold22)
+					if !rating.isEmpty {
+						RatingPreview(rating: Int(rating) ?? 0)
+							.frame(height: 24)
+					}
+				}
 				
 				Spacer()
 			}
