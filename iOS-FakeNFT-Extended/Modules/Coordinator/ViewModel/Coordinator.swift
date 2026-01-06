@@ -86,24 +86,27 @@ extension Coordinator {
             EmptyView()
         case .statProfile(profile: let profile):
             EmptyView()
+            
         case .profile(let profilePage):
             switch profilePage {
             case .editProfile(let profile):
                 EditProfileView(
-                profile: profile,
-                profileService: appContainer.profileService,
-                onSave: { [weak self] updated in
-                    self?.pop()
-                },
-                onCancel: { [weak self] in
-                    self?.pop()
-                }
-            )
-        case .myNFTs:
-            MyNFTView(appContainer: appContainer)
-        case .favoriteNFTs:
-            FavoriteNFTView(appContainer: appContainer)
-        }
+                    profile: profile,
+                    profileService: appContainer.profileService,
+                    onSave: { [weak self] updated in
+                        self?.pop()
+                    },
+                    onCancel: { [weak self] in
+                        self?.pop()
+                    }
+                )
+            case .myNFTs:
+                MyNFTView(appContainer: appContainer)
+                    .customNavigationBackButton(backAction: pop)
+            case .favoriteNFTs:
+                FavoriteNFTView(appContainer: appContainer)
+                    .customNavigationBackButton(backAction: pop)
+            }
         }
     }
 	

@@ -14,14 +14,7 @@ struct CoordinatorView: View {
 		NavigationStack(path: $coordinator.path) {
 			coordinator.build(.tabView)
 				.navigationDestination(for: Page.self) { page in
-                    let built = coordinator.build(page).overlay(content: loadingView)
-                    switch page {
-                    case .profile(.editProfile):
-                        built
-                    default:
-                        built.customNavigationBackButton(backAction: coordinator.pop)
-                            .overlay(content: loadingView)
-                    }
+                    coordinator.build(page)
 				}
 				.sheet(item: $coordinator.sheet) { sheet in
 					coordinator.build(sheet)
