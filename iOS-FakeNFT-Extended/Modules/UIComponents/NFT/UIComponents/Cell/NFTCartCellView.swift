@@ -22,6 +22,7 @@ struct NFTCartCellView: View {
 				layout: layout,
 				likeAction: likeAction,
 			)
+            .frame(width: 108)
 			
 			VStack(spacing: 12) {
 				NFTNameRateAuthorView(model: model, layout: layout)

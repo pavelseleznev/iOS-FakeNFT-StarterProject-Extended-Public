@@ -14,7 +14,8 @@ struct RemoveThisAnyDecodableDummy: Decodable {}
 final class ObservedNetworkClient {
 	private var loader = DataLoader()
 	private let api: NetworkClient
-	
+    static let mock = ObservedNetworkClient(api: DefaultNetworkClient())
+
 	@inlinable
 	var loadingState: LoadingState {
 		loader.loadingState
@@ -81,12 +82,12 @@ extension ObservedNetworkClient {
 
 // --- order ---
 extension ObservedNetworkClient {
-	func putOrderAndPay(payload: OrderPayload) async throws -> OrderRepsonse {
+	func putOrderAndPay(payload: OrderPayload) async throws -> OrderResponse {
 		let request = PutOrderAndPayRequest(payload: payload)
 		return try await fetch(request)
 	}
 	
-	func getOrder() async throws -> OrderRepsonse {
+	func getOrder() async throws -> OrderResponse {
 		let request = GetOrderRequest()
 		return try await fetch(request)
 	}
@@ -116,4 +117,10 @@ extension ObservedNetworkClient {
 		let request = GetUserByIDRequest(id: id)
 		return try await fetch(request)
 	}
+}
+
+extension ObservedNetworkClient {
+    static var preview: ObservedNetworkClient {
+        ObservedNetworkClient()
+    }
 }

@@ -28,4 +28,8 @@ extension Image {
 	static let plusCircle = Image(systemName: "plus.circle.fill")
 	static let checkmarkCircle = Image(systemName: "checkmark.circle.fill")
 	static let starFill = Image(systemName: "star.fill")
+    
+    // profile
+    static let userPicturePlaceholder = Image(.userPicturePlaceholder)
+    static let frameCamera = Image(.frameCamera)
 }

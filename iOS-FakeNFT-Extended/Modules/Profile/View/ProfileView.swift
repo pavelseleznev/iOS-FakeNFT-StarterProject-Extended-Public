@@ -8,28 +8,79 @@
 import SwiftUI
 
 struct ProfileView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	
+    @State private var viewModel: ProfileViewModel
+    init(
+        appContainer: AppContainer,
+        push: @escaping (Page) -> Void,
+    ) {
+        _viewModel = State(
+            initialValue: ProfileViewModel(
+                appContainer: appContainer,
+                push: push
+                )
+            )
+    }
+    
 	var body: some View {
 		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			Text("Profile")
-				.font(.title)
-				.bold()
+            Color.ypWhite.ignoresSafeArea()
+            
+            ProfileContainer(
+                name: viewModel.profile.name,
+                imageURLString: viewModel.profile.avatarURL,
+                about: viewModel.profile.about
+            ) {
+                Button { viewModel.websiteTapped()
+                } label: {
+                    Text(viewModel.profile.website)
+                }
+            } actions: {
+                [
+                    ProfileActionCell(
+                        title: viewModel.myNFTTitle,
+                        action: {
+                            viewModel.myNFTsTapped()
+                        }
+                    ),
+                    ProfileActionCell(
+                        title: viewModel.favoriteTitle,
+                        action: {
+                            viewModel.favoriteNFTsTapped()
+                        })
+                ]
+            }
 		}
 		.safeAreaInset(edge: .top) {
-			HStack {
-				Spacer()
-				Button {
-					push(.aboutAuthor)
-				} label: {
-					Image.edit
-						.foregroundStyle(.ypBlack)
-						.font(.editProfileIcon)
-				}
-				.padding(.trailing, 8)
-			}
+			editButton
 		}
+        .task(priority: .userInitiated) { await viewModel.load() }
+        .applyRepeatableAlert(
+            isPresented: $viewModel.loadErrorPresented,
+            message: viewModel.loadErrorMessage
+        ) {
+            Task(priority: .userInitiated) {
+                await viewModel.retryLoad()
+            }
+        }
+        .task(priority: .userInitiated) {
+            await viewModel.retryLoad()
+        }
 	}
+}
+
+private extension ProfileView {
+    var editButton: some View {
+        HStack {
+            Spacer()
+            
+            Button {
+                viewModel.editTapped()
+            } label: {
+                Image.edit
+                    .foregroundStyle(.ypBlack)
+                    .font(.editProfileIcon)
+            }
+            .padding(.trailing, 8)
+        }
+    }
 }

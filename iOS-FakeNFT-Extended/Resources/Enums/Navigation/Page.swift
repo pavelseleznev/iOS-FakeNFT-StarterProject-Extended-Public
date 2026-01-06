@@ -6,9 +6,32 @@
 //
 
 
-enum Page: Hashable, Identifiable {
+enum Page: Identifiable {
+    case splash
 	case tabView
-	case aboutAuthor
+    case aboutAuthor(urlString: String)
 	
-	var id: Self { self }
+    case statNFTCollection(nfts: [NFTModel])
+    case statProfile(profile: UserListItemResponse)
+    
+    case profile(ProfilePage)
+    
+    var id: String { .init(describing: self)}
+}
+
+extension Page: Hashable {
+    static func == (lhs: Page, rhs: Page) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
+enum ProfilePage {
+    // profile
+    case editProfile(ProfileModel)
+    case myNFTs
+    case favoriteNFTs
 }

@@ -13,9 +13,9 @@ final class Coordinator {
 	let appContainer: AppContainer
 	var path = NavigationPath()
 	var sheet: Sheet?
-	var fullScreencover: FullScreenCover? = .splash
-	
-	init(appContainer: AppContainer) {
+	var fullScreenCover: FullScreenCover? = .splash
+	    
+    init(appContainer: AppContainer) {
 		self.appContainer = appContainer
 	}
 }
@@ -29,6 +29,7 @@ extension Coordinator {
 	}
 	
 	func pop() {
+        guard !path.isEmpty else { return }
 		path.removeLast()
 	}
 }
@@ -44,32 +45,70 @@ extension Coordinator {
 	}
 	
 	func present(_ fullScreenCover: FullScreenCover) {
-		self.fullScreencover = fullScreenCover
+		self.fullScreenCover = fullScreenCover
 	}
 	
 	func dismissFullScreenCover() {
-		self.fullScreencover = nil
+		self.fullScreenCover = nil
 	}
+}
+
+// --- private helpers ---
+private extension Coordinator {
+    func onSplashComplete() {
+        dismissFullScreenCover()
+    }
 }
 
 // --- internal view builders ---
 extension Coordinator {
-	@ViewBuilder
-	func build(_ page: Page) -> some View {
-		switch page {
-		case .tabView:
-			TabBarView(
-				appContainer: appContainer,
-				push: push,
-				present: present,
-				dismiss: dismissSheet,
-				pop: pop
-			)
-			
-		case .aboutAuthor:
-			AboutAuthorVIew()
-		}
-	}
+    @ViewBuilder
+    func build(_ page: Page) -> some View {
+        switch page {
+        case .tabView:
+            TabBarView(
+                appContainer: appContainer,
+                push: push,
+                present: present,
+                dismiss: dismissSheet,
+                pop: pop
+            )
+            
+        case .splash:
+            SplashView(
+                appContainer: appContainer,
+                onComplete: onSplashComplete
+            )
+            
+        case let .aboutAuthor(urlString):
+            AboutAuthorView(websiteURLString: urlString)
+        case .statNFTCollection(nfts: let nfts):
+            EmptyView()
+        case .statProfile(profile: let profile):
+            EmptyView()
+            
+        case .profile(let profilePage):
+            switch profilePage {
+            case .editProfile(let profile):
+                EditProfileView(
+                    profile: profile,
+                    profileService: appContainer.profileService,
+                    onSave: { [weak self] updated in
+                        self?.pop()
+                    },
+                    onCancel: { [weak self] in
+                        self?.pop()
+                    }
+                )
+            case .myNFTs:
+                MyNFTView(appContainer: appContainer)
+                    .customNavigationBackButton(backAction: pop)
+            case .favoriteNFTs:
+                FavoriteNFTView(appContainer: appContainer)
+                    .customNavigationBackButton(backAction: pop)
+            }
+        }
+    }
 	
 	@ViewBuilder
 	func build(_ sheet: Sheet) -> some View {
@@ -83,7 +122,12 @@ extension Coordinator {
 	func build(_ fullScreenCover: FullScreenCover) -> some View {
 		switch fullScreenCover {
 		case .splash:
-			SplashView()
+			SplashView(
+                appContainer: appContainer,
+                onComplete: { [weak self] in
+                    self?.dismissFullScreenCover()
+                }
+            )
 		}
 	}
 }
