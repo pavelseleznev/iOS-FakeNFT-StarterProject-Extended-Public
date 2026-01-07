@@ -17,6 +17,7 @@ struct NFTNameRateAuthorView: View {
             Text(model.name)
                 .foregroundStyle(.ypBlack)
                 .font(.bold17)
+                .lineLimit(Constants.nftNameLineLimit)
             
             RatingPreview(rating: model.rating)
             
@@ -24,6 +25,7 @@ struct NFTNameRateAuthorView: View {
                 Text("от " + model.authorName)
                     .foregroundStyle(.ypBlack)
                     .font(.regular13)
+                    .lineLimit(Constants.authorNameLineLimit)
             }
         }
     }
