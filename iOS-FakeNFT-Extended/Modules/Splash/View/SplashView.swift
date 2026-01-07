@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-fileprivate let loadingCommentDuration: TimeInterval = 4
+fileprivate let loadingCommentDuration: TimeInterval = 3
+fileprivate let blinkingAppIconSize: CGFloat = 80
 
 struct SplashView: View {
 	@State private var viewModel: SplashViewModel
@@ -17,12 +18,9 @@ struct SplashView: View {
 		in: .common
 	).autoconnect()
 	
-	init(
-		appContainer: AppContainer,
-		onComplete: @escaping () -> Void,
-	) {
+	init(onComplete: @escaping () -> Void) {
 		_viewModel = .init(
-			initialValue: .init(appContainer: appContainer, onComplete: onComplete)
+			initialValue: .init(onComplete: onComplete)
 		)
 	}
 
@@ -30,23 +28,28 @@ struct SplashView: View {
 		ZStack {
 			Color.ypWhite.ignoresSafeArea()
 			
-			SplashBackgroundView()
-			
-			let state = viewModel.loadingState
-			Image(.vector)
-				.scaleEffect(state == .idle ? 1 : 0)
-				.opacity(state == .idle ? 1 : 0.1)
-			
-			VStack(spacing: 16) {
-				loadingCommentView
+			Group {
+				SplashBackgroundView()
 				
-				ProgressView()
-					.scaleEffect(1.5)
-					.progressViewStyle(.circular)
+				Image(.vector)
+					.scaleEffect(viewModel.isLoading ? 0 : 1)
+					.opacity(viewModel.isLoading ? 0.1 : 1)
+				
+				VStack(spacing: 16) {
+					BlinkingAppIcon(imageSize: blinkingAppIconSize)
+					
+					loadingCommentView
+					
+					ProgressView()
+						.scaleEffect(1.5)
+						.progressViewStyle(.circular)
+				}
+				.scaleEffect(viewModel.isLoading ? 1 : 0)
 			}
-			.scaleEffect(state != .idle ? 1 : 0)
+			.animation(Constants.defaultAnimation, value: viewModel.isLoading)
+			.scaleEffect(viewModel.performOnDissapear ? 3 : 1)
+			.opacity(viewModel.performOnDissapear ? 0 : 1)
 		}
-		.animation(Constants.defaultAnimation, value: viewModel.loadingState)
 		.task(priority: .utility) { await viewModel.waitAnimations() }
 		.transition(.opacity)
 		.onReceive(timer, perform: viewModel.timerTick)
@@ -56,6 +59,8 @@ struct SplashView: View {
 		Text(viewModel.currentLoadingComment.title)
 			.font(.bold17)
 			.foregroundStyle(.ypBlack)
+			.multilineTextAlignment(.center)
+			.frame(width: 200)
 			.transition(viewModel.randomTransition)
 			.id(viewModel.currentLoadingComment.id)
 	}
@@ -73,11 +78,6 @@ struct SplashView: View {
 
 #if DEBUG
 #Preview("Splash") {
-	@Previewable let api = ObservedNetworkClient()
-	
-	SplashView(
-		appContainer: .mock,
-		onComplete: {}
-	)
+	SplashView(onComplete: {})
 }
 #endif

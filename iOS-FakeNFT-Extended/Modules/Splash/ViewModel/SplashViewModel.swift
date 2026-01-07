@@ -10,15 +10,12 @@ import SwiftUI
 @MainActor
 @Observable
 final class SplashViewModel {
-	private let dependencies: AppContainer
 	private let onComplete: () -> Void
 	private(set) var currentLoadingComment: SplashLoadingComment = .allCases.randomElement()!
+	private(set) var isLoading = false
+	private(set) var performOnDissapear = false
 	
-	init(
-		appContainer: AppContainer,
-		onComplete: @escaping () -> Void
-	) {
-		dependencies = appContainer
+	init(onComplete: @escaping () -> Void) {
 		self.onComplete = onComplete
 	}
 }
@@ -28,7 +25,13 @@ final class SplashViewModel {
 extension SplashViewModel {
 	func waitAnimations() async {
 		do {
+			isLoading = true
 			try await Task.sleep(for: Constants.splashPresentationDuration)
+			isLoading = false
+			withAnimation(.easeInOut(duration: 0.5)) {
+				performOnDissapear = true
+			}
+			try await Task.sleep(for: .seconds(0.5))
 			onComplete()
 		} catch is CancellationError {
 			print("\(#function) cancelled")
@@ -55,10 +58,5 @@ extension SplashViewModel {
 			),
 			AnyTransition.scale
 		].randomElement() ?? .scale
-	}
-	
-	@inline(__always)
-	var loadingState: LoadingState {
-		dependencies.api.loadingState
 	}
 }

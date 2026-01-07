@@ -197,10 +197,7 @@ extension Coordinator {
 	func build(_ page: Page) -> some View {
 		switch page {
 		case .splash:
-			SplashView(
-				appContainer: appContainer,
-				onComplete: onSplashComplete
-			)
+			SplashView(onComplete: onSplashComplete)
 			
 		case .authorization(let page):
 			AuthorizationView(

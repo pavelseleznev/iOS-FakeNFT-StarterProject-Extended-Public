@@ -38,5 +38,5 @@ enum Constants {
 	
 	static let bgTaskRefreshInterval: TimeInterval = 15 * 60 // 15 mins
 	
-	static let splashPresentationDuration: Duration = .seconds(1)
+	static let splashPresentationDuration: Duration = .seconds(2)
 }
