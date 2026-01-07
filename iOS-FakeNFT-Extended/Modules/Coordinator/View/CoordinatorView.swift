@@ -8,74 +8,66 @@
 import SwiftUI
 
 struct CoordinatorView: View {
+	@AppStorage(Constants.appLaunchCountKey) private var launchCount = 0
+	@AppStorage(Constants.ratingIsAlreadyPresentedThisLaunchKey) private var ratingIsAlreadyPresentedThisLaunch = false
+	
 	@State private var coordinator: Coordinator
 	
 	var body: some View {
-		NavigationStack(path: $coordinator.path) {
-			coordinator.build(.tabView)
+		NavigationStack(path: coordinator.bindingPath) {
+			coordinator.build(.splash)
 				.navigationDestination(for: Page.self) { page in
 					coordinator.build(page)
-						.customNavigationBackButton(backAction: coordinator.pop)
+						.customNavigationBackButton(
+							hasNotBackButton: coordinator.bindingPath.wrappedValue.last?.hasNotBackButton,
+							backAction: coordinator.pop
+						)
+						.onAppear(perform: performLaunchAction)
+						.applyAppRatingView(
+							isPresented: coordinator.bindingRatingViewIsPresented,
+							didRateCalled: didRate
+						)
 				}
-				.sheet(item: $coordinator.sheet) { sheet in
+				.sheet(item: coordinator.bindingSheet) { sheet in
 					coordinator.build(sheet)
 				}
-				.fullScreenCover(
-					item: $coordinator.fullScreencover
-				) { fullScreenCover in
+				.fullScreenCover(item: coordinator.bindingsFullScreencover) { fullScreenCover in
 					coordinator.build(fullScreenCover)
-				}
-				.overlay(content: loadingView)
-				.allowsHitTesting(coordinator.appContainer.api.loadingState != .fetching)
-				.applyRepeatableAlert(
-					isPresneted: .constant(coordinator.appContainer.api.loadingState == .error),
-					message: "Не удалось получить данные", // TODO: move to constants
-					didTapRepeat: {
-						Task {
-							await coordinator.loadUserData()
-						}
-					}
-				)
-				.onAppear(perform: checkAuthState)
-				.task {
-					await coordinator.loadUserData()
 				}
 		}
 	}
 	
-	init() {
-		let api = ObservedNetworkClient()
-		let nftStorage = NFTStorage()
-		let nft = NFTService(api: api, storage: nftStorage)
-		let appContainer = AppContainer(nftService: nft, api: api)
+	init(appContainer: AppContainer) {
 		_coordinator = State(initialValue: .init(appContainer: appContainer))
+		
+		launchCount += 1
+		ratingIsAlreadyPresentedThisLaunch = false
 	}
 	
-	private func loadingView() -> some View {
-		LoadingView(loadingState: coordinator.appContainer.api.loadingState)
+	private func performLaunchAction() {
+		guard
+			coordinator.bindingPath.wrappedValue.last == .tabView,
+			!ratingIsAlreadyPresentedThisLaunch,
+			ratePresentConditionIsTrue
+		else { return }
+		
+		withAnimation(Constants.defaultAnimation.delay(0.5)) {
+			ratingIsAlreadyPresentedThisLaunch = true
+			coordinator.bindingRatingViewIsPresented.wrappedValue = true
+		}
 	}
 	
-	private func checkAuthState() {
-		coordinator.dismissFullScreenCover()
+	private var ratePresentConditionIsTrue: Bool {
+		withAnimation(Constants.defaultAnimation) {
+			launchCount % 5 == 0
+		}
+	}
+	
+	private func didRate(rating: Int) {
+		// TODO: rate implementation here
 	}
 }
 
 #Preview {
-	CoordinatorView()
-}
-
-extension View {
-	func customNavigationBackButton(backAction: @escaping () -> Void) -> some View {
-		self
-			.navigationBarBackButtonHidden()
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button(action: backAction) {
-						Image.chevronLeft
-							.font(.chevronLeftIcon)
-					}
-					.tint(.ypBlack)
-				}
-			}
-	}
+	CoordinatorView(appContainer: .mock)
 }

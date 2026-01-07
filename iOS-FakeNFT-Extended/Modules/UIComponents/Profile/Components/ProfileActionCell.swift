@@ -8,13 +8,16 @@
 import SwiftUI
 
 struct ProfileActionCell: View, Identifiable {
-	let title: String
+	let title: LocalizedStringResource
 	let action: () -> Void
 	
 	let id = UUID().uuidString
 	
 	var body: some View {
-		Button(action: action) {
+		Button {
+			HapticPerfromer.shared.play(.impact(.light))
+			action()
+		} label: {
 			HStack {
 				Text(title)
 					.font(.bold17)

@@ -46,11 +46,13 @@ private extension ObservedNetworkClient {
 
 // --- nft collections ---
 extension ObservedNetworkClient {
+	@Sendable
 	func getCollections() async throws -> [NFTCollectionItemResponse] {
 		let request = GetCollectionRequest()
 		return try await fetch(request)
 	}
 	
+	@Sendable
 	func getCollection(by id: String) async throws -> NFTCollectionItemResponse {
 		let request = GetCollectionByIDRequest(id: id)
 		return try await fetch(request)
@@ -59,11 +61,13 @@ extension ObservedNetworkClient {
 
 // --- nft ---
 extension ObservedNetworkClient {
+	@Sendable
 	func getNFTs() async throws -> [NFTResponse] {
 		let request = GetNFTsRequest()
 		return try await fetch(request)
 	}
 	
+	@Sendable
 	func getNFT(by id: String) async throws -> NFTResponse {
 		let request = GetNFTByIDRequest(id: id)
 		return try await fetch(request)
@@ -72,25 +76,40 @@ extension ObservedNetworkClient {
 
 // --- currencies ---
 extension ObservedNetworkClient {
+	@Sendable
 	func getCurrencies() async throws -> [CurrencyResponse] {
 		let request = GetCurrenciesRequest()
 		return try await fetch(request)
 	}
 	
+	@Sendable
 	func getCurrency(by id: String) async throws -> CurrencyResponse {
 		let request = GetCurrencyByIDRequest(id: id)
+		return try await fetch(request)
+	}
+	
+	@Sendable
+	func setCurrency(id: String) async throws -> CurrencySetResponse {
+		let request = SetCurrencyByIDRequest(id: id)
 		return try await fetch(request)
 	}
 }
 
 // --- order ---
 extension ObservedNetworkClient {
-	@discardableResult
-	func putOrderAndPay(payload: OrderPayload) async throws -> OrderRepsonse {
-		let request = PutOrderAndPayRequest(payload: payload)
+	@Sendable @discardableResult
+	func pay(payload: PayPayload) async throws -> OrderRepsonse {
+		let request = PayRequest(payload: payload)
 		return try await fetch(request)
 	}
 	
+	@Sendable @discardableResult
+	func putOrder(payload: OrderPayload) async throws -> OrderRepsonse {
+		let request = PutOrderRequest(payload: payload)
+		return try await fetch(request)
+	}
+	
+	@Sendable
 	func getOrder() async throws -> OrderRepsonse {
 		let request = GetOrderRequest()
 		return try await fetch(request)
@@ -99,12 +118,13 @@ extension ObservedNetworkClient {
 
 // --- profile ---
 extension ObservedNetworkClient {
+	@Sendable
 	func getProfile() async throws -> ProfileResponse {
 		let request = GetProfileRequest()
 		return try await fetch(request)
 	}
 	
-	@discardableResult
+	@Sendable @discardableResult
 	func updateProfile(payload: ProfilePayload) async throws -> ProfileResponse {
 		let request = UpdateProfileRequest(payload: payload)
 		return try await fetch(request)
@@ -113,11 +133,13 @@ extension ObservedNetworkClient {
 
 // --- users ---
 extension ObservedNetworkClient {
+	@Sendable
 	func getUsers(page: Int, sortOption: StatisticsSortActionsViewModifier.SortOption) async throws -> [UserListItemResponse] {
 		let request = GetUsersRequest(page: page, sortOption: sortOption)
 		return try await fetch(request)
 	}
 	
+	@Sendable
 	func getUser(by id: String) async throws -> UserListItemResponse {
 		let request = GetUserByIDRequest(id: id)
 		return try await fetch(request)

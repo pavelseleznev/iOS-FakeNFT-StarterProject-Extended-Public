@@ -11,7 +11,8 @@ struct StatisticsView: View {
 	private static let statisticsSortOptionKey: String = "statisticsSortOptionKey"
 	
 	@State private var viewModel: StatisticsViewModel
-	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .name
+	@StateObject private var debouncer = DebouncingViewModel()
+	@AppStorage(statisticsSortOptionKey) private var sortOption: StatisticsSortActionsViewModifier.SortOption = .rate
 	
 	init(
 		api: ObservedNetworkClient,
@@ -24,44 +25,86 @@ struct StatisticsView: View {
 			)
 		)
 		
-		viewModel.setSortOption(sortOption)
+		if sortOption != viewModel.currenctSortOption {
+			viewModel.setSortOption(sortOption)
+		}
 	}
 	
 	var body: some View {
 		ZStack(alignment: .top) {
 			Color.ypWhite.ignoresSafeArea()
 			
-			List(Array(viewModel.visibleUsers.enumerated()), id: \.offset) { counter, user in
-				UserListCell(model: user, counter: counter)
-					.task {
+			List(viewModel.visibleUsers, id: \.id) { user in
+				UserListCell(model: user)
+					.onAppear {
 						if user == viewModel.visibleUsers.last {
-							await viewModel.loadNextUsersPage()
+							Task(name: user.id, priority: .userInitiated) {
+								await viewModel.loadNextUsersPage()
+							}
 						}
 					}
-					.onTapGesture {
-						viewModel.didTapUserCell(for: user)
-					}
-					.listRowSeparator(.hidden)
-					.listRowInsets(.init())
-					.listRowBackground(Color.clear)
-					.padding(.horizontal)
+					.onTapGesture { viewModel.didTapUserCell(for: user) }
+					.listCellModifiers()
+					.id(user.id)
 			}
-			.scrollIndicators(.hidden)
-			.safeAreaPadding(.bottom)
-			.listRowSpacing(8)
-			.scrollContentBackground(.hidden)
-			.listStyle(.plain)
-			.animation(.easeInOut(duration: 0.15), value: viewModel.visibleUsers)
+			.animation(.default, value: viewModel.visibleUsers)
+			.refreshable {
+				await viewModel.resetUsers()
+			}
+			.listModifiers()
+			.overlay(content: loadingView)
 		}
-		.task {
+		.task(priority: .userInitiated) {
 			await viewModel.loadNextUsersPage(onAppear: true)
 		}
+		.toolbar(.hidden)
 		.safeAreaTopBackground()
 		.applyStatisticsSort(
 			placement: .safeAreaTop,
-			activeSortOption: $sortOption
+			activeSortOption: $sortOption,
+			searchText: $debouncer.text
 		)
-		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+		.onChange(of: sortOption) { oldValue, newValue in
+			guard oldValue != sortOption else { return }
+			viewModel.setSortOption(sortOption)
+		}
+		.onAppear {
+			debouncer.onDebounce = viewModel.onDebounce
+		}
+		.applyRepeatableAlert(
+			isPresneted: $viewModel.dataLoadingErrorIsPresented,
+			message: .cantGetUsersData,
+			didTapRepeat: {
+				Task(priority: .userInitiated) {
+					await viewModel.loadNextUsersPage()
+				}
+			}
+		)
+	}
+	
+	private func loadingView() -> some View {
+		LoadingView(loadingState: viewModel.loadingState)
+	}
+}
+
+private extension View {
+	func listCellModifiers() -> some View {
+		self
+			.listRowSeparator(.hidden)
+			.listRowInsets(.init())
+			.listRowBackground(Color.clear)
+			.padding(.horizontal)
+	}
+	
+	func listModifiers() -> some View {
+		self
+			.scrollDismissesKeyboard(.interactively)
+			.scrollIndicators(.hidden)
+			.safeAreaPadding(.bottom)
+			.listRowSpacing(16)
+			.scrollContentBackground(.hidden)
+			.environment(\.defaultMinListRowHeight, 0)
+			.listStyle(.plain)
 	}
 }
 

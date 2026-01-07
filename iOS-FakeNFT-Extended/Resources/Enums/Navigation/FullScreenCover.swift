@@ -7,7 +7,7 @@
 
 
 enum FullScreenCover: Hashable, Identifiable {
-	case splash
+	case empty
 	
 	var id: Self { self }
 }

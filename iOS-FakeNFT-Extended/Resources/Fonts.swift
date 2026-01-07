@@ -23,6 +23,12 @@ extension Font {
 		weight: .bold,
 		design: design
 	)
+	
+	static let bold32 = Font.system(
+		size: 32,
+		weight: .bold,
+		design: design
+	)
 
 	static let regular13 = Font.system(
 		size: 13,
@@ -82,6 +88,12 @@ extension Font {
 	static let startIcon = Font.system(
 		size: 10,
 		weight: .bold,
+		design: design
+	)
+	
+	static let starIcon = Font.system(
+		size: 20,
+		weight: .semibold,
 		design: design
 	)
 	

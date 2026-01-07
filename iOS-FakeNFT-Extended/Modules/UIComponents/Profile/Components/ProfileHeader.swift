@@ -11,40 +11,66 @@ struct ProfileHeader: View {
 	let name: String
 	let imageURLString: String
 	let about: String
+	let rating: String
+	
+	private let imageSize: CGFloat = 70
+	
+	init(name: String, imageURLString: String, about: String, rating: String = "") {
+		self.name = name
+		self.imageURLString = imageURLString
+		self.about = about
+		self.rating = rating
+	}
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
-				Group {
-					if let url = URL(string: imageURLString) {
-						AsyncImage(url: url) { image in
-							image
-								.resizable()
-								.scaledToFit()
-						} placeholder: {
-							ProgressView()
-								.progressViewStyle(.circular)
-						}
-					} else {
-						Image.profilePerson
+				AsyncImageCached(urlString: imageURLString) { phase in
+					switch phase {
+					case .empty:
+						Color.ypLightGrey
+							.overlay {
+								ProgressView()
+							}
+					case .loaded(let image):
+						Image(uiImage: image)
 							.resizable()
 							.scaledToFit()
+					case .error:
+						Image.profilePerson
+							.resizable()
+							.renderingMode(.template)
+							.foregroundStyle(.ypGrayUniversal)
+							.aspectRatio(contentMode: .fit)
 					}
 				}
-				.clipShape(Circle())
-				.frame(width: 70)
+				.frame(width: imageSize, height: imageSize)
+				.clipShape(.circle)
 				
-				Text(name)
-					.foregroundStyle(.ypBlack)
-					.font(.bold22)
+				VStack(alignment: .leading, spacing: 4) {
+					Text(name)
+						.foregroundStyle(.ypBlack)
+						.font(.bold22)
+					if !rating.isEmpty {
+						RatingPreview(rating: Int(rating) ?? 0)
+							.scaleEffect(1.3, anchor: .leading)
+							.frame(height: 24)
+					}
+				}
 				
 				Spacer()
 			}
 			
-			Text(about)
-				.lineSpacing(4)
-				.foregroundStyle(.ypBlack)
-				.font(.regular13)
+			Group {
+				if about.isEmpty {
+					Text(.noDescription)
+				} else {
+					Text(about)
+				}
+			}
+			.lineSpacing(4)
+			.foregroundStyle(.ypBlack)
+			.font(.regular13)
 		}
 		.padding(.horizontal, 16)
 	}

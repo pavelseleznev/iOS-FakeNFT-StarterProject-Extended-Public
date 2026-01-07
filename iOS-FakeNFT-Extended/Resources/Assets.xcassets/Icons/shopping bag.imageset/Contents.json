@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "No Active@2x 1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -20,6 +21,8 @@
     "version" : 1
   },
   "properties" : {
+    "compression-type" : "lossless",
+    "preserves-vector-representation" : true,
     "template-rendering-intent" : "template"
   }
 }

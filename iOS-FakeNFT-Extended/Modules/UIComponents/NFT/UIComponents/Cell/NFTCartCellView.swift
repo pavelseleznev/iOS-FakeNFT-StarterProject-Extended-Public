@@ -8,30 +8,25 @@
 import SwiftUI
 
 struct NFTCartCellView: View {
-	
-	let model: NFTResponse
-	let isFavourited: Bool
-	let likeAction: () -> Void
+	let model: NFTModelContainer?
 	let cartAction: () -> Void
 	
 	private let layout: NFTCellLayout = .cart
 	
 	var body: some View {
 		HStack(spacing: 20) {
-			NFTImageView(
-				model: model,
-				isFavourited: isFavourited,
-				layout: layout,
-				likeAction: likeAction,
+			NFTCartImageView(
+				model: model?.nft,
+				layout: layout
 			)
 			.frame(width: 108)
 			
-			VStack(spacing: 12) {
+			VStack(alignment: .leading, spacing: 12) {
 				NFTNameRateAuthorView(
-					model: model,
+					model: model?.nft,
 					layout: layout
 				)
-				NFTCostView(model: model, layout: layout)
+				NFTCostView(model: model?.nft, layout: layout)
 			}
 			
 			Spacer()
@@ -42,40 +37,54 @@ struct NFTCartCellView: View {
 	}
 	
 	private var cartButton: some View {
-		Button(action: cartAction) {
-			(isFavourited ? Image.removeFromCart : Image.addToCart)
+		Button {
+			HapticPerfromer.shared.play(.impact(.light))
+			cartAction()
+		} label: {
+			((model?.isInCart ?? false) ? Image.removeFromCart : Image.addToCart)
 				.resizable()
 				.foregroundStyle(.ypBlack)
 				.font(.cartIcon)
 				.frame(width: 40, height: 40)
+				.applySkeleton(model)
 		}
+		.buttonStyle(.plain)
+		.disabled(model == nil)
 	}
 }
 
 #if DEBUG
 #Preview {
-	@Previewable @State var models: [NFTResponse] = [
-		.mock,
-		.mock,
-		.badImageURLMock,
-		.mock,
-		.badImageURLMock
-	]
+	@Previewable let api = ObservedNetworkClient()
+	@Previewable @State var nfts = [String : NFTModelContainer?]()
 	
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 		
 		ScrollView(.vertical) {
 			LazyVStack(spacing: 24) {
-				ForEach(models) {
+				ForEach(
+					Array(nfts.enumerated()),
+					id: \.offset
+				) { _, element in
 					NFTCartCellView(
-						model: $0,
-						isFavourited: false,
-						likeAction: {},
+						model: element.value,
 						cartAction: {}
 					)
+					.id(element.key)
 				}
 			}
+		}
+		.animation(Constants.defaultAnimation, value: nfts)
+		.task(priority: .userInitiated) {
+			do {
+				let nftsIDs = try await api.getOrder().nftsIDs
+				nftsIDs.forEach { nfts[$0, default: nil] = nil }
+				for id in nftsIDs {
+					let nft = try await api.getNFT(by: id)
+					nfts[id] = .init(nft: nft, isFavorite: .random(), isInCart: .random())
+				}
+			} catch { print(error.localizedDescription) }
 		}
 	}
 }

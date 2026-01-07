@@ -7,9 +7,16 @@
 
 import SwiftUI
 
-struct NFTVerticalCell: View {
+struct NFTVerticalCell: View, @MainActor Equatable {
+	
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model?.id == rhs.model?.id &&
+		lhs.model?.isFavorite == rhs.model?.isFavorite &&
+		lhs.model?.isInCart == rhs.model?.isInCart
+	}
 	
 	let model: NFTModelContainer?
+	let didTapDetail: (NFTModelContainer) -> Void
 	let likeAction: () -> Void
 	let cartAction: () -> Void
 	
@@ -21,6 +28,7 @@ struct NFTVerticalCell: View {
 				layout: .my,
 				likeAction: likeAction,
 			)
+			.id(model?.isFavorite)
 			
 			RatingPreview(rating: model?.nft.rating)
 			
@@ -33,50 +41,54 @@ struct NFTVerticalCell: View {
 				cartButton
 			}
 		}
-	}
-	
-	private var nameLabel: some View {
-		Text(model?.nft.name ?? NFTModel.mock.name)
-			.foregroundStyle(.ypBlack)
-			.lineLimit(2)
-			.truncationMode(.tail)
-			.font(.bold17)
-			.overlay {
-				if model == nil {
-					LoadingShimmerPlaceholderView()
-				}
-			}
-	}
-	
-	private var costLabel: some View {
-		Text(
-			String(format: "%.2f", model?.nft.price ?? "99.99")
-				.replacingOccurrences(of: ".", with: ",")
-			+ " ETH"
-		)
-		.foregroundStyle(.ypBlack)
-		.font(.medium10)
-		.overlay {
-			if model == nil {
-				LoadingShimmerPlaceholderView()
+		.onTapGesture {
+			if let model {
+				HapticPerfromer.shared.play(.impact(.soft))
+				didTapDetail(model)
 			}
 		}
 	}
 	
+	private var nameLabel: some View {
+		Text(model?.nft.name ?? NFTResponse.mock.name)
+			.foregroundStyle(.ypBlack)
+			.lineLimit(Constants.nftNameLineLimit)
+			.truncationMode(.tail)
+			.font(.bold17)
+			.applySkeleton(model)
+	}
+	
+	private var costLabel: some View {
+		Text(formatterPriceString)
+			.foregroundStyle(.ypBlack)
+			.font(.medium10)
+			.applySkeleton(model)
+	}
+	
 	private var cartButton: some View {
-		Button(action: cartAction) {
+		Button {
+			HapticPerfromer.shared.play(.impact(.light))
+			cartAction()
+		} label: {
 			((model?.isInCart ?? false) ? Image.removeFromCart : Image.addToCart)
 				.resizable()
 				.font(.cartIcon)
 				.foregroundStyle(.ypBlack)
 				.frame(width: 40, height: 40)
 		}
-		.overlay {
-			if model == nil {
-				LoadingShimmerPlaceholderView()
-			}
-		}
 		.disabled(model == nil)
+		.applySkeleton(model)
+	}
+	
+	private var formatterPriceString: String {
+		guard
+			let price = model?.nft.price,
+			let double = Double("\(price)")
+		else {
+			return "0,0 ETH"
+		}
+		
+		return String(format: "%.2f", double).replacingOccurrences(of: ".", with: ",") + " ETH"
 	}
 }
 
@@ -97,6 +109,7 @@ struct NFTVerticalCell: View {
 			ForEach(0..<10) { _ in
 				NFTVerticalCell(
 					model: .badImageURLMock,
+					didTapDetail: {_ in},
 					likeAction: {},
 					cartAction: {}
 				)

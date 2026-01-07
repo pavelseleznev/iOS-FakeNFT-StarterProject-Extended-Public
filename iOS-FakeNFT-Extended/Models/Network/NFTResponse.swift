@@ -21,7 +21,12 @@ struct NFTResponse: Decodable, Identifiable {
 		.init(
 			createdAt: Date.now.formatted(.iso8601),
 			name: "Treasures of Westeros",
-			imagesURLsStrings: ["https://public.bnbstatic.com/static/content/square/images/21ba7a4483794ab5a1bfb2cf9a3338ab.png"],
+			imagesURLsStrings: [
+				"https://public.bnbstatic.com/static/content/square/images/21ba7a4483794ab5a1bfb2cf9a3338ab.png",
+				"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/1.png",
+				"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/2.png",
+				"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/3.png"
+			],
 			rating: 2,
 			description: "Bla Bla Bla",
 			price: 14.78,
