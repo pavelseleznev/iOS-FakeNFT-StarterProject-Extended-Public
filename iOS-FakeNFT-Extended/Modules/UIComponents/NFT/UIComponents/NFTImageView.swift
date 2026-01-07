@@ -7,12 +7,7 @@
 
 import SwiftUI
 
-struct NFTImageView: View, @MainActor Equatable {
-	
-	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.model?.id == rhs.model?.id
-	}
-	
+struct NFTImageView: View {
 	let model: NFTResponse?
 	let isFavourited: Bool?
 	let layout: NFTCellLayout
@@ -20,44 +15,46 @@ struct NFTImageView: View, @MainActor Equatable {
 	
 	var body: some View {
 		Group {
-			if model != nil {
-				Color.ypBackgroundUniversal
-					.overlay {
-						AsyncImageCached(urlString: imageURLString) { phase in
-							switch phase {
-							case .empty:
-								ProgressView()
-									.progressViewStyle(.circular)
-							case .loaded(let image):
-								Image(uiImage: image)
-									.resizable()
-									.scaledToFit()
-							case .error:
-								Text("?")
-									.font(.bold22)
-									.foregroundStyle(.ypWhiteUniversal)
-							}
+			Color.ypBackgroundUniversal
+				.overlay {
+					AsyncImageCached(urlString: imageURLString) { phase in
+						switch phase {
+						case .empty:
+							ProgressView()
+								.progressViewStyle(.circular)
+						case .loaded(let image):
+							Image(uiImage: image)
+								.resizable()
+								.scaledToFit()
+						case .error:
+							Text("?")
+								.font(.bold22)
+								.foregroundStyle(.ypWhiteUniversal)
 						}
 					}
-			} else {
-				LoadingShimmerPlaceholderView()
-			}
+				}
+				.applySkeleton(model)
 		}
 		.scaledToFit()
 		.aspectRatio(1, contentMode: .fit)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
-		.overlay(alignment: .topTrailing) {
-			Button(action: likeAction) {
-				favouriteImage
-			}
+		.overlay(alignment: .topTrailing, content: favouriteImageButton)
+	}
+}
+
+// MARK: - NFTImageView Extensions
+// --- subviews ---
+private extension NFTImageView {
+	func favouriteImageButton() -> some View {
+		Button {
+			HapticPerfromer.shared.play(.impact(.medium))
+			likeAction()
+		} label: {
+			favouriteImage
 		}
 	}
 	
-	private var imageURLString: String {
-		model?.imagesURLsStrings.first ?? ""
-	}
-	
-	private var favouriteImage: some View {
+	var favouriteImage: some View {
 		Group {
 			if let isFavourited {
 				Image.heartFill
@@ -75,5 +72,18 @@ struct NFTImageView: View, @MainActor Equatable {
 			color: .ypBlackUniversal,
 			radius: 8
 		)
+	}
+}
+
+// -- helpers ---
+private extension NFTImageView {
+	var imageURLString: String {
+	   model?.imagesURLsStrings.first ?? ""
+   }
+}
+
+extension NFTImageView: @MainActor Equatable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.model?.id == rhs.model?.id
 	}
 }
