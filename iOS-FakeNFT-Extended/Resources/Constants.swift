@@ -19,7 +19,7 @@ enum Constants {
 	static let appLaunchCountKey = "appLaunchCountKey"
 	static let ratingIsAlreadyPresentedThisLaunchKey = "ratingIsAlreadyPresentedThisLaunchKey"
 	
-	static let splashInfiniteCarouselSpeedRatio: CGFloat = 0.05
+	static let splashInfiniteCarouselSpeedRatio: CGFloat = 0.8
 	static let safeAreaHorizontalPadding: CGFloat = 15
 	static let onboardingCellSize: CGFloat = 100
 	static let tabIndicatorHeight: CGFloat = 4

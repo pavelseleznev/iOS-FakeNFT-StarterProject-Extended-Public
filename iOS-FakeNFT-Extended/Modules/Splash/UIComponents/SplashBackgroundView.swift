@@ -8,28 +8,18 @@
 import SwiftUI
 
 fileprivate let backgroundColors: [Color] = [.ypWhite, .clear]
-fileprivate let spacing: CGFloat = 16
 
 struct SplashBackgroundView: View {
 	var body: some View {
 		ZStack {
-			VStack(spacing: spacing) {
-				VStack(spacing: spacing) {
-					InfiniteCarouselView(direction: .leftToRight, speed: 0.4)
-					InfiniteCarouselView(direction: .rightToLeft, speed: 0.5)
-					InfiniteCarouselView(direction: .leftToRight, speed: 0.55)
-				}
-				
-				Spacer(minLength: Constants.onboardingCellSize * 2)
-				
-				VStack(spacing: spacing) {
-					InfiniteCarouselView(direction: .rightToLeft, speed: 0.6)
-					InfiniteCarouselView(direction: .leftToRight, speed: 0.5)
-					InfiniteCarouselView(direction: .rightToLeft, speed: 0.4)
-				}
-			}
-			.opacity(0.6)
-			.blur(radius: 1)
+			InfiniteCarouseTimelinelView(
+				topfirst: .init(direction: .leftToRight, speed: 0.1),
+				topSecond: .init(direction: .rightToLeft, speed: 0.3),
+				topThird: .init(direction: .leftToRight, speed: 0.2),
+				bottomFirst: .init(direction: .rightToLeft, speed: 0.2),
+				bottomSecond: .init(direction: .leftToRight, speed: 0.3),
+				bottomThird: .init(direction: .rightToLeft, speed: 0.1)
+			)
 			
 			VStack {
 				gradientView(colors: backgroundColors)
@@ -48,3 +38,9 @@ struct SplashBackgroundView: View {
 		)
 	}
 }
+
+#if DEBUG
+#Preview {
+	SplashBackgroundView()
+}
+#endif
