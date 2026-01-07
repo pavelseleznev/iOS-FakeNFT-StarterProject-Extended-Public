@@ -40,7 +40,7 @@ final class CatalogViewModel {
     // MARK: - Public Methods
     
     func didSelectItem(_ item: NFTCollectionItemResponse) {
-        push(.catalogDetails(catalog: item))
+        push(.catalog(.catalogDetails(catalog: item)))
     }
     
     @Sendable

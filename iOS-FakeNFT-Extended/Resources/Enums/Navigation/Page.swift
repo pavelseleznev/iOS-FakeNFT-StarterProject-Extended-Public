@@ -7,15 +7,14 @@
 
 enum Page: Identifiable {
     case splash
-	case tabView
+    case tabView
     case aboutAuthor(urlString: String)
-	
+    
     case statNFTCollection(nfts: [NFTModel])
     case statProfile(profile: UserListItemResponse)
     
     case profile(ProfilePage)
-    
-    case catalogDetails(catalog: NFTCollectionItemResponse)
+    case catalog(CatalogPage)
     
     var id: String { .init(describing: self)}
 }
@@ -31,8 +30,11 @@ extension Page: Hashable {
 }
 
 enum ProfilePage {
-    // profile
     case editProfile(ProfileModel)
     case myNFTs
     case favoriteNFTs
+}
+
+enum CatalogPage {
+    case catalogDetails(catalog: NFTCollectionItemResponse)
 }
