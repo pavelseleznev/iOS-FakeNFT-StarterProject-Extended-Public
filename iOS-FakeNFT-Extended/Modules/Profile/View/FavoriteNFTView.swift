@@ -53,7 +53,7 @@ struct FavoriteNFTView: View {
                         ForEach(viewModel.items, id: \.id) { nft in
                             NFTCompactCellView(
                                 model: nft,
-                                isFavourited: false,
+                                isFavourited: true,
                                 likeAction: {
                                     withAnimation(.easeInOut(duration: 0.2)) {
                                         // the VM will remove immediately when the task starts

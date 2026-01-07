@@ -20,9 +20,13 @@ struct NFTCostView: View {
 					.font(.regular13)
 			}
 			
-            Text("\(model.price)")
-				.foregroundStyle(.ypBlack)
-				.font(costFont)
+            Text(
+                String(format: "%.2f", model.price)
+                    .replacingOccurrences(of: ".", with: ",")
+                + " ETH"
+            )
+            .foregroundStyle(.ypBlack)
+            .font(costFont)
 		}
 	}
     
