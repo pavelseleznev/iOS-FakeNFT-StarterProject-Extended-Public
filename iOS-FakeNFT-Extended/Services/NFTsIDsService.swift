@@ -85,8 +85,8 @@ extension NFTsIDsService {
         let newIDs = Array(await get().union([id]))
         
         switch kind {
-        //case .order:
-            //try await api.putOrder(payload: .init(nfts: newIDs))
+        case .order:
+            try await api.putOrderAndPay(payload: .init(nfts: newIDs))
         case .favorites:
             try await api.updateProfile(payload: .init(likes: newIDs))
         default:
@@ -107,8 +107,8 @@ extension NFTsIDsService {
         let newIDs = Array(await get().subtracting([id]))
         
         switch kind {
-        //case .order:
-            //try await api.putOrder(payload: .init(nfts: newIDs))
+        case .order:
+            try await api.putOrderAndPay(payload: .init(nfts: newIDs))
         case .favorites:
             try await api.updateProfile(payload: .init(likes: newIDs))
         default:

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NFTCostView: View {
 	
-	let model: NFTModel
+	let model: NFTResponse
 	let layout: NFTCellLayout
 	
 	var body: some View {
@@ -20,9 +20,13 @@ struct NFTCostView: View {
 					.font(.regular13)
 			}
 			
-			Text(model.cost)
-				.foregroundStyle(.ypBlack)
-				.font(costFont)
+            Text(
+                String(format: "%.2f", model.price)
+                    .replacingOccurrences(of: ".", with: ",")
+                + " ETH"
+            )
+            .foregroundStyle(.ypBlack)
+            .font(costFont)
 		}
 	}
     

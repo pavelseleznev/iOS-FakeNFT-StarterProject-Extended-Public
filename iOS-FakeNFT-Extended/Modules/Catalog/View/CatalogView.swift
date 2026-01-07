@@ -8,24 +8,53 @@
 import SwiftUI
 
 struct CatalogView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	
-	var body: some View {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			Button {
-                push(.aboutAuthor(urlString: "https://practicum.yandex.ru"))
-			} label: {
-				Text("Catalog")
-					.font(.title)
-					.bold()
-			}
-		}
-		.applyCatalogSort(
-			placement: .safeAreaTop,
-			didTapName: {
-			},
-			didTapNFTCount: {})
-	}
+    private static let catalogSortOptionKey: String = "catalogSortOptionKey"
+    
+    @State private var viewModel: CatalogViewModel
+    @AppStorage(catalogSortOptionKey) private var sortOption: CatalogSortActionsViewModifier.SortOption = .name
+    
+    init(
+        api: ObservedNetworkClient,
+        push: @escaping (Page) -> Void
+    ) {
+        _viewModel = .init(
+            initialValue: .init(
+                api: api,
+                push: push
+            )
+        )
+        
+        viewModel.setSortOption(sortOption)
+    }
+    
+    var body: some View {
+        ZStack {
+            Color.ypWhite.ignoresSafeArea()
+            
+            List {
+                ForEach(viewModel.visibleCollections) { item in
+                    NFTCollectionCell(model: item)
+                        .onTapGesture {
+                            viewModel.didSelectItem(item)
+                        }
+                        .listRowInsets(.init())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                }
+            }
+            .padding(.top, 20)
+            .listRowSpacing(8)
+            .listStyle(.plain)
+            .animation(.easeInOut(duration: 0.15), value: viewModel.visibleCollections)
+        }
+        .task(priority: .userInitiated) {
+            await viewModel.loadCollections()
+        }
+        .safeAreaTopBackground()
+        .applyCatalogSort(
+            placement: .safeAreaTop,
+            activeSortOption: $sortOption
+        )
+        .onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+    }
 }

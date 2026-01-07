@@ -10,47 +10,45 @@ import SwiftUI
 @Observable
 @MainActor
 final class Coordinator {
-	let appContainer: AppContainer
-	var path = NavigationPath()
-	var sheet: Sheet?
-	var fullScreenCover: FullScreenCover? = .splash
-	    
+    let appContainer: AppContainer
+    var path = NavigationPath()
+    var sheet: Sheet?
+    var fullScreenCover: FullScreenCover? = .splash
+    
     init(appContainer: AppContainer) {
-		self.appContainer = appContainer
-	}
+        self.appContainer = appContainer
+    }
 }
-
-// MARK: - Coordinator Extensions
 
 // --- internal navigation ---
 extension Coordinator {
-	func push(_ page: Page) {
-		path.append(page)
-	}
-	
-	func pop() {
+    func push(_ page: Page) {
+        path.append(page)
+    }
+    
+    func pop() {
         guard !path.isEmpty else { return }
-		path.removeLast()
-	}
+        path.removeLast()
+    }
 }
 
 // --- internal sheet managment ---
 extension Coordinator {
-	func present(_ sheet: Sheet) {
-		self.sheet = sheet
-	}
-	
-	func dismissSheet() {
-		self.sheet = nil
-	}
-	
-	func present(_ fullScreenCover: FullScreenCover) {
-		self.fullScreenCover = fullScreenCover
-	}
-	
-	func dismissFullScreenCover() {
-		self.fullScreenCover = nil
-	}
+    func present(_ sheet: Sheet) {
+        self.sheet = sheet
+    }
+    
+    func dismissSheet() {
+        self.sheet = nil
+    }
+    
+    func present(_ fullScreenCover: FullScreenCover) {
+        self.fullScreenCover = fullScreenCover
+    }
+    
+    func dismissFullScreenCover() {
+        self.fullScreenCover = nil
+    }
 }
 
 // --- private helpers ---
@@ -107,27 +105,40 @@ extension Coordinator {
                 FavoriteNFTView(appContainer: appContainer)
                     .customNavigationBackButton(backAction: pop)
             }
+            
+        case .catalog(let page):
+            switch page {
+            case .catalogDetails(let catalog):
+                CatalogNFTCollectionView(
+                    api: appContainer.api,
+                    push: push,
+                    catalog: catalog,
+                    loadingState: appContainer.api.loadingState,
+                    nftService: appContainer.nftService
+                )
+                .customNavigationBackButton(backAction: pop)
+            }
         }
     }
-	
-	@ViewBuilder
-	func build(_ sheet: Sheet) -> some View {
-		switch sheet {
-		case let .nftDetail(nft):
-			NFTDetailView(nft: nft)
-		}
-	}
-	
-	@ViewBuilder
-	func build(_ fullScreenCover: FullScreenCover) -> some View {
-		switch fullScreenCover {
-		case .splash:
-			SplashView(
+    
+    @ViewBuilder
+    func build(_ sheet: Sheet) -> some View {
+        switch sheet {
+        case let .nftDetail(nft):
+            NFTDetailView(nft: nft)
+        }
+    }
+    
+    @ViewBuilder
+    func build(_ fullScreenCover: FullScreenCover) -> some View {
+        switch fullScreenCover {
+        case .splash:
+            SplashView(
                 appContainer: appContainer,
                 onComplete: { [weak self] in
                     self?.dismissFullScreenCover()
                 }
             )
-		}
-	}
+        }
+    }
 }

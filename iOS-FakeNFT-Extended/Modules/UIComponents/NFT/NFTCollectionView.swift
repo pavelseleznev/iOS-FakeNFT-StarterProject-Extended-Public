@@ -8,60 +8,75 @@
 import SwiftUI
 
 struct NFTCollectionView: View {
-	
-	let nfts: [NFTModel]
-	let likeActionOn: (NFTModel) -> Void
-	let cartActionOn: (NFTModel) -> Void
-	
-	private let columns = [
-		GridItem(.flexible(), spacing: 8),
-		GridItem(.flexible(), spacing: 8),
-		GridItem(.flexible(), spacing: 8)
-	]
-	
-	var body: some View {
-		ScrollView(.vertical) {
-			LazyVGrid(
-				columns: columns,
-				alignment: .center,
-				spacing: 28,
-				pinnedViews: .sectionFooters
-			) {
-				ForEach(nfts) { nft in
-					NFTVerticalCell(
-						model: nft,
-						likeAction: { likeActionOn(nft) },
-						cartAction: { cartActionOn(nft) }
-					)
-				}
-			}
-		}
-		.padding(.horizontal, 16)
-		.scrollIndicators(.hidden)
-	}
+    
+    @StateObject private var asyncNFTs: AsyncNFTs
+    private let nftsIDs: [String]
+    private let errorIsPresented: Bool
+    
+    private let columns = [
+        GridItem(.flexible(), spacing: 9, alignment: .top),
+        GridItem(.flexible(), spacing: 9, alignment: .top),
+        GridItem(.flexible(), spacing: 9, alignment: .top)
+    ]
+    
+    init(
+        nftsIDs: [String],
+        nftService: NFTServiceProtocol,
+        errorIsPresented: Bool
+    ) {
+        self.nftsIDs = nftsIDs
+        self.errorIsPresented = errorIsPresented
+        
+        _asyncNFTs = .init(
+            wrappedValue: .init(nftService: nftService)
+        )
+    }
+    
+    var body: some View {
+        ScrollView(.vertical) {
+            LazyVGrid(
+                columns: columns,
+                alignment: .center,
+                spacing: 28
+            ) {
+                ForEach(
+                    Array(asyncNFTs.visibleNFTs.enumerated()),
+                    id: \.offset
+                ) { index, model in
+                    NFTVerticalCell(
+                        model: model,
+                        likeAction: {
+                            asyncNFTs.didTapLikeButton(for: model)
+                        },
+                        cartAction: {
+                            asyncNFTs.didTapCartButton(for: model)
+                        }
+                    )
+                    .transition(.scale)
+                    .transition(.blurReplace)
+                }
+                .scrollTransition { content, phase in
+                    content
+                        .opacity(phase.isIdentity ? 1 : 0.25)
+                        .blur(radius: phase.isIdentity ? 0 : 5, opaque: false)
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: asyncNFTs.visibleNFTs)
+        .padding(.horizontal, 16)
+        .scrollIndicators(.hidden)
+        .task {
+            await asyncNFTs.fetchNFTs(using: Set(nftsIDs))
+        }
+        .onDisappear(perform: asyncNFTs.viewDidDissappear)
+        .applyRepeatableAlert(
+            isPresented: .constant(errorIsPresented),
+            message: "Не удалось получить данные", // TODO: move to constants
+            didTapRepeat: {
+                Task {
+                    await asyncNFTs.loadFailedNFTs()
+                }
+            }
+        )
+    }
 }
-
-#if DEBUG
-#Preview {
-	ZStack {
-		Color.ypWhite
-			.ignoresSafeArea()
-		NFTCollectionView(
-			nfts: [
-				.mock,
-				.mock,
-				.mock,
-				.mock,
-				.badImageURLMock,
-				.mock,
-				.mock,
-				.badImageURLMock,
-				.mock,
-				.badImageURLMock
-			],
-			likeActionOn: {_ in},
-			cartActionOn: {_ in}
-		)
-	}
-}
-#endif

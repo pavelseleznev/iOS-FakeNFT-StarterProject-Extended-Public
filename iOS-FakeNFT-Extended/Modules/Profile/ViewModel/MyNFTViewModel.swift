@@ -11,26 +11,24 @@ import Foundation
 @Observable
 final class MyNFTViewModel {
     
-    var count: Int { items.count }
+    var visibleItems: [NFTResponse] {
+        items.sorted(by: itemsSortComparator)
+    }
+    
     private(set) var isLoading = false
-    private(set) var items: [NFTModel] = []
     private(set) var sortOption: ProfileSortActionsViewModifier.SortOption = .name
     
     private let appContainer: AppContainer
+    private var items: [NFTResponse] = []
     
     init(
         appContainer: AppContainer,
-        items: [NFTModel] = [],
+        items: [NFTResponse] = [],
         sortOption: ProfileSortActionsViewModifier.SortOption = .name
     ) {
         self.appContainer = appContainer
         self.sortOption = sortOption
-        setItems(items)
-    }
-    
-    func setItems(_ newItems: [NFTModel]) {
-        items = newItems
-        applySort()
+        self.items = items
     }
     
     func setLoading(_ value: Bool) {
@@ -39,7 +37,6 @@ final class MyNFTViewModel {
     
     func setSortOption(_ option: ProfileSortActionsViewModifier.SortOption) {
         sortOption = option
-        applySort()
     }
     
     func loadPurchasedNFTs() async {
@@ -48,14 +45,12 @@ final class MyNFTViewModel {
         
         let ids = Array(await appContainer.purchasedNFTsService.get())
         guard !ids.isEmpty else {
-            setItems([])
+            items = []
             return
         }
         
         do {
-            let dtos = try await fetchNFTs(ids: ids)
-            let models = dtos.map(mapToNFTModel(isFavorite: false))
-            setItems(models)
+            items = try await fetchNFTs(ids: ids)
         } catch {
             guard !error.isCancellation else { return }
             print("MyNFT load failed:", (error))
@@ -82,41 +77,17 @@ final class MyNFTViewModel {
         }
     }
     
-    private func mapToNFTModel(isFavorite: Bool) -> (NFTResponse) -> NFTModel {
-        { dto in
-            NFTModel(
-                imageURLString: dto.imagesURLsStrings.first ?? "",
-                name: dto.name,
-                author: dto.authorSiteURL,
-                cost: "\(dto.price) ETH",
-                rate: "\(dto.ratingInt)/5",
-                isFavorite: isFavorite,
-                id: dto.id
-            )
-        }
-    }
-    
-    private func applySort() {
+    private func itemsSortComparator(
+        _ first: NFTResponse,
+        _ second: NFTResponse
+    ) -> Bool {
         switch sortOption {
         case .name:
-            items.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            first.name.localizedCaseInsensitiveCompare(second.name) == .orderedAscending
         case .cost:
-            items.sort { value(from: $0.cost) < value(from: $1.cost) }
+            first.price < second.price
         case .rate:
-            items.sort { ratingValue(from: $0.rate) > ratingValue(from: $1.rate) }
+            first.rating > second.rating
         }
-    }
-    
-    private func value(from costString: String) -> Double {
-        let numberPart = costString
-            .components(separatedBy: CharacterSet(charactersIn: "0123456789,." ).inverted)
-            .joined()
-            .replacingOccurrences(of: ",", with: ".")
-        return Double(numberPart) ?? 0
-    }
-    
-    private func ratingValue(from rateString: String) -> Double {
-        let left = rateString.split(separator: "/").first ?? ""
-        return Double(left.replacingOccurrences(of: ",", with: ".")) ?? 0
     }
 }
