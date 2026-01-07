@@ -23,7 +23,7 @@ struct MyNFTView: View {
         ZStack {
             Color.ypWhite.ignoresSafeArea()
             
-            if viewModel.items.isEmpty {
+            if viewModel.visibleItems.isEmpty {
                 if viewModel.isLoading {
                     ScrollView {
                         LazyVStack(spacing: 0) {
@@ -45,7 +45,7 @@ struct MyNFTView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(viewModel.items, id: \.id) { nft in
+                        ForEach(viewModel.visibleItems, id: \.id) { nft in
                             myRow(for: nft)
                         }
                     }
@@ -53,9 +53,9 @@ struct MyNFTView: View {
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(viewModel.items.isEmpty ? "" : "Мои NFT")
+        .navigationTitle(viewModel.visibleItems.isEmpty ? "" : "Мои NFT")
         .toolbar {
-            if !viewModel.items.isEmpty {
+            if !viewModel.visibleItems.isEmpty {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Color.clear
                         .modifier(
@@ -82,10 +82,11 @@ struct MyNFTView: View {
     }
     
     @ViewBuilder
-    private func myRow(for nft: NFTModel) -> some View {
+    private func myRow(for nft: NFTResponse) -> some View {
         VStack(spacing: 0) {
             NFTMyCellView(
                 model: nft,
+                isFavourited: false,
                 likeAction: {}
             )
             .frame(maxWidth: .infinity, alignment: .leading)

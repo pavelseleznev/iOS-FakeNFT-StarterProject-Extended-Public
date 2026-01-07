@@ -11,7 +11,7 @@ import Foundation
 @Observable
 final class FavoriteNFTViewModel {
     
-    var items: [NFTModel]
+    var items: [NFTResponse]
     var isLoading = false
     var count: Int { items.count }
     var loadErrorPresented = false
@@ -19,13 +19,9 @@ final class FavoriteNFTViewModel {
     
     private let appContainer: AppContainer
     
-    init(appContainer: AppContainer, items: [NFTModel] = []) {
+    init(appContainer: AppContainer, items: [NFTResponse] = []) {
         self.appContainer = appContainer
         self.items = items
-    }
-    
-    func setItems(_ newItems: [NFTModel]) {
-        items = newItems
     }
     
     func setLoading(_ value: Bool) {
@@ -39,14 +35,12 @@ final class FavoriteNFTViewModel {
         let ids = Array(await appContainer.nftService.favouritesService.get())
         
         guard !ids.isEmpty else {
-            setItems([])
+            items = []
             return
         }
         
         do {
-            let dtos = try await fetchNFTs(ids: ids)
-            let models = dtos.map(mapToNFTModel(isFavorite: true))
-            setItems(models)
+            items = try await fetchNFTs(ids: ids)
         } catch {
             guard !error.isCancellation else { return }
             loadErrorMessage = "Не удалось загрузить избранные NFT"
@@ -103,20 +97,6 @@ final class FavoriteNFTViewModel {
             
             // preserve original ids order
             return bucket.sorted { $0.0 < $1.0 }.map(\.1)
-        }
-    }
-    
-    private func mapToNFTModel(isFavorite: Bool) -> (NFTResponse) -> NFTModel {
-        { dto in
-            NFTModel(
-                imageURLString: dto.imagesURLsStrings.first ?? "",
-                name: dto.name,
-                author: dto.authorSiteURL,
-                cost: "\(dto.price) ETH",
-                rate: "\(dto.ratingInt)/5",
-                isFavorite: isFavorite,
-                id: dto.id
-            )
         }
     }
 }

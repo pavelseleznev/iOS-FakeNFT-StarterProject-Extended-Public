@@ -22,6 +22,6 @@ final class CatalogNFTCollectionViewModel {
     }
     
     func didTapCollectionAuthor() {
-        push(.aboutAuthor)
+        push(.aboutAuthor(urlString: "https://practicum.yandex.ru"))
     }
 }
