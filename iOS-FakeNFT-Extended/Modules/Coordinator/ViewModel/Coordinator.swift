@@ -116,6 +116,7 @@ extension Coordinator {
                     loadingState: appContainer.api.loadingState,
                     nftService: appContainer.nftService
                 )
+                .customNavigationBackButton(backAction: pop)
             }
         }
     }
