@@ -41,6 +41,7 @@ private struct NFTButtonStyle: ButtonStyle {
 			.background(.ypWhite)
 			.opacity(configuration.isPressed ? 0.5 : 1)
 			.brightness(brightness)
+			.clipShape(RoundedRectangle(cornerRadius: isEnabled ? 0 : 16))
 			.padding(.top, 16)
 	}
 	

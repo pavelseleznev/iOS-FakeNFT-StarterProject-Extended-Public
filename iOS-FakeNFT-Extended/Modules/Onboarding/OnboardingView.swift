@@ -117,6 +117,7 @@ fileprivate extension OnboardingView {
 	}
 	
 	func performSelectionChange(_ oldValue: Selection, _ newValue: Selection) {
+		HapticPerfromer.shared.play(.selection)
 		clearCancellable()
 		autoscrollProgress = 0
 		rollNext()

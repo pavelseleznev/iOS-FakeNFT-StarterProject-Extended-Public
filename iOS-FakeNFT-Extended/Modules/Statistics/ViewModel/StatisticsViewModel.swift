@@ -48,6 +48,7 @@ extension StatisticsViewModel {
 	}
 	
 	func didTapUserCell(for user: UserListItemResponse) {
+		HapticPerfromer.shared.play(.impact(.soft))
 		push(.statistics(.profile(profile: user)))
 	}
 	
@@ -73,6 +74,8 @@ extension StatisticsViewModel {
 	func resetUsers() async {
 		guard !users.isEmpty else { return }
 		
+		HapticPerfromer.shared.play(.impact(.light))
+		
 		if visibleUsers.count < 9 { // on search filter active | load more
 			await loadNextUsersPage()
 			return
@@ -92,7 +95,10 @@ extension StatisticsViewModel {
 	}
 	
 	func setSortOption(_ option: SortOption) {
+		HapticPerfromer.shared.play(.impact(.light))
+		
 		currenctSortOption = option
+		
 		Task(priority: .userInitiated) {
 			await resetUsers()
 		}
@@ -123,6 +129,9 @@ private extension StatisticsViewModel {
 	
 	func onError(_ error: Error) {
 		guard !(error is CancellationError) else { return }
+		
+		HapticPerfromer.shared.play(.notification(.error))
+		
 		withAnimation(Constants.defaultAnimation) {
 			dataLoadingErrorIsPresented = true
 		}

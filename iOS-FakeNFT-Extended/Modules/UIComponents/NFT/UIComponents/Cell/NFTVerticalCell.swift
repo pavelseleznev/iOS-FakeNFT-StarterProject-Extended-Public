@@ -43,6 +43,7 @@ struct NFTVerticalCell: View, @MainActor Equatable {
 		}
 		.onTapGesture {
 			if let model {
+				HapticPerfromer.shared.play(.impact(.soft))
 				didTapDetail(model)
 			}
 		}
@@ -65,7 +66,10 @@ struct NFTVerticalCell: View, @MainActor Equatable {
 	}
 	
 	private var cartButton: some View {
-		Button(action: cartAction) {
+		Button {
+			HapticPerfromer.shared.play(.impact(.light))
+			cartAction()
+		} label: {
 			((model?.isInCart ?? false) ? Image.removeFromCart : Image.addToCart)
 				.resizable()
 				.font(.cartIcon)

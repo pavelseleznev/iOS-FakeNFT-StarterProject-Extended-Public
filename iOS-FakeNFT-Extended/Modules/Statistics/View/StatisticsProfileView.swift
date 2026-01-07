@@ -28,16 +28,19 @@ struct StatisticsProfileView: View {
 			ProfileContainer(
 				model: viewModel.model,
 				link: {
-					Button(.goToUserSite, action: viewModel.didTapAuthLinkButton)
-						.nftButtonStyle(filled: false)
+					Button(.goToUserSite) {
+						HapticPerfromer.shared.play(.impact(.light))
+						
+						viewModel.didTapAuthLinkButton()
+					}
+					.nftButtonStyle(filled: false)
 				},
 				actions: {
 					[
 						ProfileActionCell(
-							title: .nftCollection(count: nftsIDsCount)
-						) {
-							viewModel.didTapProfileActionCell()
-						}
+							title: .nftCollection(count: nftsIDsCount),
+							action: viewModel.didTapProfileActionCell
+						)
 					]
 				}
 			)

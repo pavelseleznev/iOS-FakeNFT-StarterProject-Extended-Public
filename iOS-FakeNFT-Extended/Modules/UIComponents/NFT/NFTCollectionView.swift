@@ -98,6 +98,7 @@ struct NFTCollectionView: View {
 				NotificationCenter.default.publisher(for: .nftDidChange),
 				perform: asyncNFTs.handleNFTChangeNotification
 			)
+			.onChange(of: asyncNFTs.activeTokens) { HapticPerfromer.shared.play(.selection) }
 		}
 	}
 }

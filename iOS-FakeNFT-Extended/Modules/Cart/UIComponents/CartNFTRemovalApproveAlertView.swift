@@ -29,7 +29,10 @@ struct CartNFTRemovalApproveAlertView: View {
 			.frame(width: contentWidth)
 			
 			HStack {
-				Button(role: .destructive, action: removeAction) {
+				Button(role: .destructive) {
+					HapticPerfromer.shared.play(.impact(.medium))
+					removeAction()
+				} label: {
 					Text(.delete)
 						.frame(width: 84)
 						.padding(.horizontal)
@@ -39,7 +42,10 @@ struct CartNFTRemovalApproveAlertView: View {
 								.fill(.ypBlack)
 						)
 				}
-				Button(role: .cancel, action: dismissAction) {
+				Button(role: .cancel) {
+					HapticPerfromer.shared.play(.impact(.light))
+					dismissAction()
+				} label: {
 					Text(.back)
 						.frame(width: 84)
 						.padding(.horizontal)

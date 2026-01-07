@@ -144,6 +144,7 @@ private extension BaseConfirmationDialogViewModifier {
 		HStack(spacing: 0) {
 			Button {
 				withAnimation(animation) {
+					HapticPerfromer.shared.play(.impact(.light))
 					isPresented.toggle()
 				}
 			} label: {

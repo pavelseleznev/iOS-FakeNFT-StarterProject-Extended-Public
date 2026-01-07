@@ -50,8 +50,12 @@ struct NFTDetailToolbarView: View, @MainActor Equatable {
 							.frame(width: 12, height: 20)
 							.buttonDefaultFrame()
 					}
+					
 					Spacer()
-					Button(action: didTapLikeButton) {
+					Button {
+						HapticPerfromer.shared.play(.impact(.light))
+						didTapLikeButton()
+					} label: {
 						Image.heartFill
 							.resizable()
 							.foregroundStyle(model.isFavorite ? .ypRedUniversal : .secondary)

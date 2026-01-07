@@ -37,29 +37,44 @@ extension PaymentMethodChooseViewModel {
 		paymentInProgress = false
 		
 		guard !(error is CancellationError) else { return }
+		HapticPerfromer.shared.play(.notification(.error))
+		
 		withAnimation(Constants.defaultAnimation) {
 			alertIsPresented = true
 		}
 	}
 	
 	func loadPaymentMethods() async {
-		currencies = await currenciesService.get()
+		let newCurrencies = await currenciesService.get()
+		
+		guard newCurrencies != currencies else { return }
+		HapticPerfromer.shared.play(.impact(.light))
+		
+		currencies = newCurrencies
 	}
 	
 	func updatePaymentMethods(_ notification: Notification) {
-		guard let currencies = notification.userInfo?[Notification.Name.currenciesDidUpdate] as? [CurrencyContainer] else { return }
+		guard
+			let newCurrencies = notification.userInfo?[Notification.Name.currenciesDidUpdate] as? [CurrencyContainer],
+			newCurrencies != currencies
+		else { return }
+		
 		self.currencies = currencies
 	}
 	
 	func didTapBuyButton() {
 		Task(priority: .userInitiated) {
 			do {
+				HapticPerfromer.shared.play(.impact(.medium))
+				
 				paymentInProgress = true
 				guard let selectedCurrency else {
 					throw NSError(domain: "Currency is nil", code: 0, userInfo: nil)
 				}
 
 				try await cartService.pay(usingCurrencyID: selectedCurrency.id)
+				
+				HapticPerfromer.shared.play(.notification(.success))
 				
 				onComplete()
 			} catch {

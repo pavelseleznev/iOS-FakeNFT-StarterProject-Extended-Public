@@ -16,7 +16,10 @@ struct NFTDetailGoToSellerSiteButtonView: View, @MainActor Equatable {
 	let spacing: CGFloat
 	
 	var body: some View {
-		Button(action: action) {
+		Button {
+			HapticPerfromer.shared.play(.impact(.medium))
+			action()
+		} label: {
 			Text(.goToUserSite)
 		}
 		.padding(.horizontal)

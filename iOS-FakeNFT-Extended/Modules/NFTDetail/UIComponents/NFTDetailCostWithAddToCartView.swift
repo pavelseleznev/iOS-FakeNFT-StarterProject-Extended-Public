@@ -20,7 +20,10 @@ struct NFTDetailCostWithAddToCartView: View, @MainActor Equatable {
 		HStack(spacing: 27) {
 			NFTCostView(model: model.nft, layout: .cart)
 			
-			Button(action: cartAction) {
+			Button {
+				HapticPerfromer.shared.play(.impact(.light))
+				cartAction()
+			} label: {
 				Text(model.isInCart ? .removeFromCartText : .addToCartText)
 					.font(.bold17)
 					.foregroundStyle(.ypWhite)

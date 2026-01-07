@@ -47,6 +47,7 @@ extension CartViewModel {
 	}
 	
 	func setSortOption(_: SortOption, _ option: SortOption) {
+		HapticPerfromer.shared.play(.impact(.light))
 		sortOption = option
 	}
 	
@@ -67,6 +68,9 @@ extension CartViewModel {
 		let idsToAdd = Set(newCartIDs).subtracting(nfts.keys)
 		
 		let newCapacity = nfts.count + idsToAdd.count - idsToRemove.count
+		
+		guard newCapacity != nfts.count else { return }
+		HapticPerfromer.shared.play(.selection)
 		nfts.reserveCapacity(newCapacity)
 		
 		idsToRemove.forEach {
@@ -92,6 +96,7 @@ extension CartViewModel {
 			let ids = notLoadedIDs
 			if !ids.isEmpty {
 				try await loadNFTs(using: ids)
+				HapticPerfromer.shared.play(.selection)
 			}
 		} catch {
 			onError(error)
@@ -108,10 +113,10 @@ extension CartViewModel {
 					await loadNilNFTs()
 					try await waitPolling()
 				} catch is CancellationError {
-					print("\n\(#function) cancelled")
+					print("\nCartViewModel \(#function) cancelled")
 					break
 				} catch {
-					print("\n\(#function) caught unexpected error: \(error.localizedDescription)")
+					print("\nCartViewModel \(#function) caught unexpected error: \(error.localizedDescription)")
 				}
 			}
 		}
@@ -160,6 +165,9 @@ private extension CartViewModel {
 	
 	func onError(_ error: Error) {
 		guard !(error is CancellationError) else { return }
+		
+		HapticPerfromer.shared.play(.notification(.error))
+		
 		withAnimation(Constants.defaultAnimation) {
 			dataLoadingErrorIsPresented = true
 		}

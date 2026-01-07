@@ -61,8 +61,9 @@ struct AuthorizationView: View {
 		.safeAreaInset(edge: .bottom, content: enterWithResetContent)
 		.onAppear(perform: performOnAppear)
 		.onDisappear(perform: performOnDissapear)
-		.onChange(of: viewModel.bindingPassword.wrappedValue) {
-			viewModel.loginResult = nil
+		.onChange(of: viewModel.bindingPassword.wrappedValue) { viewModel.loginResult = nil }
+		.onChange(of: viewModel.isFocused) {
+			HapticPerfromer.shared.play(.selection)
 		}
 		.applyToolbar()
 	}
@@ -181,7 +182,10 @@ fileprivate extension AuthorizationView {
 	@ViewBuilder
 	private var forgotPasswordView: some View {
 		if viewModel.page == .login && !viewModel.isFocused {
-			Button(action: viewModel.performForgotPassword) {
+			Button {
+				HapticPerfromer.shared.play(.impact(.light))
+				viewModel.performForgotPassword()
+			} label: {
 				Text(.forgotPassword)
 					.foregroundStyle(.accent)
 			}
@@ -194,7 +198,10 @@ fileprivate extension AuthorizationView {
 		if viewModel.page == .login && !viewModel.isFocused {
 			HStack {
 				Text(.haventAnAccount)
-				Button(action: viewModel.performRegistration) {
+				Button {
+					HapticPerfromer.shared.play(.impact(.light))
+					viewModel.performRegistration()
+				} label: {
 					Text(.register)
 						.foregroundStyle(.accent)
 				}

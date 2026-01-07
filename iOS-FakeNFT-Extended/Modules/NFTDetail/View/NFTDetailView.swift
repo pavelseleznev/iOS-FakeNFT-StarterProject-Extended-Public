@@ -137,6 +137,7 @@ struct NFTDetailView: View {
 			NotificationCenter.default.publisher(for: .currenciesDidUpdate),
 			perform: viewModel.updateCurrencies
 		)
+		.onChange(of: isImageFullScreen) { HapticPerfromer.shared.play(.impact(.soft)) }
 	}
 	
 	func imageViewHeight(geo: GeometryProxy) -> CGFloat {

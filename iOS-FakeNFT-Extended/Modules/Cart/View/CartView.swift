@@ -108,11 +108,13 @@ private extension CartView {
 			CartNFTRemovalApproveAlertView(
 				model: viewModel.modelForRemoval,
 				removeAction: {
+					HapticPerfromer.shared.play(.notification(.success))
 					viewModel.removeNFTFromCart()
 					viewModel.nftDismissAction()
 				},
 				dismissAction: viewModel.nftDismissAction
 			)
+			.onAppear { HapticPerfromer.shared.play(.notification(.warning)) }
 			.transition(.scale.combined(with: .opacity))
 		}
 	}

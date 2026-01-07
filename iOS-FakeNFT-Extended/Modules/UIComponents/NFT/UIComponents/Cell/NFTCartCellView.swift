@@ -37,7 +37,10 @@ struct NFTCartCellView: View {
 	}
 	
 	private var cartButton: some View {
-		Button(action: cartAction) {
+		Button {
+			HapticPerfromer.shared.play(.impact(.light))
+			cartAction()
+		} label: {
 			((model?.isInCart ?? false) ? Image.removeFromCart : Image.addToCart)
 				.resizable()
 				.foregroundStyle(.ypBlack)
@@ -52,16 +55,7 @@ struct NFTCartCellView: View {
 
 #if DEBUG
 #Preview {
-//	@Previewable @State var models: [NFTModelContainer] = [
-//		.mock,
-//		.mock,
-//		.badImageURLMock,
-//		.mock,
-//		.badImageURLMock
-//	]
-	
 	@Previewable let api = ObservedNetworkClient()
-	
 	@Previewable @State var nfts = [String : NFTModelContainer?]()
 	
 	ZStack {

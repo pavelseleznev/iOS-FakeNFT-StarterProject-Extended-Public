@@ -171,7 +171,6 @@ private extension AuthorizationViewModel {
 	func sendPushNotificationWithNewPassword(_ password: String) async {
 		let content = getPushNotificationContent()
 		
-
 		let request = UNNotificationRequest(
 			identifier: UUID().uuidString,
 			content: content,
@@ -180,6 +179,7 @@ private extension AuthorizationViewModel {
 		
 		do {
 			try await UNUserNotificationCenter.current().add(request)
+			HapticPerfromer.shared.play(.selection)
 			print("push with new password was sent")
 		} catch {
 			print(error.localizedDescription)
@@ -187,16 +187,22 @@ private extension AuthorizationViewModel {
 	}
 	
 	func simulateFetching() async throws {
-		try await Task.sleep(for: .seconds(2))
+		try await Task.sleep(for: .seconds(1))
 	}
 	
 	func onSuccededAction() async throws {
 		try await simulateFetching()
+		
+		HapticPerfromer.shared.play(.notification(.success))
+		
 		onComplete()
 	}
 	
 	func onError(_ description: String) {
 		print(description)
+		
+		HapticPerfromer.shared.play(.notification(.error))
+		
 		errorIsPresented = true
 	}
 	
@@ -226,6 +232,7 @@ private extension AuthorizationViewModel {
 			loginResult = .success(page.description(state: .success).pswd)
 			emailResult = .success("")
 			
+			HapticPerfromer.shared.play(.notification(.success))
 			performLoginFlow()
 		} catch {
 			onError(
@@ -282,6 +289,8 @@ private extension AuthorizationViewModel {
 // --- navigation ---
 extension AuthorizationViewModel {
 	func performMainButtonAction() {
+		HapticPerfromer.shared.play(.impact(.light))
+		
 		dismissKeyboard()
 		guard !isLoading else { return }
 		isLoading = true

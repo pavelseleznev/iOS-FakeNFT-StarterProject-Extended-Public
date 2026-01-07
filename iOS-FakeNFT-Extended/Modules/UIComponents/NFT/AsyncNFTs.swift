@@ -60,28 +60,46 @@ extension AsyncNFTs {
 		didTapDetail(nft, visibleNFTs)
 	}
 	
-	func didTapLikeButton(for model: NFTModelContainer?) {
+	func didTapLikeButton(for model: NFTModelContainer?, isFromNotification: Bool = false) {
 		guard let model else { return }
+		
+		if !isFromNotification {
+			HapticPerfromer.shared.play(.impact(.light))
+		}
 		
 		switchLikeState(for: model, key: model.id)
 		Task(priority: .userInitiated) {
-			if await nftService.favouritesService.contains(model.id) {
-				try await nftService.removeFromFavourites(nftID: model.id)
-			} else {
-				try await nftService.addToFavourites(nftID: model.id)
+			do {
+				if await nftService.favouritesService.contains(model.id) {
+					try await nftService.removeFromFavourites(nftID: model.id)
+				} else {
+					try await nftService.addToFavourites(nftID: model.id)
+				}
+			} catch {
+				HapticPerfromer.shared.play(.notification(.error))
+				print("failed to change like state: \(error.localizedDescription)")
 			}
 		}
 	}
 	
-	func didTapCartButton(for model: NFTModelContainer?) {
+	func didTapCartButton(for model: NFTModelContainer?, isFromNotification: Bool = false) {
 		guard let model else { return }
+		
+		if !isFromNotification {
+			HapticPerfromer.shared.play(.impact(.light))
+		}
 		
 		switchCartState(for: model, key: model.id)
 		Task(priority: .userInitiated) {
-			if await nftService.orderService.contains(model.id) {
-				try await nftService.removeFromCart(nftID: model.id)
-			} else {
-				try await nftService.addToCart(nftID: model.id)
+			do {
+				if await nftService.orderService.contains(model.id) {
+					try await nftService.removeFromCart(nftID: model.id)
+				} else {
+					try await nftService.addToCart(nftID: model.id)
+				}
+			} catch {
+				HapticPerfromer.shared.play(.notification(.error))
+				print("failed to change cart state: \(error.localizedDescription)")
 			}
 		}
 	}
@@ -120,11 +138,11 @@ extension AsyncNFTs {
 			let model
 		{
 			if payload.isCartChanged {
-				didTapCartButton(for: model)
+				didTapCartButton(for: model, isFromNotification: true)
 			}
 			
 			if payload.isFavoriteChanged {
-				didTapLikeButton(for: model)
+				didTapLikeButton(for: model, isFromNotification: true)
 			}
 		}
 	}

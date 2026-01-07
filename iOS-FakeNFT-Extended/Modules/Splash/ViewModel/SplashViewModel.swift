@@ -25,6 +25,8 @@ final class SplashViewModel {
 extension SplashViewModel {
 	func waitAnimations() async {
 		do {
+			HapticPerfromer.shared.play(.splashWave)
+			
 			isLoading = true
 			try await Task.sleep(for: Constants.splashPresentationDuration)
 			isLoading = false
