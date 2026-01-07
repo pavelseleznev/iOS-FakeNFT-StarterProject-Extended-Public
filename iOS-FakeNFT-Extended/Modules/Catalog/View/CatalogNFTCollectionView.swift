@@ -77,15 +77,3 @@ struct CatalogNFTCollectionView: View {
         .ignoresSafeArea()
     }
 }
-
-#Preview {
-    @Previewable let obsAPI: ObservedNetworkClient = {
-        let api = DefaultNetworkClient()
-        return .init(api: api)
-    }()
-    
-    CatalogNFTCollectionView(
-        api: .mock,
-        push: { _ in }
-    )
-}

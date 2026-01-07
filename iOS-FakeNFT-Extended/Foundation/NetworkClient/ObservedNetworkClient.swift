@@ -28,8 +28,6 @@ final class ObservedNetworkClient {
 	init(api: NetworkClient = DefaultNetworkClient()) {
 		self.api = api
 	}
-    
-    static let mock = ObservedNetworkClient(api: DefaultNetworkClient())
 }
 
 // MARK: - ObservedNetworkClient Extensions

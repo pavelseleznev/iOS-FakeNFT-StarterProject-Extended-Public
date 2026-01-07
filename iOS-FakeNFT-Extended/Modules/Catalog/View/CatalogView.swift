@@ -49,15 +49,3 @@ struct CatalogView: View {
         )
     }
 }
-
-#Preview {
-    @Previewable let obsAPI: ObservedNetworkClient = {
-        let api = DefaultNetworkClient()
-        return .init(api: api)
-    }()
-    
-    CatalogView(
-        api: .mock,
-        push: { _ in }
-    )
-}
