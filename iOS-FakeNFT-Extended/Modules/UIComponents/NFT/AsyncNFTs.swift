@@ -39,26 +39,34 @@ extension AsyncNFTs {
 		guard let model else { return }
 		
 		switchLikeState(for: model, key: model.id)
-//		Task {
-//			if await nftService.isFavourite(id: model.id) {
-//				await nftService.removeFromFavourite(id: model.id)
-//			} else {
-//				await nftService.addToFavourite(id: model.id)
-//			}
-//		}
+		Task {
+            do {
+                if await nftService.favouritesService.contains(model.id) {
+                    try await nftService.removeFromFavourites(nftID: model.id)
+                } else {
+                    try await nftService.addToFavourites(nftID: model.id)
+                }
+            } catch {
+                print("Failed to send like. \(error)")
+            }
+		}
 	}
 	
 	func didTapCartButton(for model: NFTModelContainer?) {
 		guard let model else { return }
 		
 		switchCartState(for: model, key: model.id)
-//		Task {
-//			if await nftService.isInCart(id: model.id) {
-//				await nftService.removeFromCart(id: model.id)
-//			} else {
-//				await nftService.addToCart(id: model.id)
-//			}
-//		}
+		Task {
+            do {
+                if await nftService.orderService.contains(model.id) {
+                    try await nftService.removeFromCart(nftID: model.id)
+                } else {
+                    try await nftService.addToCart(nftID: model.id)
+                }
+            } catch {
+                print("Failed to add to cart. \(error)")
+            }
+		}
 	}
 	
 	func viewDidDissappear() {
@@ -79,8 +87,8 @@ extension AsyncNFTs {
 		for await nft in makeNFTsStream(with: ids) {
 			let nftContainer = NFTModelContainer(
 				nft: nft,
-				isFavorite: true,
-				isInCart: true
+                isFavorite: await nftService.favouritesService.contains(nft.id),
+                isInCart: await nftService.orderService.contains(nft.id)
 			)
 			nfts[nft.id, default: nil] = nftContainer
 		}
