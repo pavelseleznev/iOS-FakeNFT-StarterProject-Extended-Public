@@ -118,25 +118,26 @@ extension Coordinator {
                 )
             }
         }
-        
-        @ViewBuilder
-        func build(_ sheet: Sheet) -> some View {
-            switch sheet {
-            case let .nftDetail(nft):
-                NFTDetailView(nft: nft)
-            }
-        }
-        
-        @ViewBuilder
-        func build(_ fullScreenCover: FullScreenCover) -> some View {
-            switch fullScreenCover {
-            case .splash:
-                SplashView(
-                    appContainer: appContainer,
-                    onComplete: { [weak self] in
-                        self?.dismissFullScreenCover()
-                    }
-                )
-            }
+    }
+    
+    @ViewBuilder
+    func build(_ sheet: Sheet) -> some View {
+        switch sheet {
+        case let .nftDetail(nft):
+            NFTDetailView(nft: nft)
         }
     }
+    
+    @ViewBuilder
+    func build(_ fullScreenCover: FullScreenCover) -> some View {
+        switch fullScreenCover {
+        case .splash:
+            SplashView(
+                appContainer: appContainer,
+                onComplete: { [weak self] in
+                    self?.dismissFullScreenCover()
+                }
+            )
+        }
+    }
+}
