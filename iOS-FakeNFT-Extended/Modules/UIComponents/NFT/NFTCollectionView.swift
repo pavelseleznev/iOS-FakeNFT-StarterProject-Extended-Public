@@ -10,26 +10,24 @@ import SwiftUI
 struct NFTCollectionView: View {
 	@StateObject private var debouncingViewModel = DebouncingViewModel()
 	@StateObject private var asyncNFTs: AsyncNFTs
-	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	
 	@Environment(\.isSearching) private var isSearching
 	@State private var isSearchingState = false
 	
 	init(
 		initialNFTsIDs: [String],
-		authorID: String,
+		authorID: String = "",
 		nftService: NFTServiceProtocol,
-		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
-		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void,
+		loadAuthor: @escaping (String) async throws -> UserListItemResponse = { _ in .mock },
+		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void = { _, _ in },
 	) {
-		self.didTapDetail = didTapDetail
-		
 		_asyncNFTs = .init(
 			wrappedValue: .init(
 				loadAuthor: loadAuthor,
 				nftService: nftService,
 				initialNFTsIDs: initialNFTsIDs,
-				authorID: authorID
+				authorID: authorID,
+				didTapDetail: didTapDetail
 			)
 		)
 	}
@@ -52,7 +50,7 @@ struct NFTCollectionView: View {
 					ForEach(asyncNFTs.visibleNFTs, id: \.key) { element in
 						NFTVerticalCell(
 							model: element.value,
-							didTapDetail: didTapDetailOnCell,
+							didTapDetail: asyncNFTs.didTapDetailOnCell,
 							likeAction: {
 								asyncNFTs.didTapLikeButton(for: element.value)
 							},
@@ -125,10 +123,6 @@ private extension NFTCollectionView {
 
 // --- methods ---
 private extension NFTCollectionView {
-	private func didTapDetailOnCell(_ nft: NFTModelContainer) {
-		didTapDetail(nft, asyncNFTs.visibleNFTs)
-	}
-	
 	private func setDebouncingHandler() {
 		debouncingViewModel.onDebounce = asyncNFTs.onDebounce
 	}

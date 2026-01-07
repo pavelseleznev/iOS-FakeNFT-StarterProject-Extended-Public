@@ -23,6 +23,7 @@ final class AsyncNFTs: ObservableObject {
 	private var searchText: String = ""
 	private var viewDidDisappeared = false
 	
+	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	private let nftService: NFTServiceProtocol
 	private let pollingInterval: Duration = .seconds(5)
 	
@@ -38,11 +39,13 @@ final class AsyncNFTs: ObservableObject {
 		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
 		nftService: NFTServiceProtocol,
 		initialNFTsIDs: [String],
-		authorID: String
+		authorID: String,
+		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	) {
 		self.loadAuthor = loadAuthor
 		self.nftService = nftService
 		self.authorID = authorID
+		self.didTapDetail = didTapDetail
 		
 		initialNFTsIDs.forEach { nfts[$0, default: nil] = nil }
 	}
@@ -52,6 +55,11 @@ final class AsyncNFTs: ObservableObject {
 
 // --- internal helpers ---
 extension AsyncNFTs {
+	func didTapDetailOnCell(_ nft: NFTModelContainer) {
+		guard !authorID.isEmpty else { return }
+		didTapDetail(nft, visibleNFTs)
+	}
+	
 	func didTapLikeButton(for model: NFTModelContainer?) {
 		guard let model else { return }
 		
