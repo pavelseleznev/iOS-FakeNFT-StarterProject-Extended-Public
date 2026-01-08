@@ -5,98 +5,175 @@
 //  Created by Pavel Seleznev on 12/23/25.
 //
 
-import Foundation
+import SwiftUI
 
 @MainActor
 @Observable
 final class FavoriteNFTViewModel {
-    
-    var items: [NFTResponse]
-    var isLoading = false
-    var count: Int { items.count }
+	private(set) var filteredKeys = [String]()
+	@ObservationIgnored private var sortedKeys = [String]()
+	private(set) var items = [String : NFTResponse?]()
+	
     var loadErrorPresented = false
-    var loadErrorMessage = "Не удалось удалить NFT из избранного"
     
-    private let appContainer: AppContainer
+	@ObservationIgnored private let service: NFTServiceProtocol
+	@ObservationIgnored private var loadingTask: Task<Void, Never>?
+	@ObservationIgnored private var searchText = ""
     
-    init(appContainer: AppContainer, items: [NFTResponse] = []) {
-        self.appContainer = appContainer
-        self.items = items
+	init(service: NFTServiceProtocol) {
+		self.service = service
     }
-    
-    func setLoading(_ value: Bool) {
-        isLoading = value
-    }
-    
-    func loadFavorites() async {
-        setLoading(true)
-        defer { setLoading(false) }
-        
-        let ids = Array(await appContainer.nftService.favouritesService.get())
-        
-        guard !ids.isEmpty else {
-            items = []
-            return
-        }
-        
-        do {
-            items = try await fetchNFTs(ids: ids)
-        } catch {
-            guard !error.isCancellation else { return }
-            loadErrorMessage = "Не удалось загрузить избранные NFT"
-            loadErrorPresented = true
-            print("FavoriteNFT load failed:", (error))
-        }
-    }
-    func updateLikes(_ ids: [String]) async throws {
-        let likesPayload: [String?] = ids.isEmpty ? ["null"] : ids.map(Optional.some)
-        _ = try await appContainer.api.updateProfile(payload: .init(likes: likesPayload))
-    }
-    
-    func removeFromFavorites(id: String) async {
-        let oldItems = items
-        items.removeAll() { $0.id == id }
-        do {
-            try await updateLikes(items.map(\.id))
-            
-            try await appContainer.nftService.favouritesService.loadAndSave()
-        } catch is CancellationError {
-            return
-        } catch {
-            items = oldItems
-            loadErrorMessage = "Не удалось удалить NFT из избранного"
-            loadErrorPresented = true
-        }
-    }
-    
-    func clearAllFavorites() async {
-        do {
-            _ = try await appContainer.profileService.update(with: ProfilePayload(likes: [nil])
-            )
-            
-            try await appContainer.nftService.favouritesService.loadAndSave()
-        } catch {
-            guard !error.isCancellation else { return }
-            loadErrorMessage = "Не удалось очистить избранное"
-        }
-    }
-    
-    private func fetchNFTs(ids: [String]) async throws -> [NFTResponse] {
-        try await withThrowingTaskGroup(of: (Int, NFTResponse).self) { group in
-            for (index, id) in ids.enumerated() {
-                group.addTask { [appContainer] in
-                    let dto = try await appContainer.api.getNFT(by: id)
-                    return (index, dto)
-                }
-            }
-            
-            var bucket: [(Int, NFTResponse)] = []
-            bucket.reserveCapacity(ids.count)
-            
-            for try await pair in group { bucket.append(pair) }
-            
-            // preserve original ids order
-            return bucket.sorted { $0.0 < $1.0 }.map(\.1)
-        }
-    }
+}
+
+// MARK: - FavoriteNFTViewModel Extensions
+// --- appliers ---
+private extension FavoriteNFTViewModel {
+	func applyFilter() {
+		filteredKeys = sortedKeys
+			.filter {
+				guard !searchText.isEmpty else { return true }
+				guard let item = items[$0] ?? nil else { return false }
+				return item.name.localizedStandardContains(searchText)
+			}
+	}
+	
+	func applySort() {
+		sortedKeys
+			.sort { lhsKey, rhsKey in
+				guard
+					let lhs = items[lhsKey] ?? nil,
+					let rhs = items[rhsKey] ?? nil
+				else {
+					return false
+				}
+				
+				return lhs.id.localizedStandardCompare(rhs.id) == .orderedAscending
+			}
+		
+		applyFilter()
+	}
+}
+
+// --- helpers ---
+extension FavoriteNFTViewModel {
+	func favouritesDidUpdate(_ notification: Notification) {
+		guard
+			let _ids = notification.userInfo?[NFTsIDsKind.favorites.userDefaultsKey] as? [String]
+		else { return }
+		
+		let ids = Set(_ids)
+		let oldIDs = Set(items.keys)
+		
+		guard ids != oldIDs else { return }
+		
+		let newIDs = ids.subtracting(oldIDs)
+		let idsToRemove = oldIDs.subtracting(ids)
+		
+		if !idsToRemove.isEmpty {
+			idsToRemove.forEach { items.removeValue(forKey: $0) }
+			sortedKeys.removeAll(where: { idsToRemove.contains($0) })
+		}
+		
+		if !newIDs.isEmpty {
+			items.reserveCapacity(items.count + newIDs.count)
+			newIDs.forEach {
+				items.updateValue(.none, forKey: $0)
+				sortedKeys.append($0)
+			}
+			
+			sortedKeys.sort { $0.localizedStandardCompare($1) == .orderedAscending }
+		}
+		
+		loadNilNFTsIfNeeded()
+	}
+	
+	func removeFromFavorites(id: String) async {
+		do {
+			try await service.removeFromFavourites(nftID: id)
+			filteredKeys.removeAll { $0 == id }
+			sortedKeys.removeAll { $0 == id }
+			items.removeValue(forKey: id)
+		} catch is CancellationError {
+			return
+		} catch {
+			loadErrorPresented = true
+		}
+	}
+	
+	func onDebounce(_ text: String) {
+		searchText = text
+		applyFilter()
+	}
+	
+	func didTapLikeButton(for model: NFTResponse?) {
+		guard let id = model?.id else { return }
+		
+		Task {
+			await removeFromFavorites(id: id)
+		}
+	}
+}
+
+// --- loaders ---
+extension FavoriteNFTViewModel {
+	func loadFavorites() async {
+		let ids = await service.favouritesService.get().sorted {
+			$0.localizedStandardCompare($1) == .orderedAscending
+		}
+		
+		guard Set(ids) != Set(sortedKeys) else { return }
+		sortedKeys = ids
+		ids.forEach { items.updateValue(.none, forKey: $0) }
+		
+		loadNilNFTsIfNeeded()
+	}
+	
+	func loadNilNFTsIfNeeded() {
+		let unloaded = items.filter(\.value.isNil).map(\.key)
+		guard !unloaded.isEmpty else { return }
+		
+		let chunks = unloaded.chunked(into: 6)
+		
+		loadingTask?.cancel()
+		loadingTask = Task {
+			for chunk in chunks {
+				guard !Task.isCancelled else { return }
+				
+				let results = await withTaskGroup(
+					of: NFTResponse?.self,
+					returning: [NFTResponse].self
+				) { group in
+					
+					for id in chunk {
+						group.addTask { [weak self] in
+							guard !Task.isCancelled else { return nil }
+							return try? await self?.service.loadNFT(id: id)
+						}
+					}
+					
+					var collected = [NFTResponse]()
+					for await nft in group {
+						if let nft {
+							collected.append(nft)
+						}
+					}
+					
+					return collected
+				}
+				
+				results.forEach { items[$0.id] = $0 }
+			}
+			
+			guard !Task.isCancelled else { return }
+			
+			let failedCount = items.filter(\.value.isNil).count
+			if failedCount > 0 {
+				loadErrorPresented = true
+			} else {
+				withAnimation(nil) {
+					applySort()
+				}
+			}
+		}
+	}
 }

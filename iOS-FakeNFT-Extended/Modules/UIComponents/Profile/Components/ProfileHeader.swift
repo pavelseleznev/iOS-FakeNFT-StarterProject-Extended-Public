@@ -7,55 +7,77 @@
 
 import SwiftUI
 
+fileprivate let mockName = "John Doe (Profile Name) - #1 in the World"
+
 struct ProfileHeader: View {
-    let name: String
-    let imageURLString: String
-    let about: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(spacing: 16) {
-                AsyncImage(
-                    url: URL(string: imageURLString.trimmingCharacters(in: .whitespacesAndNewlines))
-                ) { phase in
-                    switch phase {
-                    case .empty:
-                        userPicturePlaceholder
-                            .overlay {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                            }
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                    case .failure:
-                        userPicturePlaceholder
-                    @unknown default:
-                        userPicturePlaceholder
-                    }
-                }
-                .clipShape(Circle())
-                .frame(width: 70)
-                
-                Text(name)
-                    .foregroundStyle(.ypBlack)
-                    .font(.bold22)
-                
-                Spacer()
-            }
-            
-            Text(about)
-                .lineSpacing(4)
-                .foregroundStyle(.ypBlack)
-                .font(.regular13)
-        }
-        .padding(.horizontal, 16)
-    }
-    
-    private var userPicturePlaceholder: some View {
-        Image.userPicturePlaceholder
-            .resizable()
-            .scaledToFit()
-    }
+	let name: String?
+	let imageURLString: String?
+	let about: String?
+	let rating: String?
+	
+	private let imageSize: CGFloat = 70
+	
+	init(name: String?, imageURLString: String?, about: String?, rating: String? = nil) {
+		self.name = name
+		self.imageURLString = imageURLString
+		self.about = about
+		self.rating = rating
+	}
+	
+	var body: some View {
+		VStack(alignment: .leading, spacing: 20) {
+			HStack(spacing: 16) {
+				AsyncImageCached(urlString: imageURLString ?? "") { phase in
+					switch phase {
+					case .empty:
+						Color.ypLightGrey
+							.overlay {
+								ProgressView()
+							}
+					case .loaded(let image):
+						Image(uiImage: image)
+							.resizable()
+							.scaledToFit()
+					case .error:
+						Image.profilePerson
+							.resizable()
+							.renderingMode(.template)
+							.foregroundStyle(.ypGrayUniversal)
+							.aspectRatio(contentMode: .fit)
+					}
+				}
+				.applySkeleton(imageURLString)
+				.frame(width: imageSize, height: imageSize)
+				.clipShape(.circle)
+				
+				VStack(alignment: .leading, spacing: 4) {
+					Text(name ?? mockName)
+						.foregroundStyle(.ypBlack)
+						.font(.bold22)
+						.applySkeleton(name)
+					
+					if let rating, !rating.isEmpty {
+						RatingPreview(rating: Int(rating) ?? 0)
+							.scaleEffect(1.3, anchor: .leading)
+							.frame(height: 24)
+					}
+				}
+				
+				Spacer()
+			}
+			
+			Group {
+				if let about, !about.isEmpty {
+					Text(about)
+				} else {
+					Text(.noDescription)
+				}
+			}
+			.lineSpacing(4)
+			.foregroundStyle(.ypBlack)
+			.font(.regular13)
+			.applySkeleton(about)
+		}
+		.padding(.horizontal, 16)
+	}
 }

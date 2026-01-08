@@ -10,103 +10,76 @@ import SwiftUI
 struct FavoriteNFTView: View {
     
     @State private var viewModel: FavoriteNFTViewModel
+	@StateObject private var debouncer = DebouncingViewModel()
     
-    init(appContainer: AppContainer) {
-        _viewModel = State(initialValue: FavoriteNFTViewModel(appContainer: appContainer))
+	init(service: NFTServiceProtocol) {
+		_viewModel = State(initialValue: FavoriteNFTViewModel(service: service))
     }
     
     private let columns: [GridItem] = [
-        GridItem(.flexible(), spacing: 20),
-        GridItem(.flexible(), spacing: 20)
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible())
     ]
     
     var body: some View {
         ZStack {
             Color.ypWhite.ignoresSafeArea()
             
-            if viewModel.items.isEmpty {
-                if viewModel.isLoading {
-                    ScrollView(.vertical) {
-                        LazyVGrid(columns: columns, spacing: 20) {
-                            ForEach(0..<8, id: \.self) { _ in
-                                FavoriteNFTShimmerCell()
-                            }
-                        }
-                        .padding([.horizontal, .top], 16)
-                    }
-                } else {
-                    VStack {
-                        Spacer()
-                        Text("У Вас ещё нет избранных NFT")
-                            .font(.bold17)
-                            .multilineTextAlignment(.center)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            } else {
-                ScrollView(.vertical) {
-                    LazyVGrid(
-                        columns: columns,
-                        spacing: 20
-                    ) {
-                        ForEach(viewModel.items, id: \.id) { nft in
-                            NFTCompactCellView(
-                                model: nft,
-                                isFavourited: true,
-                                likeAction: {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        // the VM will remove immediately when the task starts
-                                        // so the UI animates away
-                                    }
-                                    Task(priority: .userInitiated) {
-                                        await viewModel.removeFromFavorites(id: nft.id)
-                                    }
-                                }
-                            )
-                        }
-                    }
-                    .padding([.horizontal, .top], 16)
-                }
-            }
+			ScrollView(.vertical) {
+				LazyVGrid(
+					columns: columns,
+					spacing: 20
+				) {
+					ForEach(viewModel.filteredKeys, id: \.self) { key in
+						let item = viewModel.items[key] ?? nil
+						
+						NFTCompactCellView(
+							model: item,
+							isFavourited: item == nil ? nil : true,
+							likeAction: { viewModel.didTapLikeButton(for: item) }
+						)
+						.frame(height: 80)
+					}
+				}
+				.animation(
+					Constants.defaultAnimation,
+					value: viewModel.filteredKeys
+				)
+				.safeAreaPadding([.leading, .top])
+			}
+			.scrollContentBackground(.hidden)
+			.scrollIndicators(.hidden)
+			.scrollDismissesKeyboard(.interactively)
+			.overlay {
+				if viewModel.filteredKeys.isEmpty {
+					EmptyContentView(type: .nfts)
+				}
+			}
         }
-        .navigationBarTitleDisplayMode(.inline)
+		.applyRepeatableAlert(
+			isPresented: $viewModel.loadErrorPresented,
+//			"Не удалось удалить NFT из избранного" // TODO: Move to localization
+			message: .cantGetNFTs,
+			didTapRepeat: viewModel.loadNilNFTsIfNeeded
+		)
+		.onAppear {
+			debouncer.onDebounce = viewModel.onDebounce
+		}
         .toolbar {
             ToolbarItem(placement: .principal) {
-                if !viewModel.items.isEmpty {
-                    Text("Избранные NFT")
-                        .font(.headline)
-                }
+				Text("Избранные NFT") // TODO: Localize
+					.font(.bold17)
             }
         }
-        .alert("Ошибка", isPresented: $viewModel.loadErrorPresented) {
-            Button("ОК", role: .cancel) { }
-        } message: {
-            Text(viewModel.loadErrorMessage)
-        }
-        .task(priority: .userInitiated) {
-            await viewModel.loadFavorites()
-        }
-    }
-    
-    private struct FavoriteNFTShimmerCell: View {
-        var body: some View {
-            VStack(alignment: .leading, spacing: 8) {
-                // square image placeholder
-                LoadingShimmerPlaceholderView()
-                    .aspectRatio(1, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                
-                // title
-                LoadingShimmerPlaceholderView()
-                    .frame(height: 14)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                
-                // price line
-                LoadingShimmerPlaceholderView()
-                    .frame(width: 80, height: 12)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-            }
-        }
+		.searchable(
+			text: $debouncer.text,
+			placement: .navigationBarDrawer(displayMode: .always),
+			prompt: .search
+		)
+        .task(priority: .userInitiated) { await viewModel.loadFavorites() }
+		.onReceive(
+			NotificationCenter.default.publisher(for: .favouritesDidUpdate),
+			perform: viewModel.favouritesDidUpdate
+		)
     }
 }

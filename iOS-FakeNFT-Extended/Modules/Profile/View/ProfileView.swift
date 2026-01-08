@@ -10,61 +10,55 @@ import SwiftUI
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     init(
-        appContainer: AppContainer,
+		service: ProfileServiceProtocol,
         push: @escaping (Page) -> Void,
     ) {
-        _viewModel = State(
-            initialValue: ProfileViewModel(
-                appContainer: appContainer,
-                push: push
-                )
-            )
-    }
+		_viewModel = State(
+			initialValue: ProfileViewModel(
+				service: service,
+				push: push
+			)
+		)
+	}
     
 	var body: some View {
 		ZStack {
             Color.ypWhite.ignoresSafeArea()
             
-            ProfileContainer(
-                name: viewModel.profile.name,
-                imageURLString: viewModel.profile.avatarURL,
-                about: viewModel.profile.about
-            ) {
-                Button { viewModel.websiteTapped()
-                } label: {
-                    Text(viewModel.profile.website)
-                }
-            } actions: {
-                [
-                    ProfileActionCell(
-                        title: viewModel.myNFTTitle,
-                        action: {
-                            viewModel.myNFTsTapped()
-                        }
-                    ),
-                    ProfileActionCell(
-                        title: viewModel.favoriteTitle,
-                        action: {
-                            viewModel.favoriteNFTsTapped()
-                        })
-                ]
-            }
+			ProfileContainer(
+				model: .init(from: viewModel.profile),
+				link: {
+					Button(.goToUserSite, action: viewModel.websiteTapped)
+						.nftButtonStyle(filled: false)
+				}, actions: {
+					[
+						ProfileActionCell(
+//							title: viewModel.myNFTTitle, // TODO: Localize
+							title: .cancel,
+							action: {
+								viewModel.myNFTsTapped()
+							}
+						),
+						ProfileActionCell(
+//							title: viewModel.favoriteTitle, // TODO: Localize
+							title: .cancel,
+							action: {
+								viewModel.favoriteNFTsTapped()
+							})
+					]
+				}
+			)
 		}
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
-        .task(priority: .userInitiated) { await viewModel.load() }
-        .applyRepeatableAlert(
-            isPresented: $viewModel.loadErrorPresented,
-            message: viewModel.loadErrorMessage
-        ) {
-            Task(priority: .userInitiated) {
-                await viewModel.retryLoad()
-            }
-        }
         .task(priority: .userInitiated) {
-            await viewModel.retryLoad()
+			await viewModel.load()
         }
+		.onReceive(
+			NotificationCenter.default.publisher(for: .profileDidUpdate),
+			perform: viewModel.profileDidUpdate
+		)
 	}
 }
 

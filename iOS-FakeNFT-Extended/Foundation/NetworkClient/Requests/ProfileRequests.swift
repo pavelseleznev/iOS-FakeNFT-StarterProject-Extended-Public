@@ -43,4 +43,12 @@ struct ProfilePayload: Encodable {
 		self.website = website
 		self.likes = likes
 	}
+	
+	init(from model: ProfileContainerModel) {
+		name = model.name
+		description = model.description
+		avatar = model.avatarURLString
+		website = model.websiteURLString
+		likes = model.favoritesIDs
+	}
 }

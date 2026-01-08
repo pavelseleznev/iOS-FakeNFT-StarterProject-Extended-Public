@@ -10,25 +10,25 @@ import SwiftUI
 extension View {
 	func applyRepeatableAlert(
 		isPresented: Binding<Bool>,
-		message: String,
+		message: LocalizedStringResource,
 		didTapRepeat: @escaping () -> Void
 	) -> some View {
 		self
 			.alert(message, isPresented: isPresented) {
-				Button("Отмена", role: .cancel) {}
-				Button("Повторить", action: didTapRepeat)
+				Button(.cancel, role: .cancel) {}
+				Button(.retry, action: didTapRepeat)
 			}
 	}
 	
 	func applyExitAlert(
-        isPresented: Binding<Bool>,
-		message: String,
+		isPresented: Binding<Bool>,
+		message: LocalizedStringResource,
 		didTapExit: @escaping () -> Void
 	) -> some View {
 		self
 			.alert(message, isPresented: isPresented) {
-				Button("Остаться", role: .cancel) {}
-				Button("Выйти", action: didTapExit)
+				Button(.cancel, role: .cancel) {}
+				Button(.exit, action: didTapExit)
 			}
 	}
     
@@ -38,15 +38,13 @@ extension View {
         title: String = "Ccылка на фото",
         placeholder: String = "https://",
         onSave: @escaping (String) -> Void = { _ in },
-        onCancel: @escaping () -> Void = {}
     ) -> some View {
         modifier(AlertPhotoURLModifier(
             isPresented: isPresented,
             photoURL: photoURL,
             title: title,
             placeholder: placeholder,
-            onSave: onSave,
-            onCancel: onCancel
+            onSave: onSave
         ))
     }
 }
@@ -64,7 +62,7 @@ extension View {
 	}
 	.applyRepeatableAlert(
 		isPresented: $isPresented,
-		message: "Не удалось получить данные",
+		message: .cantGetData,
 		didTapRepeat: {}
 	)
 }
@@ -88,16 +86,15 @@ extension View {
         }
 	}
 	.applyExitAlert(
-		        isPresented: $exitAlertPresented,
-		message: "Уверены, что хотите выйти?",
+		isPresented: $exitAlertPresented,
+		message: .sureToExit,
 		didTapExit: {}
 	)
     
     .applyPhotoURLAlert(
         isPresented: $photoAlertPresented,
         photoURL: $photoURLInput,
-        onSave: { _ in },
-        onCancel: {}
+        onSave: { _ in }
     )
 }
 #endif

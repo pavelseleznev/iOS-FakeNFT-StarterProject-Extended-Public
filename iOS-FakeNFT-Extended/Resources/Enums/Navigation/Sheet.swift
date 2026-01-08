@@ -7,7 +7,7 @@
 
 
 enum Sheet: Hashable, Identifiable {
-	case nftDetail(NFTModel)
+	case empty
 	
 	var id: Self { self }
 }

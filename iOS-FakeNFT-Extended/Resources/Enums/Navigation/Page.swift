@@ -5,36 +5,85 @@
 //  Created by Superior Warden on 03.12.2025.
 //
 
-enum Page: Identifiable {
-    case splash
-    case tabView
-    case aboutAuthor(urlString: String)
-    
-    case statNFTCollection(nfts: [NFTModel])
-    case statProfile(profile: UserListItemResponse)
-    
-    case profile(ProfilePage)
-    case catalog(CatalogPage)
-    
-    var id: String { .init(describing: self)}
+import Foundation
+
+enum Page {
+	case splash
+	case onboarding
+	case authorization(AuthorizationPage)
+	case tabView
+	
+	case nftDetail(
+		model: NFTModelContainer,
+		authorID: String,
+		authorCollection: [Dictionary<String, NFTModelContainer?>.Element],
+		authorWebsiteURLString: String
+	)
+	
+	case aboutAuthor(urlString: String)
+	
+	case profile(ProfilePage)
+	case catalog(CatalogPage)
+	case cart(CartPage)
+	case statistics(StatisticsPage)
+}
+
+// MARK: - Page extensions
+// --- properties ---
+extension Page: CustomDebugStringConvertible {
+	var hasNotBackButton: Bool {
+		switch self {
+		case
+				.splash, .tabView, .onboarding,
+				.cart(.successPayment),
+				.authorization(.login):
+			true
+		default:
+			false
+		}
+	}
+	
+	var debugDescription: String {
+		switch self {
+		case .splash:
+			"splash"
+		case .onboarding:
+			"onboarding"
+		case .authorization(let authorizationPage):
+			"authorization(\(authorizationPage))"
+		case .tabView:
+			"tabView"
+		case .nftDetail:
+			"nftDetail"
+		case .aboutAuthor:
+			"aboutAuthor"
+		
+		case .profile(let profilePage):
+			"profile(\(profilePage.debugDescription))"
+			
+		case .catalog(let catalogPage):
+			"catalog(\(catalogPage.debugDescription))"
+			
+		case .cart(let cartPage):
+			"cart(\(cartPage))"
+			
+		case .statistics(let statisticsPage):
+			"statistics(\(statisticsPage.debugDescription))"
+		}
+	}
+}
+
+// --- conformances
+extension Page: Identifiable {
+	var id: String { "\(self)" }
 }
 
 extension Page: Hashable {
-    static func == (lhs: Page, rhs: Page) -> Bool {
-        lhs.hashValue == rhs.hashValue
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}
-
-enum ProfilePage {
-    case editProfile(ProfileModel)
-    case myNFTs
-    case favoriteNFTs
-}
-
-enum CatalogPage {
-    case catalogDetails(catalog: NFTCollectionItemResponse)
+	static func == (lhs: Page, rhs: Page) -> Bool {
+		lhs.hashValue == rhs.hashValue
+	}
+	
+	func hash(into hasher: inout Hasher) {
+		hasher.combine(id)
+	}
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 enum HttpMethod: String {
-    case GET, PUT
+    case GET, PUT, POST
 }
 
 protocol NetworkRequest: Sendable {

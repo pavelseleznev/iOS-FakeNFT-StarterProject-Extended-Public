@@ -10,46 +10,57 @@ import SwiftUI
 extension View {
 	func applyProfileSort(
         activeSortOption: Binding<ProfileSortActionsViewModifier.SortOption>,
-		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapCost: @escaping () -> Void,
-		didTapRate: @escaping () -> Void,
-		didTapName: @escaping () -> Void
+		placement: BaseConfirmationDialogTriggerPlacement
 	) -> some View {
 		self
 			.modifier(
 				ProfileSortActionsViewModifier(
                     activeSortOption: activeSortOption,
-					placement: placement,
-					didTapCost: didTapCost,
-					didTapRate: didTapRate,
-					didTapName: didTapName
+					placement: placement
+				)
+			)
+	}
+	
+	func applyCartSort(
+		placement: BaseConfirmationDialogTriggerPlacement,
+		activeSortOption: Binding<CartSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
+	) -> some View {
+		self
+			.modifier(
+				CartSortActionsViewModifier(
+					activeSortOption: activeSortOption,
+					searchText: searchText,
+					placement: placement
 				)
 			)
 	}
 	
 	func applyStatisticsSort(
 		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapName: @escaping () -> Void,
-		didTapRate: @escaping () -> Void
+		activeSortOption: Binding<StatisticsSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
 	) -> some View {
 		self
 			.modifier(
 				StatisticsSortActionsViewModifier(
-					placement: placement,
-					didTapRate: didTapRate,
-					didTapName: didTapName
+					activeSortOption: activeSortOption,
+					searchText: searchText,
+					placement: placement
 				)
 			)
 	}
 	
     func applyCatalogSort(
         placement: BaseConfirmationDialogTriggerPlacement,
-        activeSortOption: Binding<CatalogSortActionsViewModifier.SortOption>
+        activeSortOption: Binding<CatalogSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
     ) -> some View {
         self
             .modifier(
                 CatalogSortActionsViewModifier(
                     placement: placement,
+					searchText: searchText,
                     activeSortOption: activeSortOption
                 )
             )
@@ -78,8 +89,8 @@ extension View {
 	}
 	.applyStatisticsSort(
 		placement: .safeAreaTop,
-		didTapName: {},
-		didTapRate: {}
+		activeSortOption: .constant(.name),
+		searchText: .constant("")
 	)
 }
 
@@ -91,10 +102,7 @@ extension View {
 	}
 	.applyProfileSort(
         activeSortOption: $option,
-		placement: .safeAreaTop,
-		didTapCost: {},
-		didTapRate: {},
-		didTapName: {}
+		placement: .safeAreaTop
 	)
 }
 
@@ -105,7 +113,8 @@ extension View {
         }
         .applyCatalogSort(
             placement: .safeAreaTop,
-            activeSortOption: .constant(.name)
+            activeSortOption: .constant(.name),
+			searchText: .constant("")
         )
     }
 }

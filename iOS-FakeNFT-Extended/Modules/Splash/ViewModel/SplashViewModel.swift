@@ -2,7 +2,7 @@
 //  SplashViewModel.swift
 //  iOS-FakeNFT-Extended
 //
-//  Created by Pavel Seleznev on 1/4/26.
+//  Created by Superior Warden on 28.12.2025.
 //
 
 import SwiftUI
@@ -10,41 +10,55 @@ import SwiftUI
 @MainActor
 @Observable
 final class SplashViewModel {
-    private let dependencies: AppContainer
-    private let onComplete: () -> Void
-    
-    private(set) var dataLoadingErrorIsPresented = false
-    
-    init(
-        appContainer: AppContainer,
-        onComplete: @escaping () -> Void
-    ) {
-        self.dependencies = appContainer
-        self.onComplete = onComplete
-    }
+	private let onComplete: () -> Void
+	private(set) var currentLoadingComment: SplashLoadingComment = .allCases.randomElement()!
+	private(set) var isLoading = false
+	private(set) var performOnDissapear = false
+	
+	init(onComplete: @escaping () -> Void) {
+		self.onComplete = onComplete
+	}
 }
 
 // MARK: - SplashViewModel Extensions
 // --- internal methods ---
 extension SplashViewModel {
-    func loadUserData() async {
-        do {
-            #warning("TODO: skip this by background long polling updates")
-            
-            try await dependencies.purchasedNFTsService.loadAndSave()
-            try await dependencies.nftService.favouritesService.loadAndSave()
-            try await dependencies.nftService.orderService.loadAndSave()
-            try await dependencies.profileService.loadProfileAndSave()
-            
-            onComplete()
-        } catch is CancellationError {
-            print("\(#function) cancelled")
-        } catch {
-            print("\(#function) failed: \(error)")
-        }
-    }
-    
-    func dismissError(_ state: Bool) {
-        dataLoadingErrorIsPresented = state
-    }
+	func waitAnimations() async {
+		do {
+			HapticPerfromer.shared.play(.splashWave)
+			
+			isLoading = true
+			try await Task.sleep(for: Constants.splashPresentationDuration)
+			isLoading = false
+			withAnimation(.easeInOut(duration: 0.5)) {
+				performOnDissapear = true
+			}
+			try await Task.sleep(for: .seconds(0.5))
+			onComplete()
+		} catch is CancellationError {
+			print("\(#function) cancelled")
+		} catch {
+			print("\(#function) unexpected error: \(error)")
+		}
+	}
+	
+	func timerTick(_: Date) {
+		withAnimation(Constants.defaultAnimation) {
+			currentLoadingComment = currentLoadingComment.next
+		}
+	}
+}
+
+// --- internal data getters ---
+extension SplashViewModel {
+	@inline(__always)
+	var randomTransition: AnyTransition {
+		[
+			AnyTransition.asymmetric(
+				insertion: .scale.combined(with: .push(from: .leading)),
+				removal: .scale.combined(with: .move(edge: .trailing))
+			),
+			AnyTransition.scale
+		].randomElement() ?? .scale
+	}
 }

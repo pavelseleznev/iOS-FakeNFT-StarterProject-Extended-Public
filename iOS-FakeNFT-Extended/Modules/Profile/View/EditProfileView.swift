@@ -8,24 +8,19 @@
 import SwiftUI
 
 struct EditProfileView: View {
-    
-    let onSave: @Sendable (ProfileModel) -> Void
     let onCancel: () -> Void
     
     @State private var viewModel: EditProfileViewModel
-    @FocusState private var focusedField: EditProfileField?
 
     init(
-        profile: ProfileModel,
+		profile: ProfilePayload,
         profileService: ProfileServiceProtocol,
-        onSave: @Sendable @escaping (ProfileModel) -> Void,
         onCancel: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: EditProfileViewModel(
             profile: profile,
             profileService: profileService)
         )
-        self.onSave = onSave
         self.onCancel = onCancel
     }
     
@@ -36,8 +31,8 @@ struct EditProfileView: View {
                 ScrollView {
                     VStack(spacing: 24) {
                         EditProfileHeader(
-                            avatarURL: $viewModel.avatarURL,
                             isPhotoActionsPresented: $viewModel.isPhotoActionsPresented,
+							avatarURLString: viewModel.avatarURL,
                             didTapChangePhoto: { viewModel.changePhotoTapped() },
                             didTapDeletePhoto: { viewModel.deletePhotoTapped() }
                         )
@@ -45,71 +40,58 @@ struct EditProfileView: View {
                         EditProfileForm(
                             name: $viewModel.name,
                             about: $viewModel.about,
-                            website: $viewModel.website,
-                            focusedField: _focusedField
+                            website: $viewModel.website
                         )
                         
                         Spacer(minLength: 40)
                     }
-                    .padding(.bottom, 20)
+					.padding(.vertical, 20)
                 }
+				.scrollContentBackground(.hidden)
+				.scrollIndicators(.hidden)
+				.scrollDismissesKeyboard(.interactively)
+				.contentMargins(.bottom, viewModel.keyboardHeight)
                 
                 EditProfileFooter(
                     isVisible: viewModel.canSave,
                     onSave: {
                         Task(priority: .userInitiated) {
-                            await performSave()
+							await viewModel.performSave()
                         }
                     }
                 )
             }
             .edgesIgnoringSafeArea(.bottom)
             .contentShape(Rectangle())
-            .onTapGesture { focusedField = nil }
-            .dismissGuard(
-                hasUnsavedChanges: viewModel.hasUnsavedChanges,
-                showAlert: $viewModel.showExitAlert,
-                onConfirmDismiss: { onCancel() }
-            )
         }
         .applyPhotoURLAlert(
             isPresented: $viewModel.isPhotoURLAlertPresented,
             photoURL: $viewModel.photoURLInput,
-            onSave: { url in
-                viewModel.photoURLSaved(url)
-            },
-            onCancel: {
-                viewModel.photoURLCancelled()
-            }
+            onSave: viewModel.savePhotoURLString
         )
         .applyRepeatableAlert(
             isPresented: $viewModel.isSaveErrorPresented,
-            message: viewModel.saveErrorMessage,
+//            message: viewModel.saveErrorMessage, // TODO: Localize
+			message: .cancel,
             didTapRepeat: {
                 Task(priority: .userInitiated) {
-                    await performSave()
+					await viewModel.performSave()
                 }
             }
         )
         .overlay {
             LoadingView(loadingState: viewModel.loadingState)
         }
-    }
-    
-    @MainActor
-    private func performSave() async {
-        do {
-            try await viewModel.saveTapped()
-            onSave(ProfileModel(
-                name: viewModel.name,
-                about: viewModel.about,
-                website: viewModel.website,
-                avatarURL: viewModel.avatarURL
-            ))
-        } catch {
-            guard !(error is CancellationError) else { return }
-            print("Save profile failed:", error)
-            viewModel.isSaveErrorPresented = true
-        }
+		.onReceive(
+			NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification),
+			perform: viewModel.keyboardWillChangeFrame
+		)
+		.toolbar {
+			ToolbarItem(placement: .title) {
+				Text("Редактирование профиля") // TODO: Localize
+					.font(.bold17)
+					.foregroundStyle(.ypBlack)
+			}
+		}
     }
 }

@@ -9,75 +9,97 @@ import Foundation
 
 
 protocol ProfileStorageProtocol: Sendable, AnyObject {
-    func get() async -> ProfilePayload
-
-    func update(with model: ProfilePayload) async
-    func updateFully(with model: ProfileResponse) async
+	func get() async -> ProfileContainerModel
+	
+	func update(with model: ProfileContainerModel) async
+	func updateFully(with model: ProfileContainerModel) async
 }
 
-fileprivate let profileStorageNameKey: String = "ProfileStorage.name"
-fileprivate let profileStorageAvatarURLStringKey: String = "ProfileStorage.avatarURLString"
-fileprivate let profileStorageDescriptionKey: String = "ProfileStorage.description"
-fileprivate let profileStorageWebsiteURLStringKey: String = "ProfileStorage.websiteURLString"
-
 actor ProfileStorage: ProfileStorageProtocol {
-    private var name: String {
-        didSet {
-            storage.set(name, forKey: profileStorageNameKey)
-        }
-    }
-    private var avatarURLString: String {
-        didSet {
-            storage.set(avatarURLString, forKey: profileStorageAvatarURLStringKey)
-        }
-    }
-    private var description: String {
-        didSet {
-            storage.set(description, forKey: profileStorageDescriptionKey)
-        }
-    }
-    private var websiteURLString: String {
-        didSet {
-            storage.set(websiteURLString, forKey: profileStorageWebsiteURLStringKey)
-        }
-    }
-    
-    private let storage = UserDefaults.standard // hardcode
-    
-    init() {
-        name = storage.string(forKey: profileStorageNameKey) ?? ""
-        avatarURLString = storage.string(forKey: profileStorageAvatarURLStringKey) ?? ""
-        description = storage.string(forKey: profileStorageDescriptionKey) ?? ""
-        websiteURLString = storage.string(forKey: profileStorageWebsiteURLStringKey) ?? ""
-    }
+	private var profile = ProfileContainerModel()
+	
+	private let storage = StorageActor.shared
+	private let decoder = JSONDecoder()
+	private let encoder = JSONEncoder()
+	private var saveTask: Task<Void, Never>?
+	
+	init() {
+		Task(priority: .userInitiated) {
+			await self.restoreFromStorage()
+		}
+	}
+	
+	private func restoreFromStorage() async {
+		if
+			let profileData: Data = await storage.value(forKey: Constants.profileStorageKey),
+			let decoded = try? decoder.decode(ProfileContainerModel.self, from: profileData)
+		{
+			profile = decoded
+			print("\nProfileStorage restored from storage")
+		} else {
+			print("\nProfileStorage has not been restored from storage")
+		}
+	}
+	
+	private func notifyForUpdates(newValue: ProfileContainerModel) {
+		Task { @MainActor in
+			NotificationCenter.default.post(
+				name: .profileDidUpdate,
+				object: nil,
+				userInfo: [Constants.profileStorageKey : newValue]
+			)
+		}
+	}
+	
+	private func scheduleSave(newValue: ProfileContainerModel) {
+		saveTask?.cancel()
+		saveTask = Task {
+			do {
+				try await Task.sleep(for: .seconds(0.5))
+				guard !Task.isCancelled else { return }
+				
+				let encoded = try encoder.encode(newValue)
+				await storage.set(encoded, forKey: Constants.profileStorageKey)
+				print("\nSaved: profile")
+			} catch is CancellationError {
+				return
+			} catch {
+				print("\nFailed to save: profile (\(error.localizedDescription))")
+			}
+		}
+	}
 }
 
 // MARK: - ProfileStorage Extensions
 // --- getters ---
 extension ProfileStorage {
-    func get() async -> ProfilePayload {
-        .init(
-            name: name,
-            description: description,
-            avatar: avatarURLString,
-            website: websiteURLString
-        )
-    }
+	func get() async -> ProfileContainerModel {
+		profile
+	}
 }
 
 // --- updates ---
 extension ProfileStorage {
-    func update(with model: ProfilePayload) async {
-        name = model.name ?? name
-        avatarURLString = model.avatar ?? avatarURLString
-        websiteURLString = model.website ?? websiteURLString
-        description = model.description ?? description
-    }
-    
-    func updateFully(with model: ProfileResponse) async {
-        name = model.name
-        avatarURLString = model.avatar
-        websiteURLString = model.website
-        description = model.description
-    }
+	func update(with model: ProfileContainerModel) async {
+		let candidate = ProfileContainerModel(
+			name: model.name ?? profile.name,
+			avatarURLString: model.avatarURLString ?? profile.avatarURLString,
+			websiteURLString: model.websiteURLString ?? profile.websiteURLString,
+			description: model.description ?? profile.description,
+			nftsIDs: model.nftsIDs ?? profile.nftsIDs,
+			favoritesIDs: model.favoritesIDs ?? profile.favoritesIDs
+		)
+		
+		guard candidate != profile else { return }
+		
+		profile = candidate
+		notifyForUpdates(newValue: candidate)
+		scheduleSave(newValue: candidate)
+	}
+	
+	func updateFully(with model: ProfileContainerModel) async {
+		profile = model
+		notifyForUpdates(newValue: model)
+		scheduleSave(newValue: model)
+	}
 }

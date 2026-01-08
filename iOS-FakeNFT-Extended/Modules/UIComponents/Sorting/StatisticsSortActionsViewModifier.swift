@@ -8,42 +8,50 @@
 import SwiftUI
 
 struct StatisticsSortActionsViewModifier: ViewModifier {
-	private enum SortOption {
+	enum SortOption: String {
 		case rate, name
-		var description: String {
+		var description: LocalizedStringResource {
 			switch self {
 			case .rate:
-				"По рейтингу"
+				.byRating
 			case .name:
-				"По названию"
+				.byName
+			}
+		}
+		
+		var parameter: String {
+			switch self {
+			case .rate:
+				"rating,desc"
+			case .name:
+				"name,asc"
 			}
 		}
 	}
 	
-	@State private var activeSortOption: SortOption = .name
+	@Binding var activeSortOption: SortOption
+	@Binding var searchText: String
 	
 	let placement: BaseConfirmationDialogTriggerPlacement
-	let didTapRate: () -> Void
-	let didTapName: () -> Void
 	
 	func body(content: Content) -> some View {
 		content
 			.modifier(
 				BaseConfirmationDialogViewModifier(
+					needsSearchBar: true,
+					searchText: $searchText,
 					placement: placement,
-					title: "Сортировка",
+					title: .sorting,
 					activeSortOption: activeSortOption.description,
 					actions: {
 						Group {
-							Button("По рейтингу") {
-								didTapRate()
-								activeSortOption = .rate
-							}
-							Button("По названию") {
-								didTapName()
+							Button(.byName) {
 								activeSortOption = .name
 							}
-							Button("Закрыть", role: .cancel) {}
+							Button(.byRating) {
+								activeSortOption = .rate
+							}
+							Button(.close, role: .cancel) {}
 						}
 					}
 				)

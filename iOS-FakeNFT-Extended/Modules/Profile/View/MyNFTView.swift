@@ -7,144 +7,107 @@
 
 import SwiftUI
 
+fileprivate let myNFTSortOptionKey: String = "myNFTSortOptionKey"
+
 struct MyNFTView: View {
     @State private var viewModel: MyNFTViewModel
+	@StateObject private var debouncer = DebouncingViewModel()
     
-    private let sortPlacement: BaseConfirmationDialogTriggerPlacement = .toolbar
-    private static let myNFTSortOptionKey: String = "myNFTSortOptionKey"
+	@AppStorage(myNFTSortOptionKey) private var sortOption: ProfileSortActionsViewModifier.SortOption = .name
     
-    @AppStorage(myNFTSortOptionKey) private var sortOption: ProfileSortActionsViewModifier.SortOption = .name
-    
-    init(appContainer: AppContainer) {
-        _viewModel = State(initialValue: MyNFTViewModel(appContainer: appContainer))
+	init(
+		favoritesService: NFTsIDsServiceProtocol,
+		loadNFT: @escaping @Sendable (String) async throws -> NFTResponse,
+		loadPurchasedNFTs: @escaping @Sendable () async -> Set<String>
+	) {
+		_viewModel = State(
+			initialValue: .init(
+				favouritesService: favoritesService,
+				loadNFT: loadNFT,
+				loadPurchasedNFTs: loadPurchasedNFTs
+			)
+		)
     }
     
-    var body: some View {
-        ZStack {
-            Color.ypWhite.ignoresSafeArea()
-            
-            if viewModel.visibleItems.isEmpty {
-                if viewModel.isLoading {
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(0..<6, id: \.self) { _ in
-                                MyNFTShimmerRow()
-                            }
-                        }
-                    }
-                } else {
-                    VStack {
-                        Spacer()
-                        Text("У Вас ещё нет NFT")
-                            .font(.bold17)
-                            .multilineTextAlignment(.center)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(viewModel.visibleItems, id: \.id) { nft in
-                            myRow(for: nft)
-                        }
-                    }
-                }
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(viewModel.visibleItems.isEmpty ? "" : "Мои NFT")
-        .toolbar {
-            if !viewModel.visibleItems.isEmpty {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Color.clear
-                        .modifier(
-                            ProfileSortActionsViewModifier(
-                                activeSortOption: $sortOption,
-                                placement: sortPlacement,
-                                didTapCost: { sortOption = .cost },
-                                didTapRate: { sortOption = .rate },
-                                didTapName: { sortOption = .name }
-                            )
-                        )
-                }
-            }
-        }
-        .onAppear() {
-            viewModel.setSortOption(sortOption)
-        }
-        .onChange(of: sortOption) {
-            viewModel.setSortOption(sortOption)
-        }
-        .task(priority: .userInitiated) {
-            await viewModel.loadPurchasedNFTs()
-        }
-    }
-    
-    @ViewBuilder
-    private func myRow(for nft: NFTResponse) -> some View {
-        VStack(spacing: 0) {
-            NFTMyCellView(
-                model: nft,
-                isFavourited: false,
-                likeAction: {}
-            )
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: 140)
-        }
-        .background(Color.ypWhite)
-    }
-    
-    private struct MyNFTShimmerRow: View {
-        var body: some View {
-            VStack(spacing: 0) {
-                HStack(alignment: .top, spacing: 16) {
-
-                    // Image placeholder (approx)
-                    LoadingShimmerPlaceholderView()
-                        .frame(width: 108, height: 108)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                    VStack(alignment: .leading, spacing: 10) {
-
-                        // Title line
-                        LoadingShimmerPlaceholderView()
-                            .frame(width: 170, height: 16)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-
-                        // Subtitle line (author)
-                        LoadingShimmerPlaceholderView()
-                            .frame(width: 120, height: 12)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-
-                        Spacer(minLength: 0)
-
-                        HStack {
-                            // Stars / rating placeholder
-                            LoadingShimmerPlaceholderView()
-                                .frame(width: 90, height: 12)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-
-                            Spacer()
-
-                            // Price placeholder
-                            LoadingShimmerPlaceholderView()
-                                .frame(width: 70, height: 14)
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                        }
-                    }
-
-                    Spacer(minLength: 0)
-                }
-                .padding(16)
-                .frame(height: 140)
-
-                // Divider like your cell bottom border
-                Rectangle()
-                    .fill(Color.ypBlackUniversal.opacity(0.08))
-                    .frame(height: 1)
-            }
-            .background(Color.ypWhite)
-        }
+	var body: some View {
+		ZStack {
+			Color.ypWhite.ignoresSafeArea()
+			
+			let contentIsEmpty = viewModel.filteredKeys.isEmpty
+			ScrollView {
+				LazyVStack(spacing: 0) {
+					ForEach(viewModel.filteredKeys, id: \.self) { key in
+						let item = viewModel.items[key] ?? nil
+						let model = viewModel.isLoaded ? item : nil
+						let isFavourite = viewModel.isLoaded ? item?.isFavorite : nil
+						
+						NFTMyCellView(
+							model: model?.nft,
+							isFavourited: isFavourite,
+							likeAction: { viewModel.didTapLikeButton(item) }
+						)
+						.id("\(key)-\(isFavourite ?? false)")
+						.frame(height: 140)
+					}
+				}
+				.id(viewModel._kickUIUpdate)
+				.animation(
+					Constants.defaultAnimation,
+					value: viewModel.filteredKeys
+				)
+			}
+			.scrollContentBackground(.hidden)
+			.scrollIndicators(.hidden)
+			.scrollDismissesKeyboard(.interactively)
+			.overlay {
+				if contentIsEmpty {
+					EmptyContentView(type: .nfts)
+				}
+			}
+		}
+		.onAppear() {
+			viewModel.setSortOption(sortOption)
+			debouncer.onDebounce = viewModel.onDebounce
+		}
+		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
+		.onChange(of: viewModel.sortOption) { _, newValue in sortOption = newValue }
+		.applyRepeatableAlert(
+			isPresented: $viewModel.loadErrorPresented,
+			message: .cantGetNFTs,
+			didTapRepeat: viewModel.loadNilNFTsIfNeeded
+		)
+		.applyProfileSort(
+			activeSortOption: .init(
+				get: { viewModel.sortOption },
+				set: { viewModel.setSortOption($0) }
+			),
+			placement: .toolbar
+		)
+		.task(priority: .userInitiated) { await viewModel.loadPurchasedNFTs() }
+		.searchable(
+			text: $debouncer.text,
+			placement: .navigationBarDrawer(displayMode: .always),
+			prompt: .search
+		)
+		.toolbar {
+			ToolbarItem(placement: .title) {
+				Text("Мои NFT")
+					.font(.bold17)
+			}
+		}
+		.onReceive(
+			NotificationCenter.default.publisher(for: .purchasedDidUpdate),
+			perform: viewModel.purchasedDidUpdate
+		)
     }
 }
+
+#if DEBUG
+#Preview {
+	MyNFTView(
+		favoritesService: NFTsIDsService(api: .mock, kind: .favorites),
+		loadNFT: { _ in .mock },
+		loadPurchasedNFTs: { [] }
+	)
+}
+#endif

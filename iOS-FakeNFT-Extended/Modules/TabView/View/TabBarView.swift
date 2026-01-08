@@ -5,9 +5,9 @@ struct TabBarView: View {
 	let push: (Page) -> Void
 	let present: (Sheet) -> Void
 	let dismiss: () -> Void
-	let pop: () -> Void
 	
 	@State private var tab: Tab = .catalog
+	@State private var isVisible = false
 	
     var body: some View {
 		TabView(selection: $tab) {
@@ -23,12 +23,17 @@ struct TabBarView: View {
 				)
 				.tag(tab)
 				.tabItem {
-					Group {
-						tab.imageView()
-						Text(tab.title)
-					}
+					Text(tab.title)
+					tab.imageView
 				}
 			}
         }
+		.opacity(isVisible ? 1 : 0.6)
+		.blur(radius: isVisible ? 0 : 10)
+		.onAppear {
+			withAnimation(.easeInOut(duration: 0.3)) {
+				isVisible = true
+			}
+		}
     }
 }

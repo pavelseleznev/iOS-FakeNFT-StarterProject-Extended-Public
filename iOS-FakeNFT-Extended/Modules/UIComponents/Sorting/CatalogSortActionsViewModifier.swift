@@ -10,35 +10,38 @@ import SwiftUI
 struct CatalogSortActionsViewModifier: ViewModifier {
     enum SortOption: String {
         case name, nftCount
-        var description: String {
+        var description: LocalizedStringResource {
             switch self {
             case .name:
-                "По названию"
+                .byTitle
             case .nftCount:
-                "По кол-ву NFT"
+                .byNFTQuantity
             }
         }
     }
     
     let placement: BaseConfirmationDialogTriggerPlacement
+	@Binding var searchText: String
     @Binding var activeSortOption: SortOption
     
     func body(content: Content) -> some View {
         content
             .modifier(
                 BaseConfirmationDialogViewModifier(
+					needsSearchBar: true,
+					searchText: $searchText,
                     placement: placement,
-                    title: "Сортировка",
+                    title: .sorting,
                     activeSortOption: activeSortOption.description,
                     actions: {
                         Group {
-                            Button("По названию") {
+                            Button(.byTitle) {
                                 activeSortOption = .name
                             }
-                            Button("По количеству NFT") {
+                            Button(.byNFTQuantity) {
                                 activeSortOption = .nftCount
                             }
-                            Button("Закрыть", role: .cancel) {}
+                            Button(.close, role: .cancel) {}
                         }
                     }
                 )

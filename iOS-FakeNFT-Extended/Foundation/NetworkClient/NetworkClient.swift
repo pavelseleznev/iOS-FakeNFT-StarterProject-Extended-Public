@@ -66,7 +66,7 @@ private extension DefaultNetworkClient {
 			urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
 			urlRequest.httpBody = bodyString.data(using: .utf8)
 		}
-		
+
 		urlRequest.addValue(RequestConstants.token, forHTTPHeaderField: "X-Practicum-Mobile-Token")
 		return urlRequest
 	}
@@ -104,6 +104,8 @@ extension Encodable {
 				params[key] = value.description
 			} else if let value = child.value as? OptionalProtocol, !value.isNil {
 				params[key] = value.stringValue
+			} else {
+				params[key] = "null"
 			}
 		}
 		return params

@@ -12,13 +12,14 @@ import Observation
 final class CatalogViewModel {
     typealias SortOption = CatalogSortActionsViewModifier.SortOption
     
-    // MARK: - Public Properties
-    
     var visibleCollections: [NFTCollectionItemResponse] {
-        collections.sorted(by: collectionsSortComparator)
+		collections
+			.sorted(by: collectionsSortComparator)
+			.filter {
+				$0.name.lowercased().contains(searchText.lowercased()) || searchText.isEmpty
+			}
     }
-    
-    // MARK: - Private Properties
+	var errorIsPresented = false
     
     private var collections: [NFTCollectionItemResponse] = []
     
@@ -26,8 +27,7 @@ final class CatalogViewModel {
     private let push: (Page) -> Void
     
     private var currentSortOption: SortOption = .name
-    
-    // MARK: - Initializers
+	private var searchText = ""
     
     init(
         api: ObservedNetworkClient,
@@ -36,37 +36,46 @@ final class CatalogViewModel {
         self.api = api
         self.push = push
     }
-    
-    // MARK: - Public Methods
-    
-    func didSelectItem(_ item: NFTCollectionItemResponse) {
-        push(.catalog(.catalogDetails(catalog: item)))
-    }
-    
-    @Sendable
-    func loadCollections() async {
-        do {
-            collections = try await api.getCollections()
-        } catch {
-            print(error)
-        }
-    }
-    
-    func setSortOption(_ option: SortOption) {
-        currentSortOption = option
-    }
-    
-    // MARK: - Private Methods
-    
-    private func collectionsSortComparator(
-        _ first: NFTCollectionItemResponse,
-        _ second: NFTCollectionItemResponse
-    ) -> Bool {
-        switch currentSortOption {
-        case .name:
-            first.name.localizedStandardCompare(second.name) == .orderedAscending
-        case .nftCount:
-            Set(first.nftsIDs).count > Set(second.nftsIDs).count
-        }
-    }
+}
+
+// MARK: - CatalogViewModel Extensions
+// --- helpers ---
+extension CatalogViewModel {
+	func setSortOption(_ option: SortOption) {
+		currentSortOption = option
+	}
+	
+	func onDebounce(_ text: String) {
+		searchText = text
+	}
+	
+	func didSelectItem(_ item: NFTCollectionItemResponse) {
+		push(.catalog(.catalogDetails(catalog: item)))
+	}
+	
+	func loadCollections() async {
+		do {
+			collections = try await api.getCollections()
+		} catch is CancellationError {
+			return
+		} catch {
+			errorIsPresented = true
+			print("\nFailed to load collections: \(error.localizedDescription)")
+		}
+	}
+}
+
+// ---- helpers ---
+private extension CatalogViewModel {
+	func collectionsSortComparator(
+		_ first: NFTCollectionItemResponse,
+		_ second: NFTCollectionItemResponse
+	) -> Bool {
+		switch currentSortOption {
+		case .name:
+			first.name.localizedStandardCompare(second.name) == .orderedAscending
+		case .nftCount:
+			Set(first.nftsIDs).count > Set(second.nftsIDs).count
+		}
+	}
 }

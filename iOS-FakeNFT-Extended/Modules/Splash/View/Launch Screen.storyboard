@@ -18,7 +18,7 @@
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="Vector" translatesAutoresizingMaskIntoConstraints="NO" id="vSl-Cs-VQ9">
                                 <rect key="frame" x="159" y="387" width="75" height="78"/>
-                                <color key="tintColor" name="YPWhite"/>
+                                <color key="tintColor" name="YPBlack"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
@@ -36,6 +36,9 @@
     </scenes>
     <resources>
         <image name="Vector" width="75" height="78"/>
+        <namedColor name="YPBlack">
+            <color red="0.10300000011920929" green="0.10599999874830246" blue="0.13099999725818634" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
         <namedColor name="YPWhite">
             <color red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
