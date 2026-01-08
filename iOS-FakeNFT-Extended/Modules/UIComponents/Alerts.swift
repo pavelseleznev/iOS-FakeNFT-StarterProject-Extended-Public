@@ -9,29 +9,49 @@ import SwiftUI
 
 extension View {
 	func applyRepeatableAlert(
-		isPresneted: Binding<Bool>,
+		isPresented: Binding<Bool>,
 		message: LocalizedStringResource,
 		didTapRepeat: @escaping () -> Void
 	) -> some View {
 		self
-			.alert(message, isPresented: isPresneted) {
+			.alert(message, isPresented: isPresented) {
 				Button(.cancel, role: .cancel) {}
 				Button(.retry, action: didTapRepeat)
 			}
 	}
 	
 	func applyExitAlert(
-		isPresneted: Binding<Bool>,
+		isPresented: Binding<Bool>,
 		message: LocalizedStringResource,
 		didTapExit: @escaping () -> Void
 	) -> some View {
 		self
-			.alert(message, isPresented: isPresneted) {
+			.alert(message, isPresented: isPresented) {
 				Button(.cancel, role: .cancel) {}
 				Button(.exit, action: didTapExit)
 			}
 	}
+    
+    func applyPhotoURLAlert(
+        isPresented: Binding<Bool>,
+        photoURL: Binding<String>,
+        title: String = "Ccылка на фото",
+        placeholder: String = "https://",
+        onSave: @escaping (String) -> Void = { _ in },
+        onCancel: @escaping () -> Void = {}
+    ) -> some View {
+        modifier(AlertPhotoURLModifier(
+            isPresented: isPresented,
+            photoURL: photoURL,
+            title: title,
+            placeholder: placeholder,
+            onSave: onSave,
+            onCancel: onCancel
+        ))
+    }
 }
+
+
 
 #if DEBUG
 #Preview("Statistic") {
@@ -43,24 +63,41 @@ extension View {
 		}
 	}
 	.applyRepeatableAlert(
-		isPresneted: $isPresented,
+		isPresented: $isPresented,
 		message: .cantGetData,
 		didTapRepeat: {}
 	)
 }
 
 #Preview("Profile") {
-	@Previewable @State var isPresented: Bool = false
+	@Previewable @State var exitAlertPresented: Bool = false
+    @Previewable @State var photoAlertPresented: Bool = false
+    @Previewable @State var photoURLInput: String = ""
+    
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
-		Button("Perform profile exit") {
-			isPresented.toggle()
-		}
+        
+        VStack(spacing: 16) {
+            Button("Perform profile exit") {
+                exitAlertPresented.toggle()
+            }
+            
+            Button("Perform profile photo change") {
+                photoAlertPresented.toggle()
+            }
+        }
 	}
 	.applyExitAlert(
-		isPresneted: $isPresented,
+		isPresented: $exitAlertPresented,
 		message: .sureToExit,
 		didTapExit: {}
 	)
+    
+    .applyPhotoURLAlert(
+        isPresented: $photoAlertPresented,
+        photoURL: $photoURLInput,
+        onSave: { _ in },
+        onCancel: {}
+    )
 }
 #endif

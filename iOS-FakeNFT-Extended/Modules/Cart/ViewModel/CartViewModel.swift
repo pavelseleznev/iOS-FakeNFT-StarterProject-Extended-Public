@@ -69,7 +69,6 @@ extension CartViewModel {
 		
 		let newCapacity = nfts.count + idsToAdd.count - idsToRemove.count
 		
-		guard newCapacity != nfts.count else { return }
 		HapticPerfromer.shared.play(.selection)
 		nfts.reserveCapacity(newCapacity)
 		
@@ -83,7 +82,7 @@ extension CartViewModel {
 	}
 	
 	func update(with notification: Notification) {
-		guard let ids = notification.userInfo?["ids"] as? [String] else { return }
+		guard let ids = notification.userInfo?[NFTsIDsKind.order.userDefaultsKey] as? [String] else { return }
 		
 		Task(priority: .userInitiated) {
 			await performCartUpdateIfNeeded(with: ids)

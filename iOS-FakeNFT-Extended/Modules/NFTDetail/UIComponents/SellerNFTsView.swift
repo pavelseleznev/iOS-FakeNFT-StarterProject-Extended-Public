@@ -63,7 +63,7 @@ struct SellerNFTsView: View, @MainActor Equatable {
 		}
 		.scrollIndicators(.hidden)
 		.applyRepeatableAlert(
-			isPresneted: $viewModel.showNFTsLoadingError,
+			isPresented: $viewModel.showNFTsLoadingError,
 			message: .cantGetNFTs,
 			didTapRepeat: viewModel.startPolling
 		)

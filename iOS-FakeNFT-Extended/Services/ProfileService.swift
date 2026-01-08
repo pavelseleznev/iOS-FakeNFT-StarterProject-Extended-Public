@@ -7,8 +7,8 @@
 
 protocol ProfileServiceProtocol: Sendable {
 	func performUpdatesIfNeeded() async throws -> ProfileResponse
-	func get() async -> ProfilePayload
-	func update(with model: ProfilePayload) async throws
+	func get() async -> ProfileContainerModel
+	func update(with model: ProfileContainerModel) async throws
 	func loadProfile() async throws -> ProfileResponse
 }
 
@@ -25,27 +25,28 @@ actor ProfileService: ProfileServiceProtocol {
 // MARK: - ProfileService Extensions
 // --- methods ---
 extension ProfileService {
-	func update(with model: ProfilePayload) async throws {
+	func update(with model: ProfileContainerModel) async throws {
 		await storage.update(with: model)
-		try await api.updateProfile(payload: model)
+		do {
+			try await api.updateProfile(payload: .init(from: model))
+		} catch {
+			// restoring data after server abort
+			if let actual = try? await loadProfile() {
+				await storage.updateFully(with: .init(from: actual))
+			}
+			
+			throw error
+		}
 	}
 	
-	func get() async -> ProfilePayload {
+	func get() async -> ProfileContainerModel {
 		await storage.get()
 	}
 	
 	func performUpdatesIfNeeded() async throws -> ProfileResponse {
 		let loadedProfile = try await loadProfile()
-		let currentProfile = await get()
-		
-		guard
-			loadedProfile.name != currentProfile.name ||
-			loadedProfile.avatar != currentProfile.avatar ||
-			loadedProfile.website != currentProfile.website ||
-			loadedProfile.description != currentProfile.description
-		else { return loadedProfile }
-		
-		await storage.updateFully(with: loadedProfile)
+
+		await storage.update(with: .init(from: loadedProfile))
 		return loadedProfile
 	}
 	

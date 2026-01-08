@@ -50,14 +50,14 @@ enum Tab: String, CaseIterable, Identifiable {
 		switch self {
 		case .profile:
 			ProfileView(
-				appContainer: appContainer,
+				service: appContainer.profileService,
 				push: push
 			)
 			
 		case .catalog:
 			CatalogView(
-				appContainer: appContainer,
-				push: push
+                api: appContainer.api,
+                push: push
 			)
 			
 		case .cart:

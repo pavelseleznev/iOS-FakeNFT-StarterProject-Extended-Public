@@ -238,7 +238,13 @@ extension Coordinator {
 				push: push,
 				backAction: pop
 			)
-			
+
+		case .profile(let profilePage):
+			buildFlow(profilePage)
+
+		case .catalog(let catalogFlow):
+			buildFlow(catalogFlow)
+
 		case .statistics(let statisticsFlow):
 			buildFlow(statisticsFlow)
 			
@@ -303,7 +309,7 @@ extension Coordinator {
 }
 
 // --- cart flow builder ---
-extension Coordinator {
+private extension Coordinator {
 	@ViewBuilder
 	func buildFlow(_ page: CartPage) -> some View {
 		switch page {
@@ -318,4 +324,45 @@ extension Coordinator {
 			SuccessPaymentView(backToCart: popToRoot)
 		}
 	}
+}
+
+// --- catalog flow builder ---
+private extension Coordinator {
+    @ViewBuilder
+    func buildFlow(_ page: CatalogPage) -> some View {
+        switch page {
+        case .catalogDetails(let catalog):
+            CatalogNFTCollectionView(
+				backAction: pop,
+				performAuthorSite: { [weak self] in self?.push(.aboutAuthor(urlString: $0)) },
+                catalog: catalog,
+                nftService: appContainer.nftService
+            )
+        }
+    }
+}
+
+// --- profile flow builder ---
+private extension Coordinator {
+    @ViewBuilder
+    func buildFlow(_ page: ProfilePage) -> some View {
+        switch page {
+        case .editProfile(let profile):
+            EditProfileView(
+                profile: profile,
+                profileService: appContainer.profileService,
+                onCancel: pop
+            )
+        case .myNFTs:
+			MyNFTView(
+				favoritesService: appContainer.nftService.favouritesService,
+				loadNFT: appContainer.api.getNFT,
+				loadPurchasedNFTs: appContainer.purchasedNFTsService.get
+			)
+
+        case .favoriteNFTs:
+			FavoriteNFTView(service: appContainer.nftService)
+
+        }
+    }
 }

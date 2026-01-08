@@ -22,6 +22,8 @@ enum Page {
 	
 	case aboutAuthor(urlString: String)
 	
+	case profile(ProfilePage)
+	case catalog(CatalogPage)
 	case cart(CartPage)
 	case statistics(StatisticsPage)
 }
@@ -31,7 +33,10 @@ enum Page {
 extension Page: CustomDebugStringConvertible {
 	var hasNotBackButton: Bool {
 		switch self {
-		case .splash, .tabView, .cart(.successPayment), .onboarding, .authorization(.login):
+		case
+				.splash, .tabView, .onboarding,
+				.cart(.successPayment),
+				.authorization(.login):
 			true
 		default:
 			false
@@ -52,8 +57,16 @@ extension Page: CustomDebugStringConvertible {
 			"nftDetail"
 		case .aboutAuthor:
 			"aboutAuthor"
+		
+		case .profile(let profilePage):
+			"profile(\(profilePage.debugDescription))"
+			
+		case .catalog(let catalogPage):
+			"catalog(\(catalogPage.debugDescription))"
+			
 		case .cart(let cartPage):
 			"cart(\(cartPage))"
+			
 		case .statistics(let statisticsPage):
 			"statistics(\(statisticsPage.debugDescription))"
 		}

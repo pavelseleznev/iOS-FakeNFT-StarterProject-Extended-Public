@@ -70,7 +70,7 @@ struct CartView: View {
 		.overlay(content: removalApproveContent)
 		.toolbar(.hidden)
 		.applyRepeatableAlert(
-			isPresneted: $viewModel.dataLoadingErrorIsPresented,
+			isPresented: $viewModel.dataLoadingErrorIsPresented,
 			message: .cantGetData,
 			didTapRepeat: viewModel.reloadCart
 		)

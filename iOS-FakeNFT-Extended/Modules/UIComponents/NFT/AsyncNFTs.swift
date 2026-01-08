@@ -316,7 +316,6 @@ private extension AsyncNFTs {
 		
 		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
 		
-		guard newCapacity != oldIDs.count else { return }
 		nfts.reserveCapacity(newCapacity)
 		
 		idsToRemove.forEach { nfts.removeValue(forKey: $0) }

@@ -8,45 +8,43 @@
 import SwiftUI
 
 struct CatalogSortActionsViewModifier: ViewModifier {
-	private enum SortOption {
-		case name, nftCount
-		var description: LocalizedStringResource {
-			switch self {
-			case .name:
-				.byTitle
-			case .nftCount:
-				.byNFTQuantity
-			}
-		}
-	}
-	
-	@State private var activeSortOption: SortOption = .name
-	
-	let placement: BaseConfirmationDialogTriggerPlacement
-	let didTapName: () -> Void
-	let didTapNFTCount: () -> Void
-	
-	func body(content: Content) -> some View {
-		content
-			.modifier(
-				BaseConfirmationDialogViewModifier(
-					placement: placement,
-					title: .sorting,
-					activeSortOption: activeSortOption.description,
-					actions: {
-						Group {
-							Button(.byTitle) {
-								didTapName()
-								activeSortOption = .name
-							}
-							Button(.byNFTQuantity) {
-								didTapNFTCount()
-								activeSortOption = .nftCount
-							}
-							Button(.close, role: .cancel) {}
-						}
-					}
-				)
-			)
-	}
+    enum SortOption: String {
+        case name, nftCount
+        var description: LocalizedStringResource {
+            switch self {
+            case .name:
+                .byTitle
+            case .nftCount:
+                .byNFTQuantity
+            }
+        }
+    }
+    
+    let placement: BaseConfirmationDialogTriggerPlacement
+	@Binding var searchText: String
+    @Binding var activeSortOption: SortOption
+    
+    func body(content: Content) -> some View {
+        content
+            .modifier(
+                BaseConfirmationDialogViewModifier(
+					needsSearchBar: true,
+					searchText: $searchText,
+                    placement: placement,
+                    title: .sorting,
+                    activeSortOption: activeSortOption.description,
+                    actions: {
+                        Group {
+                            Button(.byTitle) {
+                                activeSortOption = .name
+                            }
+                            Button(.byNFTQuantity) {
+                                activeSortOption = .nftCount
+                            }
+                            Button(.close, role: .cancel) {}
+                        }
+                    }
+                )
+            )
+    }
 }

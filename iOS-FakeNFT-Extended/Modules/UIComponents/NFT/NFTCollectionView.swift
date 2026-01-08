@@ -13,6 +13,7 @@ struct NFTCollectionView: View {
 	
 	@Environment(\.isSearching) private var isSearching
 	@State private var isSearchingState = false
+	private let hidesToolbar: Bool
 	
 	init(
 		initialNFTsIDs: [String],
@@ -20,7 +21,10 @@ struct NFTCollectionView: View {
 		nftService: NFTServiceProtocol,
 		loadAuthor: @escaping (String) async throws -> UserListItemResponse = { _ in .mock },
 		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void = { _, _ in },
+		hidesToolbar: Bool = false
 	) {
+		self.hidesToolbar = hidesToolbar
+		
 		_asyncNFTs = .init(
 			wrappedValue: .init(
 				loadAuthor: loadAuthor,
@@ -75,7 +79,8 @@ struct NFTCollectionView: View {
 					text: $debouncingViewModel.text,
 					activeTokens: $asyncNFTs.activeTokens,
 					tokenAction: asyncNFTs.tokenAction,
-					isSearching: $isSearchingState
+					isSearching: $isSearchingState,
+					hidesToolbar: hidesToolbar
 				)
 				.animation(Constants.defaultAnimation, value: asyncNFTs.activeTokens)
 			}
@@ -84,7 +89,7 @@ struct NFTCollectionView: View {
 			.overlay(alignment: .center, content: emptyNFTsView)
 			.overlay(alignment: .bottomTrailing, content: filtrationButton)
 			.applyRepeatableAlert(
-				isPresneted: $asyncNFTs.errorIsPresented,
+				isPresented: $asyncNFTs.errorIsPresented,
 				message: .cantGetNFTs,
 				didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
 			)
@@ -162,7 +167,8 @@ fileprivate extension View {
 		text: Binding<String>,
 		activeTokens: Binding<[FilterToken]>,
 		tokenAction: @escaping (FilterToken) -> Void,
-		isSearching: Binding<Bool>
+		isSearching: Binding<Bool>,
+		hidesToolbar: Bool
 	) -> some View {
 		self
 			.autocorrectionDisabled()
@@ -175,6 +181,7 @@ fileprivate extension View {
 				prompt: .search,
 				token: { Text($0.title) }
 			)
+			.toolbar(hidesToolbar ? .hidden : .visible)
 			.toolbar {
 				ToolbarItem(placement: .destructiveAction) {
 					NFTCollectionToolbarView(

@@ -26,6 +26,7 @@ struct NFTCartCellView: View {
 					model: model?.nft,
 					layout: layout
 				)
+
 				NFTCostView(model: model?.nft, layout: layout)
 			}
 			

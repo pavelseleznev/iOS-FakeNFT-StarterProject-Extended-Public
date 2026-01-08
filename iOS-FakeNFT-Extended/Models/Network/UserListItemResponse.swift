@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UserListItemResponse: Decodable, Identifiable, Hashable {
+struct UserListItemResponse {
 	let name: String
 	let avatarURLString: String
 	let description: String?
@@ -16,6 +16,26 @@ struct UserListItemResponse: Decodable, Identifiable, Hashable {
 	let rating: String
 	let id: String
 	
+	init(
+		name: String = "",
+		avatarURLString: String = "",
+		description: String? = nil,
+		websiteURLString: String = "",
+		nftsIDs: [String] = [],
+		rating: String = "",
+		id: String = ""
+	) {
+		self.name = name
+		self.avatarURLString = avatarURLString
+		self.description = description
+		self.websiteURLString = websiteURLString
+		self.nftsIDs = nftsIDs
+		self.rating = rating
+		self.id = id
+	}
+}
+
+extension UserListItemResponse: Decodable, Identifiable, Hashable {
 	enum CodingKeys: String, CodingKey {
 		case name, description, rating, id
 		case avatarURLString = "avatar"
@@ -48,5 +68,45 @@ struct UserListItemResponse: Decodable, Identifiable, Hashable {
 			rating: String((1...5).randomElement() ?? 1),
 			id: UUID().uuidString
 		)
+	}
+}
+
+extension UserListItemResponse {
+	init?(from payload: ProfilePayload) {
+		guard
+			let _name = payload.name,
+			let _avatar = payload.avatar,
+			let _description = payload.description,
+			let _website = payload.website
+		else {
+			return nil
+		}
+		
+		name = _name
+		avatarURLString = _avatar
+		description = _description
+		websiteURLString = _website
+		nftsIDs = []
+		rating = ""
+		id = UUID().uuidString
+	}
+	
+	init?(from model: ProfileContainerModel) {
+		guard
+			let _name = model.name,
+			let _avatar = model.avatarURLString,
+			let _description = model.description,
+			let _website = model.websiteURLString
+		else {
+			return nil
+		}
+		
+		name = _name
+		avatarURLString = _avatar
+		description = _description
+		websiteURLString = _website
+		nftsIDs = []
+		rating = ""
+		id = UUID().uuidString
 	}
 }

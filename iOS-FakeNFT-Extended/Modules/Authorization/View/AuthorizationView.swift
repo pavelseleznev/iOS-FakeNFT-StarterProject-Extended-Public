@@ -51,7 +51,7 @@ struct AuthorizationView: View {
 		}
 		.overlay(content: blinkingAppIcon)
 		.applyRepeatableAlert(
-			isPresneted: $viewModel.errorIsPresented,
+			isPresented: $viewModel.errorIsPresented,
 			message: viewModel.page.error,
 			didTapRepeat: viewModel.performMainButtonAction
 		)

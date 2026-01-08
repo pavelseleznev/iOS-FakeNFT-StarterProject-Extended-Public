@@ -47,7 +47,7 @@ struct BaseConfirmationDialogViewModifier<Actions: View>: ViewModifier {
 			.confirmationDialog(
 				title,
 				isPresented: $isPresented,
-				titleVisibility: .visible,
+                titleVisibility: .visible,
 				actions: actions
 			)
 			.toolbar {

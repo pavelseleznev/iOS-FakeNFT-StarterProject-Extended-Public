@@ -16,7 +16,7 @@ struct TabBarView: View {
 				id: \.offset
 			) { index, tab in
 				tab.view(
-					appContainer: appContainer,
+                    appContainer: appContainer,
 					push: push,
 					present: present,
 					dismiss: dismiss

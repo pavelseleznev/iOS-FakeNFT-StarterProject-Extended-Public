@@ -28,7 +28,7 @@ enum NFTsIDsKind {
 		case .order:
 			.cartDidUpdate
 		case .favorites:
-			.favoritesDidUpdate
+			.favouritesDidUpdate
 		case .purchased:
 			.purchasedDidUpdate
 		}
@@ -38,6 +38,7 @@ enum NFTsIDsKind {
 protocol NFTsIDsServiceProtocol: Sendable {
 	func performUpdatesIfNeeded(with loadedIDs: [String]) async
 	
+	@Sendable
 	func get() async -> Set<String>
 	
 	func loadAndSave() async throws
@@ -77,6 +78,7 @@ extension NFTsIDsService {
 		await replace(withLoaded: loadedIDs)
 	}
 	
+	@Sendable
 	func get() async -> Set<String> {
 		await storage.get()
 	}

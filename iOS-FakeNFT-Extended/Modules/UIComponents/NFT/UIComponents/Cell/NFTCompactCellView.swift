@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct NFTCompactCellView: View {
-	
-	let model: NFTResponse
-	let isFavourited: Bool
+	let model: NFTResponse?
+	let isFavourited: Bool?
 	let likeAction: () -> Void
 	
 	private let layout: NFTCellLayout = .compact
@@ -24,13 +23,14 @@ struct NFTCompactCellView: View {
 				likeAction: likeAction,
 			)
 			
-			VStack(spacing: 8) {
+			VStack(alignment: .leading, spacing: 8) {
 				NFTNameRateAuthorView(
 					model: model,
 					layout: layout
 				)
 				NFTCostView(model: model, layout: layout)
 			}
+			Spacer()
 		}
 	}
 }
@@ -47,7 +47,7 @@ struct NFTCompactCellView: View {
 	
 	@Previewable let columns = [
 		GridItem(.flexible(), spacing: 8),
-		GridItem(.flexible(), spacing: 8)
+		GridItem(.flexible())
 	]
 	
 	ZStack {
@@ -67,7 +67,7 @@ struct NFTCompactCellView: View {
 					)
 				}
 			}
-			.padding(.horizontal)
+			.safeAreaPadding(.leading)
 			.safeAreaPadding(.top)
 		}
 	}

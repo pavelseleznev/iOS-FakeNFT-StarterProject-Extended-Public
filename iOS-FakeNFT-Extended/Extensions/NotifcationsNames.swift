@@ -13,12 +13,8 @@ extension Notification.Name {
 	static let nftDidChange = Notification.Name("nftDidChange")
 	
 	static let cartDidUpdate = Notification.Name("cartDidUpdate")
-	static let favoritesDidUpdate = Notification.Name("favoritesDidUpdate")
+	static let favouritesDidUpdate = Notification.Name("favoritesDidUpdate")
 	static let purchasedDidUpdate = Notification.Name("purchasedDidUpdate")
 	static let currenciesDidUpdate = Notification.Name("currenciesDidUpdate")
-
-	static let profileNameDidChange = Notification.Name("profileNameDidChange")
-	static let profileAvatarDidChange = Notification.Name("profileAvatarDidChange")
-	static let profileWebsiteDidChange = Notification.Name("profileWebsiteDidChange")
-	static let profileDescriptionDidChange = Notification.Name("profileDescriptionDidChange")
+	static let profileDidUpdate = Notification.Name("profileDidUpdate")
 }

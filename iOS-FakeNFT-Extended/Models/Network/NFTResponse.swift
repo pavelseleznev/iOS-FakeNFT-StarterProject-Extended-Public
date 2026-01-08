@@ -27,9 +27,9 @@ struct NFTResponse: Decodable, Identifiable {
 				"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/2.png",
 				"https://code.s3.yandex.net/Mobile/iOS/NFT/Gray/Butter/3.png"
 			],
-			rating: 2,
+			rating: Int.random(in: 1...5),
 			description: "Bla Bla Bla",
-			price: 14.78,
+			price: Float.random(in: 1.11...15.99),
 			authorName: "Daenerys Targaryen",
 			website: "https://google.com",
 			id: UUID().uuidString
@@ -41,9 +41,9 @@ struct NFTResponse: Decodable, Identifiable {
 			createdAt: Date.now.formatted(.iso8601),
 			name: "Name",
 			imagesURLsStrings: [],
-			rating: 4,
+			rating: Int.random(in: 1...5),
 			description: "Bla Bla Bla",
-			price: 99.99,
+			price: Float.random(in: 1.11...15.99),
 			authorName: "John Snow",
 			website: "https://google.com",
 			id: UUID().uuidString

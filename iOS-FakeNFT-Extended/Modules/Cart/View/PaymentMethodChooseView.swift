@@ -63,7 +63,7 @@ struct PaymentMethodChooseView: View {
 			}
 		}
 		.applyRepeatableAlert(
-			isPresneted: $viewModel.alertIsPresented,
+			isPresented: $viewModel.alertIsPresented,
 			message: .failedToPay,
 			didTapRepeat: viewModel.didTapBuyButton
 		)

@@ -17,12 +17,26 @@ struct NFTCostView: View {
 				Text(.cost)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
+					.applySkeleton(model)
 			}
 			
 			Text(String(format: "%.2f", model?.price ?? 99.99) + " ETH")
 				.foregroundStyle(.ypBlack)
-				.font(.bold17)
+				.font(.regular13)
+				.bold()
 				.applySkeleton(model)
 		}
 	}
+    
+    private var showsLabel: Bool {
+        layout == .my
+    }
+    
+    private var costFont: Font {
+        switch layout {
+        case .my: .bold17
+        case .compact: .regular15
+        case .cart: .bold17
+        }
+    }
 }

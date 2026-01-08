@@ -9,18 +9,14 @@ import SwiftUI
 
 extension View {
 	func applyProfileSort(
-		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapCost: @escaping () -> Void,
-		didTapRate: @escaping () -> Void,
-		didTapName: @escaping () -> Void
+        activeSortOption: Binding<ProfileSortActionsViewModifier.SortOption>,
+		placement: BaseConfirmationDialogTriggerPlacement
 	) -> some View {
 		self
 			.modifier(
 				ProfileSortActionsViewModifier(
-					placement: placement,
-					didTapCost: didTapCost,
-					didTapRate: didTapRate,
-					didTapName: didTapName
+                    activeSortOption: activeSortOption,
+					placement: placement
 				)
 			)
 	}
@@ -55,20 +51,20 @@ extension View {
 			)
 	}
 	
-	func applyCatalogSort(
-		placement: BaseConfirmationDialogTriggerPlacement,
-		didTapName: @escaping () -> Void,
-		didTapNFTCount: @escaping () -> Void
-	) -> some View {
-		self
-			.modifier(
-				CatalogSortActionsViewModifier(
-					placement: placement,
-					didTapName: didTapName,
-					didTapNFTCount: didTapNFTCount
-				)
-			)
-	}
+    func applyCatalogSort(
+        placement: BaseConfirmationDialogTriggerPlacement,
+        activeSortOption: Binding<CatalogSortActionsViewModifier.SortOption>,
+		searchText: Binding<String>
+    ) -> some View {
+        self
+            .modifier(
+                CatalogSortActionsViewModifier(
+                    placement: placement,
+					searchText: searchText,
+                    activeSortOption: activeSortOption
+                )
+            )
+    }
 	
 	func applyProfilePhotoActions(
 		isPresented: Binding<Bool>,
@@ -99,28 +95,28 @@ extension View {
 }
 
 #Preview("Profile Sort") {
+    @Previewable @State var option: ProfileSortActionsViewModifier.SortOption = .name
+    
 	ZStack {
 		Color.ypWhite.ignoresSafeArea()
 	}
 	.applyProfileSort(
-		placement: .safeAreaTop,
-		didTapCost: {},
-		didTapRate: {},
-		didTapName: {}
+        activeSortOption: $option,
+		placement: .safeAreaTop
 	)
 }
 
 #Preview("Catalog Sort") {
-	NavigationStack {
-		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-		}
-		.applyCatalogSort(
-			placement: .safeAreaTop,
-			didTapName: {},
-			didTapNFTCount: {}
-		)
-	}
+    NavigationStack {
+        ZStack {
+            Color.ypWhite.ignoresSafeArea()
+        }
+        .applyCatalogSort(
+            placement: .safeAreaTop,
+            activeSortOption: .constant(.name),
+			searchText: .constant("")
+        )
+    }
 }
 
 #Preview("Profile Image") {

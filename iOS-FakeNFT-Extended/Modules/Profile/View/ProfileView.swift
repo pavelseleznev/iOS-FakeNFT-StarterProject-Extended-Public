@@ -8,69 +8,73 @@
 import SwiftUI
 
 struct ProfileView: View {
-	let appContainer: AppContainer
-	let push: (Page) -> Void
-	
-	@State private var name = ""
-	@State private var description = ""
-	@State private var avatarURLString = ""
-	@State private var websiteURLString = ""
-	
+    @State private var viewModel: ProfileViewModel
+    init(
+		service: ProfileServiceProtocol,
+        push: @escaping (Page) -> Void,
+    ) {
+		_viewModel = State(
+			initialValue: ProfileViewModel(
+				service: service,
+				push: push
+			)
+		)
+	}
+    
 	var body: some View {
 		ZStack {
-			Color.ypWhite.ignoresSafeArea()
-			VStack(alignment: .leading, spacing: 24) {
-				AsyncImageCached(urlString: avatarURLString) { phase in
-					switch phase {
-					case .empty:
-						ProgressView()
-					case .loaded(let uIImage):
-						Image(uiImage: uIImage)
-							.resizable()
-							.scaledToFit()
-							.frame(width: 100, height: 100)
-					case .error:
-						Text("?")
-							.font(.bold22)
-							.foregroundStyle(.ypBlack)
-					}
+            Color.ypWhite.ignoresSafeArea()
+            
+			ProfileContainer(
+				model: .init(from: viewModel.profile) ?? .mock,
+				link: {
+					Button(.goToUserSite, action: viewModel.websiteTapped)
+						.nftButtonStyle(filled: false)
+				}, actions: {
+					[
+						ProfileActionCell(
+//							title: viewModel.myNFTTitle, // TODO: Localize
+							title: .cancel,
+							action: {
+								viewModel.myNFTsTapped()
+							}
+						),
+						ProfileActionCell(
+//							title: viewModel.favoriteTitle, // TODO: Localize
+							title: .cancel,
+							action: {
+								viewModel.favoriteNFTsTapped()
+							})
+					]
 				}
-				
-				Text(name)
-					.font(.bold22)
-					.foregroundStyle(.ypBlack)
-				
-				Text(description)
-					.font(.regular15)
-					.foregroundStyle(.ypBlack)
-				
-				Text(websiteURLString)
-					.font(.regular15)
-					.foregroundStyle(.ypBlack)
-			}
+			)
 		}
 		.safeAreaInset(edge: .top) {
-			HStack {
-				Spacer()
-				Button {} label: {
-					Image.edit
-						.foregroundStyle(.ypBlack)
-						.font(.editProfileIcon)
-				}
-				.padding(.trailing, 8)
-			}
+			editButton
 		}
-		.toolbar(.hidden)
-		.task {
-			let profile = await appContainer.profileService.get()
-			name = profile.name ?? ""
-			description = profile.description ?? ""
-			avatarURLString = profile.avatar ?? ""
-			websiteURLString = profile.website ?? ""
-		}
-		.onReceive(NotificationCenter.default.publisher(for: .profileNameDidChange)) { notification in
-			guard let newName = notification.userInfo?[ProfileStorageKey.name.key] as? String else { return }
-			name = newName
-		}
+        .task(priority: .userInitiated) {
+			await viewModel.load()
+        }
+		.onReceive(
+			NotificationCenter.default.publisher(for: .profileDidUpdate),
+			perform: viewModel.profileDidUpdate
+		)
 	}
+}
+
+private extension ProfileView {
+    var editButton: some View {
+        HStack {
+            Spacer()
+            
+            Button {
+                viewModel.editTapped()
+            } label: {
+                Image.edit
+                    .foregroundStyle(.ypBlack)
+                    .font(.editProfileIcon)
+            }
+            .padding(.trailing, 8)
+        }
+    }
 }

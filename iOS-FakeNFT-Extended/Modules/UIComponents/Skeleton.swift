@@ -14,7 +14,7 @@ extension View {
 			.overlay {
 				if data == nil {
 					LoadingShimmerPlaceholderView()
-						.transition(.scale.combined(with: .opacity))
+						.transition(.opacity)
 				}
 			}
 	}

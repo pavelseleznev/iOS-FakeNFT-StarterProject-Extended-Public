@@ -5,7 +5,7 @@
 //  Created by Superior Warden on 05.12.2025.
 //
 
-struct OrderRepsonse: Decodable {
+struct OrderResponse: Decodable {
 	let nftsIDs: [String]
 	let id: String
 	

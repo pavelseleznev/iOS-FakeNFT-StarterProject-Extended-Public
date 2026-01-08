@@ -11,6 +11,7 @@ enum Constants {
 	static let userDataKeychainService = "com.fakeNFT.auth"
 	
 	static let currenciesStorageKey = "currenciesStorageKey"
+	static let profileStorageKey = "profileStorageKey"
 	
 	static let nftChangePayloadKey = "nftChangePayloadKey"
 	

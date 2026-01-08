@@ -38,10 +38,12 @@ private struct NFTButtonStyle: ButtonStyle {
 						lineWidth: filled ? 1 : 0.3
 					)
 			)
-			.background(.ypWhite)
+			.background(
+				RoundedRectangle(cornerRadius: 16)
+					.fill(.ypWhite)
+			)
 			.opacity(configuration.isPressed ? 0.5 : 1)
 			.brightness(brightness)
-			.clipShape(RoundedRectangle(cornerRadius: isEnabled ? 0 : 16))
 			.padding(.top, 16)
 	}
 	
@@ -90,7 +92,7 @@ extension View {
 		.padding(.horizontal)
 	}
 	.onAppear {
-		withAnimation(.easeInOut(duration: 0.15).repeatForever().speed(0.5)) {
+		withAnimation(.easeInOut(duration: 0.5).repeatForever().speed(0.5)) {
 //			isEnabled.toggle()
 		}
 	}

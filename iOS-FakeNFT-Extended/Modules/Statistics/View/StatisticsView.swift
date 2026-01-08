@@ -72,7 +72,7 @@ struct StatisticsView: View {
 			debouncer.onDebounce = viewModel.onDebounce
 		}
 		.applyRepeatableAlert(
-			isPresneted: $viewModel.dataLoadingErrorIsPresented,
+			isPresented: $viewModel.dataLoadingErrorIsPresented,
 			message: .cantGetUsersData,
 			didTapRepeat: {
 				Task(priority: .userInitiated) {
