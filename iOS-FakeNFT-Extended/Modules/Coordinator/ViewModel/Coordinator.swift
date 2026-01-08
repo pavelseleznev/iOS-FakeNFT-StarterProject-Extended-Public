@@ -333,10 +333,11 @@ private extension Coordinator {
         switch page {
         case .catalogDetails(let catalog):
             CatalogNFTCollectionView(
+				loadCollection: appContainer.api.getCollection,
 				backAction: pop,
 				performAuthorSite: { [weak self] in self?.push(.aboutAuthor(urlString: $0)) },
                 catalog: catalog,
-                nftService: appContainer.nftService
+				nftService: appContainer.nftService
             )
         }
     }

@@ -10,8 +10,8 @@ import SwiftUI
 @MainActor
 final class AsyncNFTs: ObservableObject {
 	@Published private var nfts = [String : NFTModelContainer?]()
-	private let authorID: String
-	private let loadAuthor: (String) async throws -> UserListItemResponse
+	private let loadAuthor: @Sendable (String) async throws -> UserListItemResponse
+	private let loadCollection: @Sendable (String) async throws -> NFTCollectionItemResponse
 	var errorIsPresented = false
 	
 	private var currentStream: AsyncThrowingStream<NFTResponse, Error>?
@@ -27,6 +27,9 @@ final class AsyncNFTs: ObservableObject {
 	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	private let nftService: NFTServiceProtocol
 	private let pollingInterval: Duration = .seconds(5)
+	private let collectionID: String?
+	private let authorID: String?
+	private let isFromCollection: Bool
 	
 	var visibleNFTs: [Dictionary<String, NFTModelContainer?>.Element] {
 		withAnimation(.default) {
@@ -37,18 +40,24 @@ final class AsyncNFTs: ObservableObject {
 	}
 	
 	init(
-		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
+		loadAuthor: @escaping @Sendable (String) async throws -> UserListItemResponse,
+		loadCollection: @escaping @Sendable (String) async throws -> NFTCollectionItemResponse,
 		nftService: NFTServiceProtocol,
 		initialNFTsIDs: [String],
-		authorID: String,
+		isFromCollection: Bool,
+		collectionID: String?,
+		authorID: String?,
 		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	) {
 		self.loadAuthor = loadAuthor
+		self.loadCollection = loadCollection
 		self.nftService = nftService
+		self.isFromCollection = isFromCollection
 		self.authorID = authorID
+		self.collectionID = collectionID
 		self.didTapDetail = didTapDetail
 		
-		initialNFTsIDs.forEach { nfts[$0, default: nil] = nil }
+		initialNFTsIDs.forEach { nfts.updateValue(.none, forKey: $0) }
 	}
 }
 
@@ -57,7 +66,17 @@ final class AsyncNFTs: ObservableObject {
 // --- internal helpers ---
 extension AsyncNFTs {
 	func didTapDetailOnCell(_ nft: NFTModelContainer) {
-		guard !authorID.isEmpty else { return }
+		var shouldProceed = false
+		
+		if isFromCollection, let collectionID, !collectionID.isEmpty {
+			shouldProceed = true
+		}
+		
+		if !isFromCollection, let authorID, !authorID.isEmpty {
+			shouldProceed = true
+		}
+		
+		guard shouldProceed else { return }
 		didTapDetail(nft, visibleNFTs)
 	}
 	
@@ -315,7 +334,14 @@ private extension AsyncNFTs {
 	}
 	
 	func updateIDs() async throws {
-		let newIDs = Set(try await loadAuthor(authorID).nftsIDs)
+		let newIDs: Set<String>
+		if isFromCollection, let collectionID {
+			newIDs = Set(try await loadCollection(collectionID).nftsIDs)
+		} else if !isFromCollection, let authorID {
+			newIDs = Set(try await loadAuthor(authorID).nftsIDs)
+		} else {
+			return
+		}
 		let oldIDs = Set(nfts.keys)
 		
 		let idsToAdd = newIDs.subtracting(oldIDs)

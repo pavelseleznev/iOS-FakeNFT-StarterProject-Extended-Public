@@ -17,9 +17,12 @@ struct NFTCollectionView: View {
 	
 	init(
 		initialNFTsIDs: [String],
+		isFromCollection: Bool = false,
 		authorID: String = "",
+		collectionID: String = "",
 		nftService: NFTServiceProtocol,
-		loadAuthor: @escaping (String) async throws -> UserListItemResponse = { _ in .mock },
+		loadAuthor: @escaping @Sendable (String) async throws -> UserListItemResponse = { _ in .mock },
+		loadCollection: @escaping @Sendable (String) async throws -> NFTCollectionItemResponse = { _ in .mock1 },
 		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void = { _, _ in },
 		hidesToolbar: Bool = false
 	) {
@@ -28,9 +31,12 @@ struct NFTCollectionView: View {
 		_asyncNFTs = .init(
 			wrappedValue: .init(
 				loadAuthor: loadAuthor,
+				loadCollection: loadCollection,
 				nftService: nftService,
 				initialNFTsIDs: initialNFTsIDs,
-				authorID: authorID,
+				isFromCollection: isFromCollection,
+				collectionID: collectionID.isEmpty ? nil : collectionID,
+				authorID: authorID.isEmpty ? nil : authorID,
 				didTapDetail: didTapDetail
 			)
 		)

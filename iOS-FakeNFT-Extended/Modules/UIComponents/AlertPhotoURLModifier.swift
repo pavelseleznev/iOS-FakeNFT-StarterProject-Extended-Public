@@ -14,7 +14,6 @@ struct AlertPhotoURLModifier: ViewModifier {
     let title: String
     let placeholder: String
     let onSave: (String) -> Void
-    let onCancel: () -> Void
 
     @FocusState private var textFieldFocused: Bool
 
@@ -60,7 +59,6 @@ struct AlertPhotoURLModifier: ViewModifier {
                         Button(action: {
                             photoURL = ""
                             withAnimation { isPresented = false }
-                            onCancel()
                         }) {
                             Text("Отмена")
                                 .frame(maxWidth: .infinity, maxHeight: 44)
@@ -84,7 +82,7 @@ struct AlertPhotoURLModifier: ViewModifier {
                     .frame(height: 44)
                 }
                 .frame(maxWidth: 270)
-                .background(Color(UIColor.systemBackground))
+				.background(.bar)
                 .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
                 .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 8)
                 .padding(.horizontal, 40)

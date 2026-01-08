@@ -38,15 +38,13 @@ extension View {
         title: String = "Ccылка на фото",
         placeholder: String = "https://",
         onSave: @escaping (String) -> Void = { _ in },
-        onCancel: @escaping () -> Void = {}
     ) -> some View {
         modifier(AlertPhotoURLModifier(
             isPresented: isPresented,
             photoURL: photoURL,
             title: title,
             placeholder: placeholder,
-            onSave: onSave,
-            onCancel: onCancel
+            onSave: onSave
         ))
     }
 }
@@ -96,8 +94,7 @@ extension View {
     .applyPhotoURLAlert(
         isPresented: $photoAlertPresented,
         photoURL: $photoURLInput,
-        onSave: { _ in },
-        onCancel: {}
+        onSave: { _ in }
     )
 }
 #endif
