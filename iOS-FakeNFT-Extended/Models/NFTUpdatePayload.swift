@@ -14,6 +14,7 @@ struct NFTUpdatePayload {
 	
 	let id: String
 	let screenID: UUID
+	let updatesID: UUID
 	let isCartChanged: Bool
 	let isFavoriteChanged: Bool
 	let fromObject: ObjectType

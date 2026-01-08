@@ -25,6 +25,7 @@ final class SellerNFTsViewModel {
 	
 	@ObservationIgnored private var nftsUpdateTask: Task<Void, Never>?
 	
+	@ObservationIgnored private var updatesID = UUID()
 	private(set) var modelUpdateTriggerID = UUID()
 	private(set) var nfts = [Dictionary<String, NFTModelContainer?>.Element]()
 	var showAuthorLoadingError = false
@@ -55,13 +56,15 @@ extension SellerNFTsViewModel {
 		clearNFTsUpdateTask()
 	}
 	
-	func didTapCartButton(for model: NFTModelContainer?) {
+	func didTapCartButton(for model: NFTModelContainer?, isFromNotification: Bool = false) {
 		guard let model else { return }
+		if !isFromNotification { updatesID = UUID() }
 		changeModelState(model: model, isCartChanged: true)
 	}
 	
-	func didTapLikeButton(for model: NFTModelContainer?) {
+	func didTapLikeButton(for model: NFTModelContainer?, isFromNotification: Bool = false) {
 		guard let model else { return }
+		if !isFromNotification { updatesID = UUID() }
 		changeModelState(model: model, isFavoriteChanged: true)
 	}
 	
@@ -69,15 +72,18 @@ extension SellerNFTsViewModel {
 		if
 			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
 			payload.screenID != screenID,
+			payload.updatesID != payload.updatesID,
 			payload.hasChanges,
 			let model = nfts.first(where: { $0.key == payload.id })?.value
 		{
+			updatesID = payload.updatesID
+			
 			if payload.isCartChanged {
-				didTapCartButton(for: model)
+				didTapCartButton(for: model, isFromNotification: true)
 			}
 			
 			if payload.isFavoriteChanged {
-				didTapLikeButton(for: model)
+				didTapLikeButton(for: model, isFromNotification: true)
 			}
 		}
 	}
@@ -88,7 +94,7 @@ private extension SellerNFTsViewModel {
 	func changeModelState(
 		model: NFTModelContainer,
 		isFavoriteChanged: Bool = false,
-		isCartChanged: Bool = false
+		isCartChanged: Bool = false,
 	) {
 		guard let index = nfts.firstIndex(where: { $0.key == model.id }) else { return }
 		nfts[index].value = .init(
@@ -116,11 +122,12 @@ private extension SellerNFTsViewModel {
 		let payload = NFTUpdatePayload(
 			id: nftID,
 			screenID: screenID,
+			updatesID: updatesID,
 			isCartChanged: isCartChanged,
 			isFavoriteChanged: isFavoriteChanged,
 			fromObject: .sellerNFTs
 		)
-		
+		print("SENT FROM: \(screenID)")
 		NotificationCenter
 			.default
 			.post(

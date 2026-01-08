@@ -22,6 +22,7 @@ final class AsyncNFTs: ObservableObject {
 	var activeTokens = [FilterToken]()
 	private var searchText: String = ""
 	private var viewDidDisappeared = false
+	private var updatesID: UUID?
 	
 	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	private let nftService: NFTServiceProtocol
@@ -131,19 +132,21 @@ extension AsyncNFTs {
 // --- private helpers ---
 extension AsyncNFTs {
 	func handleNFTChangeNotification(notification: Notification) {
-		if
+		guard
 			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
-			payload.hasChanges,
-			let model = nfts[payload.id],
-			let model
-		{
-			if payload.isCartChanged {
-				didTapCartButton(for: model, isFromNotification: true)
-			}
-			
-			if payload.isFavoriteChanged {
-				didTapLikeButton(for: model, isFromNotification: true)
-			}
+			updatesID != payload.updatesID,
+			let model = nfts[payload.id] ?? nil,
+			payload.hasChanges
+		else { return }
+		
+		updatesID = payload.updatesID
+		
+		if payload.isCartChanged {
+			didTapCartButton(for: model, isFromNotification: true)
+		}
+		
+		if payload.isFavoriteChanged {
+			didTapLikeButton(for: model, isFromNotification: true)
 		}
 	}
 	
@@ -292,18 +295,22 @@ private extension AsyncNFTs {
 // --- updaters ---
 private extension AsyncNFTs {
 	func switchLikeState(for model: NFTModelContainer, key id: String) {
-		nfts[id] = .init(
-			nft: model.nft,
-			isFavorite: !model.isFavorite,
-			isInCart: model.isInCart
+		nfts.updateValue(
+			.init(
+				nft: model.nft,
+				isFavorite: !model.isFavorite,
+				isInCart: model.isInCart
+			), forKey: id
 		)
 	}
 	
 	func switchCartState(for model: NFTModelContainer, key id: String) {
-		nfts[id] = .init(
-			nft: model.nft,
-			isFavorite: model.isFavorite,
-			isInCart: !model.isInCart
+		nfts.updateValue(
+			.init(
+				nft: model.nft,
+				isFavorite: model.isFavorite,
+				isInCart: !model.isInCart
+			), forKey: id
 		)
 	}
 	
@@ -319,7 +326,7 @@ private extension AsyncNFTs {
 		nfts.reserveCapacity(newCapacity)
 		
 		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
-		idsToAdd.forEach { nfts[$0, default: nil] = nil }
+		idsToAdd.forEach { nfts.updateValue(.none, forKey: $0) }
 	}
 }
 

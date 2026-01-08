@@ -19,6 +19,7 @@ final class NFTDetailViewModel {
 	let authorID: String
 	let authorWebsiteURLString: String
 	
+	@ObservationIgnored private var updatesID = UUID()
 	private(set) var model: NFTModelContainer
 	private(set) var modelUpdateTriggerID = UUID()
 	private(set) var currencies = [CurrencyContainer]()
@@ -108,9 +109,12 @@ private extension NFTDetailViewModel {
 		isCartChanged: Bool = false,
 		isFavoriteChanged: Bool = false
 	) {
+		updatesID = UUID()
+		
 		let payload = NFTUpdatePayload(
 			id: nftID,
 			screenID: screenID,
+			updatesID: updatesID,
 			isCartChanged: isCartChanged,
 			isFavoriteChanged: isFavoriteChanged,
 			fromObject: .nftDetail

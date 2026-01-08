@@ -98,19 +98,19 @@ extension ObservedNetworkClient {
 // --- order ---
 extension ObservedNetworkClient {
 	@Sendable @discardableResult
-	func pay(payload: PayPayload) async throws -> OrderRepsonse {
+	func pay(payload: PayPayload) async throws -> OrderResponse {
 		let request = PayRequest(payload: payload)
 		return try await fetch(request)
 	}
 	
 	@Sendable @discardableResult
-	func putOrder(payload: OrderPayload) async throws -> OrderRepsonse {
+	func putOrder(payload: OrderPayload) async throws -> OrderResponse {
 		let request = PutOrderRequest(payload: payload)
 		return try await fetch(request)
 	}
 	
 	@Sendable
-	func getOrder() async throws -> OrderRepsonse {
+	func getOrder() async throws -> OrderResponse {
 		let request = GetOrderRequest()
 		return try await fetch(request)
 	}
