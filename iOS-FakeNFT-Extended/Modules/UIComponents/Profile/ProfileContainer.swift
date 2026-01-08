@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileContainer<Link: View>: View {
-	let model: UserListItemResponse
+	let model: UserListItemResponse?
 	
 	let link: () -> Link
 	let actions: () -> [ProfileActionCell]
@@ -17,10 +17,10 @@ struct ProfileContainer<Link: View>: View {
 		VStack(alignment: .leading, spacing: 40) {
 			VStack(alignment: .leading, spacing: 8) {
 				ProfileHeader(
-					name: model.name,
-					imageURLString: model.avatarURLString,
-					about: model.description ?? "",
-					rating: model.rating
+					name: model?.name,
+					imageURLString: model?.avatarURLString,
+					about: model?.description,
+					rating: model?.rating
 				)
 				
 				link()

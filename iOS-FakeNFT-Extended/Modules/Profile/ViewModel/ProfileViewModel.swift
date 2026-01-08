@@ -54,8 +54,6 @@ extension ProfileViewModel {
 	}
 	
 	func editTapped() {
-		guard !profile.anyFieldIsEmpty else { return }
-		
 		push(.profile(.editProfile(.init(from: profile))))
 	}
 	

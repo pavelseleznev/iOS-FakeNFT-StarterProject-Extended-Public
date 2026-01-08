@@ -26,7 +26,7 @@ struct ProfileView: View {
             Color.ypWhite.ignoresSafeArea()
             
 			ProfileContainer(
-				model: .init(from: viewModel.profile) ?? .mock,
+				model: .init(from: viewModel.profile),
 				link: {
 					Button(.goToUserSite, action: viewModel.websiteTapped)
 						.nftButtonStyle(filled: false)
