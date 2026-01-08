@@ -19,6 +19,7 @@ final class CatalogViewModel {
 				$0.name.lowercased().contains(searchText.lowercased()) || searchText.isEmpty
 			}
     }
+	var errorIsPresented = false
     
     private var collections: [NFTCollectionItemResponse] = []
     
@@ -55,8 +56,11 @@ extension CatalogViewModel {
 	func loadCollections() async {
 		do {
 			collections = try await api.getCollections()
+		} catch is CancellationError {
+			return
 		} catch {
-			print(error)
+			errorIsPresented = true
+			print("\nFailed to load collections: \(error.localizedDescription)")
 		}
 	}
 }

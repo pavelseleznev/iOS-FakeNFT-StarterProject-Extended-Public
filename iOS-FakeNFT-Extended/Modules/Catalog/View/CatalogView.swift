@@ -35,14 +35,13 @@ struct CatalogView: View {
 			List {
 				let data = viewModel.visibleCollections
 				ForEach(data.isEmpty ? mockData : data, id: \.id) { item in
-					NFTCollectionCell(model: item, isMock: data.isEmpty)
+					CatalogCollectionCell(model: item, isMock: data.isEmpty)
 						.onTapGesture {
 							viewModel.didSelectItem(item)
 						}
 						.listRowInsets(.init())
 						.listRowSeparator(.hidden)
 						.listRowBackground(Color.clear)
-						.id(item.id)
 				}
 			}
 			.animation(
@@ -68,6 +67,15 @@ struct CatalogView: View {
 			placement: .safeAreaTop,
 			activeSortOption: $sortOption,
 			searchText: $deboucner.text
+		)
+		.applyRepeatableAlert(
+			isPresented: $viewModel.errorIsPresented,
+			message: .nftCollection, // TODO: add custom & Localize
+			didTapRepeat: {
+				Task {
+					await viewModel.loadCollections()
+				}
+			}
 		)
 		.toolbar(.hidden)
 		.onChange(of: sortOption) { viewModel.setSortOption(sortOption) }
