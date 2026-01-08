@@ -7,42 +7,32 @@
 
 import SwiftUI
 
+fileprivate let imageSize: CGFloat = 120
+
 struct EditProfileHeader: View {
-    @Binding var avatarURL: String
     @Binding var isPhotoActionsPresented: Bool
+	let avatarURLString: String
     let didTapChangePhoto: () -> Void
     let didTapDeletePhoto: () -> Void
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            AsyncImage(
-                url: URL(
-                    string: avatarURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                )
-            ) { phase in
-                switch phase {
-                case .empty:
-                    placeholder
-                        .overlay {
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                        }
-                    
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFit()
-                case .failure:
-                    placeholder
-                @unknown default:
-                    placeholder
-                }
-            }
-            .frame(width: 70, height: 70)
-            .clipShape(Circle())
-            .onTapGesture {
-                isPhotoActionsPresented = true
-            }
+			AsyncImageCached(urlString: avatarURLString) { phase in
+				switch phase {
+				case .empty, .error:
+					placeholder
+						.overlay {
+							ProgressView()
+								.progressViewStyle(.circular)
+						}
+				case .loaded(let uIImage):
+					Image(uiImage: uIImage)
+						.resizable()
+				}
+			}
+			.scaledToFit()
+			.frame(width: imageSize, height: imageSize)
+			.clipShape(.circle)
             .modifier(
                 ProfilePhotoActionsViewModifier(
                     isPresented: $isPhotoActionsPresented,
@@ -50,12 +40,23 @@ struct EditProfileHeader: View {
                     didTapDeletePhoto: didTapDeletePhoto
                 ))
             
-            Image.frameCamera
+			Image.frameCamera
                 .resizable()
-                .frame(width: 24, height: 24)
-                .clipShape(Circle())
-                .offset(x: 4, y: 4)
+				.scaledToFit()
+				.padding(imageSize * 0.1)
+				.background(
+					Circle()
+						.fill(Material.thin)
+						.strokeBorder(
+							.ypBlack.opacity(0.4),
+							lineWidth: 1
+						)
+				)
+				.frame(width: imageSize * 0.4)
         }
+		.onTapGesture {
+			isPhotoActionsPresented = true
+		}
     }
     private var placeholder: some View {
         Image.userPicturePlaceholder
@@ -63,3 +64,17 @@ struct EditProfileHeader: View {
             .scaledToFit()
     }
 }
+
+#if DEBUG
+#Preview {
+	Color.ypWhite.ignoresSafeArea()
+		.overlay {
+			EditProfileHeader(
+				isPhotoActionsPresented: .constant(false),
+				avatarURLString: "",
+				didTapChangePhoto: {},
+				didTapDeletePhoto: {}
+			)
+		}
+}
+#endif

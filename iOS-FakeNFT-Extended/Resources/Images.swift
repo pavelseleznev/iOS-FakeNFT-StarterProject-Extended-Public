@@ -32,5 +32,5 @@ extension Image {
     
     // profile
     static let userPicturePlaceholder = Image(.userPicturePlaceholder)
-    static let frameCamera = Image(.frameCamera)
+	static let frameCamera = Image(systemName: "camera.fill")
 }
