@@ -107,6 +107,6 @@ private extension BackgroundUpdater {
 			.performUpdatesIfNeeded(with: loadedProfile.likes)
 		await appContainer.purchasedNFTsService
 			.performUpdatesIfNeeded(with: loadedProfile.nfts)
-		print("\n\(#function) done")
+		print("\nBackgroundUpdater \(#function) done")
 	}
 }

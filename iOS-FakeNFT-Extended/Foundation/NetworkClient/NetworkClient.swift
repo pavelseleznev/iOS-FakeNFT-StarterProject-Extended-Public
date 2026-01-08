@@ -104,6 +104,8 @@ extension Encodable {
 				params[key] = value.description
 			} else if let value = child.value as? OptionalProtocol, !value.isNil {
 				params[key] = value.stringValue
+			} else {
+				params[key] = "null"
 			}
 		}
 		return params

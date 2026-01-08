@@ -13,17 +13,16 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
     let coverImageURLString: String
     let nftsIDs: [String]
     let description: String
-    let author: String
+    let authorName: String
+	let websiteURLString: String
     let id: String
     
     enum CodingKeys: String, CodingKey {
-        case createdAt, name, description, author, id
+        case createdAt, name, description, id
+		case authorName = "author"
+		case websiteURLString = "website"
         case coverImageURLString = "cover"
         case nftsIDs = "nfts"
-    }
-    
-    var coverImageURL: URL? {
-        URL(string: coverImageURLString)
     }
     
     static var mock1: Self {
@@ -35,7 +34,8 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
                 "d6a02bd1-1255-46cd-815b-656174c1d9c0"
             ],
             description: "description",
-            author: "author",
+			authorName: "author",
+			websiteURLString: "http://google.com",
             id: UUID().uuidString
         )
     }
@@ -50,7 +50,8 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
                 "f380f245-0264-4b42-8e7e-c4486e237504"
             ],
             description: "description",
-            author: "author",
+			authorName: "author",
+			websiteURLString: "https://google.com",
             id: UUID().uuidString
         )
     }
@@ -66,7 +67,8 @@ struct NFTCollectionItemResponse: Decodable, Identifiable, Equatable {
                 "c14cf3bc-7470-4eec-8a42-5eaa65f4053c"
             ],
             description: "description",
-            author: "author",
+			authorName: "author",
+			websiteURLString: "htpps://google.com",
             id: UUID().uuidString
         )
     }
