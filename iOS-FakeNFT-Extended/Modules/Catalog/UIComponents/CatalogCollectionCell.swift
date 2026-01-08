@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct NFTCollectionCell: View {
+struct CatalogCollectionCell: View {
     let model: NFTCollectionItemResponse
 	let isMock: Bool
     
     var body: some View {
         VStack(spacing: 4) {
-			AsyncImageCached(urlString: model.coverImageURL?.absoluteString ?? "") { phase in
+			AsyncImageCached(urlString: model.coverImageURLString) { phase in
 				Color.ypBackgroundUniversal
 					.overlay {
 						switch phase {
@@ -29,7 +29,8 @@ struct NFTCollectionCell: View {
 			}
             .frame(height: 140)
 			.applySkeleton(isMock ? nil : 0)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 28))
+			.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 10)
             
             Text("\(model.name) (\(Set(model.nftsIDs).count))")
                 .foregroundStyle(.ypBlack)
@@ -37,6 +38,7 @@ struct NFTCollectionCell: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 				.applySkeleton(isMock ? nil : 0)
 				.clipShape(.capsule)
+				.padding(.horizontal)
             
             Spacer()
         }
@@ -49,6 +51,10 @@ struct NFTCollectionCell: View {
 #if DEBUG
 #Preview {
 	@Previewable @State var isMock = true
-	NFTCollectionCell(model: .mock1, isMock: isMock)
+	
+	Color.ypWhite.ignoresSafeArea()
+		.overlay {
+			CatalogCollectionCell(model: .mock1, isMock: false)
+		}
 }
 #endif
