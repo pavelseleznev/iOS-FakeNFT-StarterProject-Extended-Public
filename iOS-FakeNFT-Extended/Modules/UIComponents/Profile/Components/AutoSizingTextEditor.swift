@@ -7,43 +7,40 @@
 
 import SwiftUI
 
+fileprivate let maxHeight: CGFloat = 150
+
 struct AutoSizingTextEditor: View {
     @Binding var text: String
-    var minHeight: CGFloat = 100
-    var maxHeight: CGFloat = .infinity
-    var font: Font = .system(size: 17)
-    
-    @State private var dynamicHeight: CGFloat = 0
+	let placeholder: String
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            Text(text.isEmpty ? " " : text)
-                .font(font)
-                .lineLimit(nil)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 4))
-                .background(GeometryReader { proxy -> Color in
-                    DispatchQueue.main.async {
-                        let h = max(minHeight, min(proxy.size.height, maxHeight))
-                        if abs(h - dynamicHeight) > 0.5 {
-                            dynamicHeight = h
-                        }
-                    }
-                    return Color.clear
-                })
-                .hidden()
+		ZStack(alignment: .topLeading) {
+			Text(text.isEmpty ? placeholder : text)
+				.font(.regular17)
+				.foregroundColor(.clear)
+				.padding(.horizontal, 5)
+				.padding(.vertical, 8)
+				.frame(maxWidth: .infinity, alignment: .leading)
+
             
             TextEditor(text: $text)
-                .font(font)
-                .frame(height: dynamicHeight)
-                .padding(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+				.font(.regular17)
+				.scrollContentBackground(.hidden)
+			
+			if text.isEmpty {
+				Text(placeholder)
+					.font(.regular17)
+					.foregroundColor(.gray.opacity(0.5))
+					.padding(.horizontal, 5)
+					.padding(.vertical, 8)
+					.allowsHitTesting(false)
+			}
         }
-        .onAppear {
-            DispatchQueue.main.async {
-                if dynamicHeight == 0 {
-                    dynamicHeight = minHeight
-                }
-            }
-        }
+		.frame(height: maxHeight)
+		.padding(4)
+		.padding(.horizontal, 8)
+		.background(Color.ypLightGrey)
+		.clipShape(RoundedRectangle(cornerRadius: 28))
+		.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 10)
     }
 }
