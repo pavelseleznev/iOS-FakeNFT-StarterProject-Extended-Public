@@ -7,15 +7,17 @@
 
 import SwiftUI
 
+fileprivate let mockName = "John Doe (Profile Name) - #1 in the World"
+
 struct ProfileHeader: View {
-	let name: String
-	let imageURLString: String
-	let about: String
-	let rating: String
+	let name: String?
+	let imageURLString: String?
+	let about: String?
+	let rating: String?
 	
 	private let imageSize: CGFloat = 70
 	
-	init(name: String, imageURLString: String, about: String, rating: String = "") {
+	init(name: String?, imageURLString: String?, about: String?, rating: String? = nil) {
 		self.name = name
 		self.imageURLString = imageURLString
 		self.about = about
@@ -25,7 +27,7 @@ struct ProfileHeader: View {
 	var body: some View {
 		VStack(alignment: .leading, spacing: 20) {
 			HStack(spacing: 16) {
-				AsyncImageCached(urlString: imageURLString) { phase in
+				AsyncImageCached(urlString: imageURLString ?? "") { phase in
 					switch phase {
 					case .empty:
 						Color.ypLightGrey
@@ -44,14 +46,17 @@ struct ProfileHeader: View {
 							.aspectRatio(contentMode: .fit)
 					}
 				}
+				.applySkeleton(imageURLString)
 				.frame(width: imageSize, height: imageSize)
 				.clipShape(.circle)
 				
 				VStack(alignment: .leading, spacing: 4) {
-					Text(name)
+					Text(name ?? mockName)
 						.foregroundStyle(.ypBlack)
 						.font(.bold22)
-					if !rating.isEmpty {
+						.applySkeleton(name)
+					
+					if let rating, !rating.isEmpty {
 						RatingPreview(rating: Int(rating) ?? 0)
 							.scaleEffect(1.3, anchor: .leading)
 							.frame(height: 24)
@@ -62,15 +67,16 @@ struct ProfileHeader: View {
 			}
 			
 			Group {
-				if about.isEmpty {
-					Text(.noDescription)
-				} else {
+				if let about, !about.isEmpty {
 					Text(about)
+				} else {
+					Text(.noDescription)
 				}
 			}
 			.lineSpacing(4)
 			.foregroundStyle(.ypBlack)
 			.font(.regular13)
+			.applySkeleton(about)
 		}
 		.padding(.horizontal, 16)
 	}
