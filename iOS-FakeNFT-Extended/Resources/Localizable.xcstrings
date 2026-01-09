@@ -533,6 +533,23 @@
         }
       }
     },
+    "cantGetNFTCatalogs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t get the NFT catalog list"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось получить список NFT каталогов"
+          }
+        }
+      }
+    },
     "cantGetNFTs" : {
       "extractionState" : "manual",
       "localizations" : {
