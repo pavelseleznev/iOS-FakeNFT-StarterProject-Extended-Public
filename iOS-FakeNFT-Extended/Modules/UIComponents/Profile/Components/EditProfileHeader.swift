@@ -17,17 +17,23 @@ struct EditProfileHeader: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-			AsyncImageCached(urlString: avatarURLString) { phase in
-				switch phase {
-				case .empty, .error:
+			Group {
+				if avatarURLString.isEmpty {
 					placeholder
-						.overlay {
-							ProgressView()
-								.progressViewStyle(.circular)
+				} else {
+					AsyncImageCached(urlString: avatarURLString) { phase in
+						switch phase {
+						case .empty, .error:
+							Color.ypLightGrey
+								.overlay {
+									ProgressView()
+										.progressViewStyle(.circular)
+								}
+						case .loaded(let uIImage):
+							Image(uiImage: uIImage)
+								.resizable()
 						}
-				case .loaded(let uIImage):
-					Image(uiImage: uIImage)
-						.resizable()
+					}
 				}
 			}
 			.scaledToFit()
@@ -61,7 +67,6 @@ struct EditProfileHeader: View {
     private var placeholder: some View {
         Image.userPicturePlaceholder
             .resizable()
-            .scaledToFit()
     }
 }
 

@@ -72,39 +72,21 @@ extension UserListItemResponse: Decodable, Identifiable, Hashable {
 }
 
 extension UserListItemResponse {
-	init?(from payload: ProfilePayload) {
-		guard
-			let _name = payload.name,
-			let _avatar = payload.avatar,
-			let _description = payload.description,
-			let _website = payload.website
-		else {
-			return nil
-		}
-		
-		name = _name
-		avatarURLString = _avatar
-		description = _description
-		websiteURLString = _website
+	init(from payload: ProfilePayload) {
+		name = payload.name ?? ""
+		avatarURLString = payload.avatar ?? ""
+		description = payload.description ?? ""
+		websiteURLString = payload.website ?? ""
 		nftsIDs = []
 		rating = ""
 		id = UUID().uuidString
 	}
 	
-	init?(from model: ProfileContainerModel) {
-		guard
-			let _name = model.name,
-			let _avatar = model.avatarURLString,
-			let _description = model.description,
-			let _website = model.websiteURLString
-		else {
-			return nil
-		}
-		
-		name = _name
-		avatarURLString = _avatar
-		description = _description
-		websiteURLString = _website
+	init(from model: ProfileContainerModel) {
+		name = model.name ?? ""
+		avatarURLString = model.avatarURLString ?? ""
+		description = model.description
+		websiteURLString = model.websiteURLString ?? ""
 		nftsIDs = []
 		rating = ""
 		id = UUID().uuidString
