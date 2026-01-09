@@ -212,8 +212,9 @@ extension MyNFTViewModel {
 				loadErrorPresented = true
 			} else {
 				applySort()
-				isLoaded = true
 			}
+			
+			isLoaded = true
 		}
 	}
 }

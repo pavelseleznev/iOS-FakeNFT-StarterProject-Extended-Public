@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NFTCollectionFiltrationButtonView: View {
-	@EnvironmentObject private var asyncNFTs: AsyncNFTs
+	@EnvironmentObject private var asyncNFTs: NFTCollectionViewModel
 	
 	var body: some View {
 		Circle()
