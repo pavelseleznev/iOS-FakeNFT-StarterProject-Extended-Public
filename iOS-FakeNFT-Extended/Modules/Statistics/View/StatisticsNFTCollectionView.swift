@@ -10,7 +10,7 @@ import SwiftUI
 struct StatisticsNFTCollectionView: View {
 	private let authorID: String
 	private let initialNFTsIDs: [String]
-	private let loadAuthor: (String) async throws -> UserListItemResponse
+	private let loadAuthor: @Sendable (String) async throws -> UserListItemResponse
 	private let nftService: NFTServiceProtocol
 	private let loadingState: LoadingState
 	private let didTapDetail: (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
@@ -20,7 +20,7 @@ struct StatisticsNFTCollectionView: View {
 		authorID: String,
 		loadingState: LoadingState,
 		nftService: NFTServiceProtocol,
-		loadAuthor: @escaping (String) async throws -> UserListItemResponse,
+		loadAuthor: @escaping @Sendable (String) async throws -> UserListItemResponse,
 		didTapDetail: @escaping (NFTModelContainer, [Dictionary<String, NFTModelContainer?>.Element]) -> Void
 	) {
 		self.authorID = authorID
