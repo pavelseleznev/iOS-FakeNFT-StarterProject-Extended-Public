@@ -32,14 +32,13 @@ struct CartView: View {
 		ZStack {
 			Color.ypWhite.ignoresSafeArea()
 			
-			List(
-				Array(viewModel.visibleNfts.enumerated()),
-				id: \.offset
-			) { index, nft in
+			List(viewModel.filteredKeys, id: \.self) { key in
+				let model = viewModel.nfts[key] ?? nil
+				
 				NFTCartCellView(
-					model: nft,
+					model: model,
 					cartAction: {
-						viewModel.setNFTForRemoval(nft)
+						viewModel.setNFTForRemoval(model)
 					}
 				)
 				.listCellModifiers()
@@ -47,7 +46,7 @@ struct CartView: View {
 			.listModifiers()
 			.overlay(content: emptyCartView)
 		}
-		.animation(Constants.defaultAnimation, value: viewModel.visibleNfts)
+		.animation(Constants.defaultAnimation, value: viewModel.filteredKeys)
 		.toolbar(.hidden)
 		.task(priority: .userInitiated) {
 			await viewModel.performCartUpdateIfNeeded()
@@ -56,7 +55,9 @@ struct CartView: View {
 			NotificationCenter.default.publisher(for: .cartDidUpdate),
 			perform: viewModel.update
 		)
-		.task(priority: .userInitiated) { await viewModel.loadNilNFTs() }
+		.task(priority: .userInitiated) {
+			await viewModel.performCartUpdateIfNeeded()
+		}
 		.onChange(of: sortOption, viewModel.setSortOption)
 		.safeAreaTopBackground()
 		.applyCartSort(
@@ -88,14 +89,14 @@ struct CartView: View {
 private extension CartView {
 	@ViewBuilder
 	private func emptyCartView() -> some View {
-		if viewModel.nftCount == 0 {
+		if viewModel.nfts.count == 0 {
 			EmptyContentView(type: .cart)
 		}
 	}
 	
 	private func cartActionContent() -> some View {
 		CartBottomToolbar(
-			nftCount: viewModel.nftCount,
+			nftCount: viewModel.nfts.count,
 			costLabel: viewModel.cartCostLabel,
 			performPayment: viewModel.onSubmmit,
 			isLoaded: viewModel.isLoaded
