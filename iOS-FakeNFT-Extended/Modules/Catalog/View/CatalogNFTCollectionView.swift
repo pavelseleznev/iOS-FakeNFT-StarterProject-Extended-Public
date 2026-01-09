@@ -127,7 +127,7 @@ fileprivate struct AboutCollectionView: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 			
 			HStack {
-				Text("Автор коллекции:") // TODO: Localize
+                Text(.createdBy)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
 				
