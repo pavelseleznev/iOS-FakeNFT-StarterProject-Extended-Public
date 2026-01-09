@@ -71,8 +71,7 @@ struct EditProfileView: View {
         )
         .applyRepeatableAlert(
             isPresented: $viewModel.isSaveErrorPresented,
-//            message: viewModel.saveErrorMessage, // TODO: Localize
-			message: .cancel,
+            message: viewModel.saveErrorMessage,
             didTapRepeat: {
                 Task(priority: .userInitiated) {
 					await viewModel.performSave()
@@ -88,7 +87,7 @@ struct EditProfileView: View {
 		)
 		.toolbar {
 			ToolbarItem(placement: .title) {
-				Text("Редактирование профиля") // TODO: Localize
+                Text(viewModel.editProfileTitle)
 					.font(.bold17)
 					.foregroundStyle(.ypBlack)
 			}

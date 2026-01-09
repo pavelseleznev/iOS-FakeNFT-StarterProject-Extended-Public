@@ -12,6 +12,9 @@ fileprivate let placeholder = "Jhon Doe Jhon Doe Jhon Doe Jhon Doe"
 struct NFTNameRateAuthorView: View {
 	let model: NFTResponse?
 	let layout: NFTCellLayout
+    var fromAuthorString: LocalizedStringResource {
+        return "\(LocalizedStringResource.fromAuthorString) \(model?.authorName ?? placeholder)"
+    }
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 6) {
@@ -25,7 +28,7 @@ struct NFTNameRateAuthorView: View {
 			RatingPreview(rating: model?.rating)
 			
 			if case .my = layout {
-				Text("от " + (model?.authorName ?? placeholder)) // TODO: Localize
+				Text(fromAuthorString)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
 					.lineLimit(Constants.nftNameLineLimit)

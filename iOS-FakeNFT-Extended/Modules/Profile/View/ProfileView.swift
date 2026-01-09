@@ -33,15 +33,13 @@ struct ProfileView: View {
 				}, actions: {
 					[
 						ProfileActionCell(
-//							title: viewModel.myNFTTitle, // TODO: Localize
-							title: .cancel,
+							title: viewModel.myNFTTitle,
 							action: {
 								viewModel.myNFTsTapped()
 							}
 						),
 						ProfileActionCell(
-//							title: viewModel.favoriteTitle, // TODO: Localize
-							title: .cancel,
+							title: viewModel.favoriteTitle,
 							action: {
 								viewModel.favoriteNFTsTapped()
 							})

@@ -7,30 +7,33 @@
 
 import SwiftUI
 
-#warning("TODO: Loalize all fields")
 struct EditProfileForm: View {
     @Binding var name: String
     @Binding var about: String
     @Binding var website: String
+    private let nameField: LocalizedStringResource = .nameField
+    private let descriptionField: LocalizedStringResource = .descriptionField
+    private let websiteField: LocalizedStringResource = .websiteField
+    private let editProfilePlaceholder: LocalizedStringResource = .editProfilePlaceholder
 
     var body: some View {
         VStack(spacing: 24) {
-			FormView(title: "Имя", placeholder: "Написать...", text: $name)
+            FormView(title: String(localized: nameField), placeholder: String(localized: editProfilePlaceholder), text: $name)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Описание")
+                Text(descriptionField)
 					.font(.bold22)
 					.padding(.leading)
 				
 				AutoSizingTextEditor(
 					text: $about,
-					placeholder: "Написать..."
+					placeholder: String(localized: editProfilePlaceholder)
 				)
             }
 			
 			FormView(
-				title: "Сайт",
-				placeholder: "Написать...",
+				title: String(localized: websiteField),
+				placeholder: String(localized: editProfilePlaceholder),
 				text: $website
 			)
         }

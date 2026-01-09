@@ -52,14 +52,13 @@ struct FavoriteNFTView: View {
 			.scrollDismissesKeyboard(.interactively)
 			.overlay {
 				if viewModel.filteredKeys.isEmpty {
-					EmptyContentView(type: .nfts)
+					EmptyContentView(type: .noFavoriteNFTs)
 				}
 			}
         }
 		.applyRepeatableAlert(
 			isPresented: $viewModel.loadErrorPresented,
-//			"Не удалось удалить NFT из избранного" // TODO: Move to localization
-			message: .cantGetNFTs,
+            message: viewModel.removeFavoriteErrorMessage,
 			didTapRepeat: viewModel.loadNilNFTsIfNeeded
 		)
 		.onAppear {
@@ -67,7 +66,7 @@ struct FavoriteNFTView: View {
 		}
         .toolbar {
             ToolbarItem(placement: .principal) {
-				Text("Избранные NFT") // TODO: Localize
+                Text(viewModel.favouritedNFTs)
 					.font(.bold17)
             }
         }
