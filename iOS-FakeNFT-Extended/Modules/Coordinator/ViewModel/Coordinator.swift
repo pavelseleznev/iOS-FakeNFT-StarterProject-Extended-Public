@@ -150,7 +150,7 @@ private extension Coordinator {
 				transaction.disablesAnimations = true
 				
 				withTransaction(transaction) {
-					path = [.onboarding]
+					path = [.tabView]
 				}
 			}
 		}
