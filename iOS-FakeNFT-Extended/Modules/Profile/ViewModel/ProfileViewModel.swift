@@ -39,8 +39,15 @@ extension ProfileViewModel {
 		profile = await service.get()
 	}
 	
-	var myNFTTitle: String { "Мои NFT (\(profile.nftsIDs?.count ?? -1))" } // TODO: Localie
-	var favoriteTitle: String { "Избранные NFT (\(profile.favoritesIDs?.count ?? -1))" } // TODO: Localize
+    var myNFTTitle: LocalizedStringResource {
+        let count = profile.nftsIDs?.count ?? -1
+        return "\(LocalizedStringResource.myNFTs) (\(count))"
+    }
+    
+    var favoriteTitle: LocalizedStringResource {
+        let count = profile.favoritesIDs?.count ?? -1
+        return "\(LocalizedStringResource.favouritedNFTs) (\(count))"
+    }
 }
 
 // --- routing ---

@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum EmptyContentType {
-	case nfts, cart, currencies
+	case nfts, cart, currencies, noMyNFTs, noFavoriteNFTs
 	
 	var title: LocalizedStringResource {
 		switch self {
@@ -18,6 +18,10 @@ enum EmptyContentType {
 			.shoppingCartIsEmpty
 		case .currencies:
 			.noCurrenciesAvailable
+        case .noMyNFTs:
+             .noMyNFTs
+        case .noFavoriteNFTs:
+             .noFavoriteNFTs
 		}
 	}
 }

@@ -61,7 +61,7 @@ struct MyNFTView: View {
 			.scrollDismissesKeyboard(.interactively)
 			.overlay {
 				if contentIsEmpty {
-					EmptyContentView(type: .nfts)
+					EmptyContentView(type: .noMyNFTs)
 				}
 			}
 		}
@@ -91,7 +91,7 @@ struct MyNFTView: View {
 		)
 		.toolbar {
 			ToolbarItem(placement: .title) {
-				Text("Мои NFT")
+                Text(viewModel.myNFTs)
 					.font(.bold17)
 			}
 		}

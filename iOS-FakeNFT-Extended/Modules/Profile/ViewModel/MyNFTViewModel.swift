@@ -11,6 +11,8 @@ import Foundation
 @Observable
 final class MyNFTViewModel {
 	var loadErrorPresented = false
+    var loadErrorMessage: LocalizedStringResource = .addToFavoriteError
+    var myNFTs: LocalizedStringResource = .myNFTs
 	private(set) var isLoaded = false
 	private(set) var filteredKeys = [String]()
 	private(set) var _kickUIUpdate = false
@@ -99,7 +101,8 @@ extension MyNFTViewModel {
 			} catch is CancellationError {
 				return
 			} catch {
-				loadErrorPresented = true // TODO: replace by like error
+                loadErrorMessage = .addToFavoriteError
+				loadErrorPresented = true
 			}
 		}
 	}
