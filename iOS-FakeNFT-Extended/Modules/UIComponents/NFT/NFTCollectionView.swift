@@ -9,7 +9,7 @@ import SwiftUI
 
 struct NFTCollectionView: View {
 	@StateObject private var debouncingViewModel = DebouncingViewModel()
-	@StateObject private var asyncNFTs: AsyncNFTs
+	@StateObject private var viewModel: NFTCollectionViewModel
 	
 	@Environment(\.isSearching) private var isSearching
 	@State private var isSearchingState = false
@@ -28,7 +28,7 @@ struct NFTCollectionView: View {
 	) {
 		self.hidesToolbar = hidesToolbar
 		
-		_asyncNFTs = .init(
+		_viewModel = .init(
 			wrappedValue: .init(
 				loadAuthor: loadAuthor,
 				loadCollection: loadCollection,
@@ -57,19 +57,19 @@ struct NFTCollectionView: View {
 					spacing: 28,
 					pinnedViews: .sectionHeaders
 				) {
-					ForEach(asyncNFTs.visibleNFTs, id: \.key) { element in
+					ForEach(viewModel.filteredKeys, id: \.self) { key in
+						let model = viewModel.nfts[key] ?? nil
+						
 						NFTVerticalCell(
-							model: element.value,
-							didTapDetail: asyncNFTs.didTapDetailOnCell,
+							model: model,
+							didTapDetail: viewModel.didTapDetailOnCell,
 							likeAction: {
-								asyncNFTs.didTapLikeButton(for: element.value)
+								viewModel.didTapLikeButton(for: model)
 							},
 							cartAction: {
-								asyncNFTs.didTapCartButton(for: element.value)
+								viewModel.didTapCartButton(for: model)
 							}
 						)
-						.transition(.scale(scale: 0, anchor: .center))
-						.id(element.key)
 					}
 					.scrollTransition { content, phase in
 						content
@@ -83,33 +83,34 @@ struct NFTCollectionView: View {
 				}
 				.collectionSearchable(
 					text: $debouncingViewModel.text,
-					activeTokens: $asyncNFTs.activeTokens,
-					tokenAction: asyncNFTs.tokenAction,
+					activeTokens: $viewModel.activeTokens,
+					tokenAction: viewModel.tokenAction,
 					isSearching: $isSearchingState,
-					hidesToolbar: hidesToolbar
+					hidesToolbar: hidesToolbar,
+					didCancel: { viewModel.onDebounce("") }
 				)
-				.animation(Constants.defaultAnimation, value: asyncNFTs.activeTokens)
+				.animation(Constants.defaultAnimation, value: viewModel.activeTokens)
 			}
 			.layout(isSearchingState: isSearchingState)
 			.scrollModifiers()
 			.overlay(alignment: .center, content: emptyNFTsView)
 			.overlay(alignment: .bottomTrailing, content: filtrationButton)
 			.applyRepeatableAlert(
-				isPresented: $asyncNFTs.errorIsPresented,
+				isPresented: $viewModel.errorIsPresented,
 				message: .cantGetNFTs,
-				didTapRepeat: asyncNFTs.startBackgroundUnloadedLoadPolling
+				didTapRepeat: viewModel.startBackgroundUnloadedLoadPolling
 			)
 			.onChange(of: isSearching, onIsSearchingChanged)
 			.onAppear(perform: setDebouncingHandler)
 			.lifeCycle(
-				onAppear: asyncNFTs.startBackgroundUnloadedLoadPolling,
-				onDisappear: asyncNFTs.viewDidDissappear
+				onAppear: viewModel.startBackgroundUnloadedLoadPolling,
+				onDisappear: viewModel.viewDidDissappear
 			)
 			.onReceive(
 				NotificationCenter.default.publisher(for: .nftDidChange),
-				perform: asyncNFTs.handleNFTChangeNotification
+				perform: viewModel.handleNFTChangeNotification
 			)
-			.onChange(of: asyncNFTs.activeTokens) { HapticPerfromer.shared.play(.selection) }
+			.onChange(of: viewModel.activeTokens) { HapticPerfromer.shared.play(.selection) }
 		}
 	}
 }
@@ -119,7 +120,7 @@ struct NFTCollectionView: View {
 private extension NFTCollectionView {
 	@ViewBuilder
 	func emptyNFTsView() -> some View {
-		if asyncNFTs.visibleNFTs.isEmpty {
+		if viewModel.filteredKeys.isEmpty {
 			EmptyContentView(type: .nfts)
 		}
 	}
@@ -128,7 +129,7 @@ private extension NFTCollectionView {
 	func filtrationButton() -> some View {
 		if isSearchingState {
 			NFTCollectionFiltrationButtonView()
-				.environmentObject(asyncNFTs)
+				.environmentObject(viewModel)
 		}
 	}
 }
@@ -136,7 +137,7 @@ private extension NFTCollectionView {
 // --- methods ---
 private extension NFTCollectionView {
 	private func setDebouncingHandler() {
-		debouncingViewModel.onDebounce = asyncNFTs.onDebounce
+		debouncingViewModel.onDebounce = viewModel.onDebounce
 	}
 	
 	private func onIsSearchingChanged(_: Bool, _: Bool) {
@@ -174,15 +175,34 @@ fileprivate extension View {
 		activeTokens: Binding<[FilterToken]>,
 		tokenAction: @escaping (FilterToken) -> Void,
 		isSearching: Binding<Bool>,
-		hidesToolbar: Bool
+		hidesToolbar: Bool,
+		didCancel: @escaping () -> Void
 	) -> some View {
 		self
 			.autocorrectionDisabled()
 			.textInputAutocapitalization(.never)
 			.searchable(
-				text: text,
+				text: Binding(
+					get: { text.wrappedValue },
+					set: { newValue in
+						
+						text.wrappedValue = newValue
+						if newValue.isEmpty {
+							didCancel()
+						}
+					}
+				),
 				tokens: activeTokens,
-				isPresented: isSearching,
+				isPresented: Binding(
+					get: { isSearching.wrappedValue },
+					set: { newValue in
+						
+						isSearching.wrappedValue = newValue
+						if newValue == false {
+							didCancel()
+						}
+					}
+				),
 				placement: .navigationBarDrawer(displayMode: .always),
 				prompt: .search,
 				token: { Text($0.title) }

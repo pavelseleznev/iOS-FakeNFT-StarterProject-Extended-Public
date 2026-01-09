@@ -1,5 +1,5 @@
 //
-//  AsyncNFTs.swift
+//  NFTCollectionViewModel.swift
 //  iOS-FakeNFT-Extended
 //
 //  Created by Superior Warden on 18.12.2025.
@@ -8,14 +8,15 @@
 import SwiftUI
 
 @MainActor
-final class AsyncNFTs: ObservableObject {
-	@Published private var nfts = [String : NFTModelContainer?]()
+final class NFTCollectionViewModel: ObservableObject {
+	@Published private(set) var isLoaded = false
+	@Published private(set) var filteredKeys = [String]()
+	@Published private var sortedKeys = [String]()
+	@Published private(set) var nfts = [String : NFTModelContainer?]()
 	private let loadAuthor: @Sendable (String) async throws -> UserListItemResponse
 	private let loadCollection: @Sendable (String) async throws -> NFTCollectionItemResponse
 	var errorIsPresented = false
 	
-	private var currentStream: AsyncThrowingStream<NFTResponse, Error>?
-	private var continuation: AsyncThrowingStream<NFTResponse, Error>.Continuation?
 	private var pollingTask: Task<Void, Never>?
 	private var fetchingTask: Task<Void, Error>?
 	
@@ -30,14 +31,6 @@ final class AsyncNFTs: ObservableObject {
 	private let collectionID: String?
 	private let authorID: String?
 	private let isFromCollection: Bool
-	
-	var visibleNFTs: [Dictionary<String, NFTModelContainer?>.Element] {
-		withAnimation(.default) {
-			nfts
-				.sorted(by: sortComparator)
-				.filter(filterApplier)
-		}
-	}
 	
 	init(
 		loadAuthor: @escaping @Sendable (String) async throws -> UserListItemResponse,
@@ -57,14 +50,21 @@ final class AsyncNFTs: ObservableObject {
 		self.collectionID = collectionID
 		self.didTapDetail = didTapDetail
 		
-		initialNFTsIDs.forEach { nfts.updateValue(.none, forKey: $0) }
+		initialNFTsIDs.forEach {
+			nfts.updateValue(.none, forKey: $0)
+			filteredKeys.append($0)
+			sortedKeys.append($0)
+		}
+		
+		applySort(isInitial: true)
+		loadNilNFTsIfNeeded(isInitial: true)
 	}
 }
 
 // MARK: - AsyncNFTs extensions
 
 // --- internal helpers ---
-extension AsyncNFTs {
+extension NFTCollectionViewModel {
 	func didTapDetailOnCell(_ nft: NFTModelContainer) {
 		var shouldProceed = false
 		
@@ -77,7 +77,7 @@ extension AsyncNFTs {
 		}
 		
 		guard shouldProceed else { return }
-		didTapDetail(nft, visibleNFTs)
+		didTapDetail(nft, nfts.sorted { $0.key < $1.key })
 	}
 	
 	func didTapLikeButton(for model: NFTModelContainer?, isFromNotification: Bool = false) {
@@ -140,16 +140,46 @@ extension AsyncNFTs {
 			activeTokens.append(token)
 		}
 		
-		objectWillChange.send()
+		applySort()
 	}
 	
 	func onDebounce(_ text: String) {
 		searchText = text
+		
+		if isLoaded {
+			applyFilter()
+		}
+	}
+}
+
+// --- appliers ---
+private extension NFTCollectionViewModel {
+	func applyFilter() {
+		filteredKeys = sortedKeys
+			.filter(filterApplier)
+	}
+	
+	func applySort(isInitial: Bool = false) {
+		sortedKeys
+			.sort { lhsKey, rhsKey in
+				guard
+					let lhs = nfts[lhsKey] ?? nil,
+					let rhs = nfts[rhsKey] ?? nil
+				else { return false }
+				
+				return sortComparator(lhs, rhs)
+			}
+		
+		if !isInitial {
+			applyFilter()
+		} else {
+			filteredKeys = sortedKeys
+		}
 	}
 }
 
 // --- private helpers ---
-extension AsyncNFTs {
+extension NFTCollectionViewModel {
 	func handleNFTChangeNotification(notification: Notification) {
 		guard
 			let payload = notification.userInfo?[Constants.nftChangePayloadKey] as? NFTUpdatePayload,
@@ -169,86 +199,47 @@ extension AsyncNFTs {
 		}
 	}
 	
-	func performWithTimeout<T: Sendable>(
-		timeout: Duration,
-		operation: @escaping @Sendable () async throws -> T
-	) async throws -> T {
-		try await withThrowingTaskGroup(of: Result<T, Error>.self) { group in
-			group.addTask(priority: .userInitiated) {
-				do {
-					let result = try await operation()
-					return .success(result)
-				} catch {
-					return .failure(error)
-				}
-			}
-			
-			group.addTask(priority: .userInitiated) {
-				try await Task.sleep(for: timeout)
-				return .failure(NSError(domain: "Timeout", code: 0, userInfo: nil))
-			}
-			
-			if let firstResult = try await group.next() {
-				group.cancelAll()
-				
-				switch firstResult {
-				case .success(let value):
-					return value
-				case .failure(let error):
-					throw error
-				}
-			}
-			
-			group.cancelAll()
-			throw NSError(domain: "No value received", code: 0, userInfo: nil)
-		}
-	}
-	
 	func sortComparator(
-		_ model1: [String : NFTModelContainer?].Element,
-		_ model2: [String : NFTModelContainer?].Element
+		_ model1: NFTModelContainer,
+		_ model2: NFTModelContainer
 	) -> Bool {
 		let activeSortOptions = activeTokens.filter(\.isSortOption)
-		guard
-			!activeSortOptions.isEmpty,
-			let value1 = model1.value,
-			let value2 = model2.value
-		else {
-			return model1.key.localizedStandardCompare(model2.key) == .orderedAscending
+		guard !activeSortOptions.isEmpty else {
+			return model1.id.localizedStandardCompare(model2.id) == .orderedAscending
 		}
 		
 		return activeSortOptions.allSatisfy { sortOption in
 			switch sortOption {
 			case .ratingAscending:
-				value1.nft.rating < value2.nft.rating
+				return model1.nft.rating < model2.nft.rating
 			case .ratingDescending:
-				value1.nft.rating > value2.nft.rating
+				return model1.nft.rating > model2.nft.rating
 			case .costAscending:
-				value1.nft.price < value2.nft.price
+				return model1.nft.price < model2.nft.price
 			case .costDescending:
-				value1.nft.price > value2.nft.price
+				return model1.nft.price > model2.nft.price
 			default:
-				true
+				return false
 			}
 		}
 	}
 	
-	func filterApplier(_ model: [String : NFTModelContainer?].Element) -> Bool {
-		guard let model = model.value else { return true }
+	func filterApplier(_ id: String) -> Bool {
+		guard let item = nfts[id] ?? nil else { return true }
 		
 		let matchesText = searchText.isEmpty ||
-			model.nft.name.localizedCaseInsensitiveContains(searchText)
+			item.nft.name.localizedCaseInsensitiveContains(searchText)
 		
 		let matchesTokens = activeTokens.allSatisfy { token in
 			switch token {
 			case .isFavourite:
-				model.isFavorite
+				item.isFavorite
 			case .isInCart:
-				model.isInCart
+				item.isInCart
 			case .isNotFavourite:
-				!model.isFavorite
+				!item.isFavorite
 			case .isNotInCart:
-				!model.isInCart
+				!item.isInCart
 			default:
 				true
 			}
@@ -259,60 +250,15 @@ extension AsyncNFTs {
 }
 
 // --- stream lifecycle ---
-private extension AsyncNFTs {
+private extension NFTCollectionViewModel {
 	func cancelFetchingTask() {
 		fetchingTask?.cancel()
 		fetchingTask = nil
-		
-		continuation?.finish()
-		continuation = nil
-		currentStream = nil
-	}
-	
-	func makeNFTsStream(with ids: [String]) -> AsyncThrowingStream<NFTResponse, Error> {
-		if let currentStream {
-			return currentStream
-		} else {
-			let stream = AsyncThrowingStream<NFTResponse, Error> { continuation in
-				cancelFetchingTask()
-				
-				self.continuation = continuation
-				
-				fetchingTask = Task(priority: .userInitiated) {
-					for id in ids {
-						if viewDidDisappeared {
-							cancelFetchingTask()
-							return
-						}
-						
-						let nft = try await performWithTimeout(
-							timeout: Duration.seconds(3),
-							operation: { [weak self] in
-								guard let self else { throw NSError(domain: "Self is deallocated", code: 0) }
-								return try await nftService.loadNFT(id: id)
-							}
-						)
-						
-						continuation.yield(nft)
-					}
-					continuation.finish()
-				}
-				
-				continuation.onTermination = { _ in
-					Task(priority: .utility) { [weak self] in
-						await self?.cancelFetchingTask()
-					}
-				}
-			}
-			
-			currentStream = stream
-			return stream
-		}
 	}
 }
 
 // --- updaters ---
-private extension AsyncNFTs {
+private extension NFTCollectionViewModel {
 	func switchLikeState(for model: NFTModelContainer, key id: String) {
 		nfts.updateValue(
 			.init(
@@ -342,49 +288,117 @@ private extension AsyncNFTs {
 		} else {
 			return
 		}
+		
 		let oldIDs = Set(nfts.keys)
 		
 		let idsToAdd = newIDs.subtracting(oldIDs)
 		let idsToRemove = oldIDs.subtracting(newIDs)
 		
-		let newCapacity = oldIDs.count - idsToRemove.count + idsToAdd.count
+		let newIsEmpty = idsToAdd.isEmpty
+		let removalIsEmpty = idsToRemove.isEmpty
+		guard !newIsEmpty || !removalIsEmpty else { return }
 		
-		nfts.reserveCapacity(newCapacity)
+		isLoaded = false
 		
-		idsToRemove.forEach { nfts.removeValue(forKey: $0) }
-		idsToAdd.forEach { nfts.updateValue(.none, forKey: $0) }
+		if !removalIsEmpty {
+			idsToRemove.forEach { nfts.removeValue(forKey: $0) }
+			sortedKeys.removeAll(where: { idsToRemove.contains($0) })
+			filteredKeys.removeAll(where: { idsToRemove.contains($0) })
+			sortedKeys.removeAll(where: { idsToRemove.contains($0) })
+		}
+		
+		if !newIsEmpty {
+			nfts.reserveCapacity(nfts.count + idsToAdd.count)
+			newIDs.forEach {
+				nfts.updateValue(.none, forKey: $0)
+				if !sortedKeys.contains($0) {
+					sortedKeys.append($0)
+				}
+				
+				if !filteredKeys.contains($0) {
+					filteredKeys.append($0)
+				}
+			}
+		}
+		
+		loadNilNFTsIfNeeded()
 	}
 }
 
 // --- loaders ---
-private extension AsyncNFTs {
-	func loadUnloadedNFTsIfNeeded() async throws {
-		let unloadedNFTs = nfts.filter(\.value.isNil)
-		guard !unloadedNFTs.isEmpty else { return }
+private extension NFTCollectionViewModel {
+	func loadNilNFTsIfNeeded(isInitial: Bool = false) {
+		let unloaded = nfts.filter(\.value.isNil).map(\.key)
 		
-		try await loadNFTs(by: unloadedNFTs.map(\.key))
-	}
-	
-	func loadNFTs(by ids: [String]) async throws {
-		nfts.reserveCapacity(ids.count)
-		ids.forEach { nfts[$0, default: nil] = nil }
+		guard !unloaded.isEmpty else {
+			if !sortedKeys.isEmpty && !isLoaded {
+				applySort()
+			}
+			isLoaded = true
+			return
+		}
 		
-		let favourites = await nftService.favouritesService.get()
-		let order = await nftService.orderService.get()
+		let chunks = unloaded.chunked(into: 10)
 		
-		for try await nft in makeNFTsStream(with: ids) {
-			let nftContainer = NFTModelContainer(
-				nft: nft,
-				isFavorite: favourites.contains(nft.id),
-				isInCart: order.contains(nft.id)
-			)
-			nfts[nft.id, default: nil] = nftContainer
+		fetchingTask?.cancel()
+		fetchingTask = Task {
+			let favourites = await nftService.favouritesService.get()
+			let order = await nftService.orderService.get()
+			
+			for chunk in chunks {
+				guard !Task.isCancelled else { return }
+				
+				let results = await withTaskGroup(
+					of: NFTResponse?.self,
+					returning: [NFTResponse].self
+				) { group in
+					
+					for id in chunk {
+						group.addTask { [weak self] in
+							guard !Task.isCancelled else { return nil }
+							return try? await self?.nftService.loadNFT(id: id)
+						}
+					}
+					
+					var collected = [NFTResponse]()
+					for await nft in group {
+						if let nft {
+							collected.append(nft)
+						}
+					}
+					
+					return collected
+				}
+				
+				for nft in results {
+					nfts[nft.id] = .init(
+						nft: nft,
+						isFavorite: favourites.contains(nft.id),
+						isInCart: order.contains(nft.id)
+					)
+				}
+			}
+			
+			guard !Task.isCancelled else { return }
+			
+			let failedCount = nfts.filter(\.value.isNil).count
+			if failedCount > 0 {
+				errorIsPresented = true
+			} else {
+				if !isInitial {
+					withAnimation(Constants.defaultAnimation) {
+						applySort()
+					}
+				}
+			}
+			
+			isLoaded = true
 		}
 	}
 }
 
 // --- polling lifecycle ---
-extension AsyncNFTs {
+extension NFTCollectionViewModel {
 	func startBackgroundUnloadedLoadPolling() {
 		guard pollingTask == nil || pollingTask?.isCancelled ?? true else { return }
 		
@@ -392,7 +406,9 @@ extension AsyncNFTs {
 			do {
 				repeat {
 					try await updateIDs()
-					try await loadUnloadedNFTsIfNeeded()
+					if isLoaded {
+						loadNilNFTsIfNeeded()
+					}
 					try await Task.sleep(for: pollingInterval)
 				} while !Task.isCancelled
 			} catch is CancellationError {

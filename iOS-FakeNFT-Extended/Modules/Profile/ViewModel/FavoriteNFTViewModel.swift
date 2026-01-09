@@ -22,8 +22,16 @@ final class FavoriteNFTViewModel {
 	@ObservationIgnored private var loadingTask: Task<Void, Never>?
 	@ObservationIgnored private var searchText = ""
     
-	init(service: NFTServiceProtocol) {
+	init(service: NFTServiceProtocol, initialNFTsIDs: Set<String>) {
 		self.service = service
+		
+		initialNFTsIDs.forEach {
+			sortedKeys.append($0)
+			filteredKeys.append($0)
+			items.updateValue(.none, forKey: $0)
+		}
+		
+		loadNilNFTsIfNeeded()
     }
 }
 

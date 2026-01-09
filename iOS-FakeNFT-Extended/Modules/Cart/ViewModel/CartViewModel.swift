@@ -13,9 +13,13 @@ final class CartViewModel {
 	typealias SortOption = CartSortActionsViewModifier.SortOption
 	
 	private var sortOption: SortOption = .cost
-	private var nfts = [String : NFTModelContainer?]()
-
+	private(set) var nfts = [String : NFTModelContainer?]()
+	private var sortedKeys = [String]()
+	private(set) var isLoaded = false
+	private(set) var filteredKeys = [String]()
+	
 	private var nftsLoadTask: Task<Void, Never>?
+	private var loadingTask: Task<Void, Never>?
 	
 	private(set) var removalApproveAlertIsPresented = false
 	private(set) var modelForRemoval: NFTModelContainer?
@@ -44,11 +48,19 @@ final class CartViewModel {
 extension CartViewModel {
 	func onDebounce(_ searchText: String) {
 		self.searchText = searchText
+		
+		if isLoaded {
+			applyFilter()
+		}
 	}
 	
 	func setSortOption(_: SortOption, _ option: SortOption) {
 		HapticPerfromer.shared.play(.impact(.light))
 		sortOption = option
+		
+		if isLoaded {
+			applySort()
+		}
 	}
 	
 	func viewDidDissappear() {
@@ -62,43 +74,111 @@ extension CartViewModel {
 		} else {
 			newCartIDs = Set(ids)
 		}
-		guard nfts.keys.sorted() != newCartIDs.sorted() else { return }
 		
-		let idsToRemove = Set(nfts.keys).subtracting(Set(newCartIDs))
-		let idsToAdd = Set(newCartIDs).subtracting(nfts.keys)
+		let oldIDs = Set(nfts.keys)
+		guard oldIDs != newCartIDs else { return }
 		
-		let newCapacity = nfts.count + idsToAdd.count - idsToRemove.count
+		let idsToRemove = oldIDs.subtracting(Set(newCartIDs))
+		let idsToAdd = newCartIDs.subtracting(oldIDs)
 		
-		HapticPerfromer.shared.play(.selection)
-		nfts.reserveCapacity(newCapacity)
-		
-		idsToRemove.forEach {
-			nfts.removeValue(forKey: $0)
+		var anyChange = false
+		if !idsToRemove.isEmpty {
+			anyChange = true
+			idsToRemove.forEach { nfts.removeValue(forKey: $0) }
+			sortedKeys.removeAll(where: { idsToRemove.contains($0) })
+			filteredKeys.removeAll(where: { idsToRemove.contains($0) })
 		}
 		
-		idsToAdd.forEach {
-			nfts[$0, default: nil] = nil
+		if !idsToAdd.isEmpty {
+			anyChange = true
+			nfts.reserveCapacity(nfts.count + idsToAdd.count)
+			idsToAdd.forEach {
+				nfts.updateValue(.none, forKey: $0)
+				if !sortedKeys.contains($0) {
+					sortedKeys.append($0)
+				}
+				if !filteredKeys.contains($0) {
+					filteredKeys.append($0)
+				}
+			}
 		}
+		
+		if anyChange {
+			HapticPerfromer.shared.play(.selection)
+		}
+		
+		loadNilNFTsIfNeeded()
 	}
 	
 	func update(with notification: Notification) {
 		guard let ids = notification.userInfo?[NFTsIDsKind.order.userDefaultsKey] as? [String] else { return }
 		
-		Task(priority: .userInitiated) {
+		Task {
 			await performCartUpdateIfNeeded(with: ids)
 		}
 	}
 
-	func loadNilNFTs() async {
-		do {
-			try Task.checkCancellation()
-			let ids = notLoadedIDs
-			if !ids.isEmpty {
-				try await loadNFTs(using: ids)
-				HapticPerfromer.shared.play(.selection)
+	func loadNilNFTsIfNeeded() {
+		let unloaded = nfts.filter(\.value.isNil).map(\.key)
+		
+		guard !unloaded.isEmpty else {
+			if !sortedKeys.isEmpty && !isLoaded {
+				applySort()
+				isLoaded = true
 			}
-		} catch {
-			onError(error)
+			return
+		}
+		
+		let chunks = unloaded.chunked(into: 6)
+		
+		loadingTask?.cancel()
+		loadingTask = Task {
+			for chunk in chunks {
+				guard !Task.isCancelled else { return }
+				
+				let results = await withTaskGroup(
+					of: NFTResponse?.self,
+					returning: [NFTResponse].self
+				) { group in
+					
+					for id in chunk {
+						group.addTask { [weak self] in
+							guard !Task.isCancelled else { return nil }
+							return try? await self?.nftService.loadNFT(id: id)
+						}
+					}
+					
+					var collected = [NFTResponse]()
+					for await nft in group {
+						if let nft {
+							collected.append(nft)
+						}
+					}
+					
+					return collected
+				}
+				
+				for nft in results {
+					nfts.updateValue(
+						.init(
+							nft: nft,
+							isFavorite: false,
+							isInCart: true
+						),
+						forKey: nft.id
+					)
+				}
+			}
+			
+			guard !Task.isCancelled else { return }
+			
+			let failedCount = nfts.filter(\.value.isNil).count
+			if failedCount > 0 {
+				dataLoadingErrorIsPresented = true
+			} else {
+				applySort()
+				isLoaded = true
+			}
 		}
 	}
 	
@@ -109,7 +189,9 @@ extension CartViewModel {
 			defer { clearNftsLoadTask() }
 			while !Task.isCancelled {
 				do {
-					await loadNilNFTs()
+					if isLoaded {
+						loadNilNFTsIfNeeded()
+					}
 					try await waitPolling()
 				} catch is CancellationError {
 					print("\nCartViewModel \(#function) cancelled")
@@ -128,9 +210,37 @@ extension CartViewModel {
 	}
 }
 
+// --- appliers ---
+private extension CartViewModel {
+	func applyFilter() {
+		filteredKeys = sortedKeys
+			.filter {
+				guard !searchText.isEmpty else { return true }
+				guard let item = nfts[$0] ?? nil else { return false }
+				return item.nft.name.localizedStandardContains(searchText)
+			}
+	}
+	
+	func applySort() {
+		sortedKeys
+			.sort { lhsKey, rhsKey in
+				guard
+					let lhs = nfts[lhsKey] ?? nil,
+					let rhs = nfts[rhsKey] ?? nil
+				else {
+					return false
+				}
+				
+				return sortComparator(lhs, rhs)
+			}
+		
+		filteredKeys = sortedKeys
+	}
+}
+
 // --- private helpers ---
 private extension CartViewModel {
-	func sortComparator(lhs: NFTModelContainer?, rhs: NFTModelContainer?) -> Bool {
+	func sortComparator(_ lhs: NFTModelContainer?, _ rhs: NFTModelContainer?) -> Bool {
 		guard let lhs, let rhs else { return false }
 		
 		switch sortOption {
@@ -147,14 +257,6 @@ private extension CartViewModel {
 			return lhs.nft.price.isLess(than: rhs.nft.price)
 		case .rate:
 			return lhs.nft.rating < rhs.nft.rating
-		}
-	}
-	
-	func filterApplier(_ model: NFTModelContainer?) -> Bool {
-		if !searchText.isEmpty, let model {
-			model.nft.name.localizedCaseInsensitiveContains(searchText)
-		} else {
-			true
 		}
 	}
 	
@@ -175,49 +277,14 @@ private extension CartViewModel {
 	func clearNftsLoadTask() {
 		nftsLoadTask?.cancel()
 		nftsLoadTask = nil
-	}
-	
-	func loadNFTs(using ids: [String]) async throws {
-		for id in ids {
-			try Task.checkCancellation()
-			let nft = try await nftService.loadNFT(id: id)
-			nfts[id, default: nil] = .init(
-				nft: nft,
-				isFavorite: false,
-				isInCart: true
-			)
-		}
+		
+		loadingTask?.cancel()
+		loadingTask = nil
 	}
 }
 
 // --- data getters ---
 extension CartViewModel {
-	var isLoaded: Bool {
-		nfts.compactMap(\.value).count == nfts.count
-	}
-	
-	@inline(__always)
-	private var notLoadedIDs: [String] {
-		nfts.filter { $0.value == nil }.map(\.key)
-	}
-	
-	var visibleNfts: [NFTModelContainer?] {
-		if isLoaded {
-			nfts
-				.map(\.value)
-				.sorted(by: sortComparator)
-				.filter(filterApplier)
-		} else {
-			nfts
-				.map(\.value)
-				.map { _ in nil }
-		}
-	}
-	
-	var nftCount: Int {
-		nfts.count
-	}
-	
 	private var cartCost: Float {
 		nfts.compactMap(\.value?.nft.price).reduce(0, +)
 	}
@@ -257,6 +324,8 @@ extension CartViewModel {
 	func removeNFTFromCart() {
 		guard let modelForRemoval else { return }
 		
+		filteredKeys.removeAll(where: { $0 == modelForRemoval.id })
+		sortedKeys.removeAll(where: { $0 == modelForRemoval.id })
 		nfts.removeValue(forKey: modelForRemoval.id)
 		Task(priority: .userInitiated) {
 			try await nftService.removeFromCart(nftID: modelForRemoval.id)

@@ -30,7 +30,6 @@ final class EditProfileViewModel {
 	private var originalProfile: ProfilePayload
     
 	@ObservationIgnored private let profileService: ProfileServiceProtocol
-	@ObservationIgnored private let userPicturePlaceholder = "userPicturePlaceholder"
 
     
     // MARK: - Init
@@ -43,9 +42,7 @@ final class EditProfileViewModel {
         self.name = profile.name ?? "no name"
 		self.about = profile.description ?? "no about"
 		self.website = profile.website ?? "no url"
-		
-		let avatar = profile.avatar ?? ""
-		self.avatarURL = avatar.isEmpty ? userPicturePlaceholder : avatar
+		self.avatarURL = profile.avatar ?? ""
         self.originalProfile = profile
     }
 }
@@ -61,7 +58,7 @@ extension EditProfileViewModel {
 	func deletePhotoTapped() {
 		isPhotoActionsPresented = false
 		photoURLInput = ""
-		avatarURL = userPicturePlaceholder
+		avatarURL = ""
 	}
 	
 	func keyboardWillChangeFrame(_ notification: Notification) {
@@ -92,11 +89,9 @@ extension EditProfileViewModel {
 	}
 	
 	func saveTapped() async throws {
-		let avatarToSend = (avatarURL == userPicturePlaceholder) ? "" : avatarURL
-		
 		let payload = ProfileContainerModel(
 			name: name,
-			avatarURLString: avatarToSend,
+			avatarURLString: avatarURL,
 			websiteURLString: website,
 			description: about
 		)

@@ -13,7 +13,7 @@ enum CatalogPage {
 extension CatalogPage: CustomDebugStringConvertible {
 	var debugDescription: String {
 		switch self {
-		case .catalogDetails(let catalog):
+		case .catalogDetails:
 			"catalogDetails"
 		}
 	}

@@ -17,19 +17,21 @@ struct NFTImageView: View {
 		Group {
 			Color.ypBackgroundUniversal
 				.overlay {
-					AsyncImageCached(urlString: imageURLString) { phase in
-						switch phase {
-						case .empty:
-							ProgressView()
-								.progressViewStyle(.circular)
-						case .loaded(let image):
-							Image(uiImage: image)
-								.resizable()
-								.scaledToFit()
-						case .error:
-							Text("?")
-								.font(.bold22)
-								.foregroundStyle(.ypWhiteUniversal)
+					if imageURLString.isEmpty {
+						Text("?")
+							.font(.bold22)
+							.foregroundStyle(.ypWhiteUniversal)
+					} else {
+						AsyncImageCached(urlString: imageURLString) { phase in
+							switch phase {
+							case .empty, .error:
+								ProgressView()
+									.progressViewStyle(.circular)
+							case .loaded(let image):
+								Image(uiImage: image)
+									.resizable()
+									.scaledToFit()
+							}
 						}
 					}
 				}

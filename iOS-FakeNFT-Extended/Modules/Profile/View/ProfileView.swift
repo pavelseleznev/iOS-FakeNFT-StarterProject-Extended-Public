@@ -66,6 +66,7 @@ private extension ProfileView {
             Spacer()
             
             Button {
+				guard !viewModel.profile.anyFieldDidntLoaded else { return }
                 viewModel.editTapped()
             } label: {
                 Image.edit

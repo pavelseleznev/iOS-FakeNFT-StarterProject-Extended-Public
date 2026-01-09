@@ -53,11 +53,11 @@ extension ProfileViewModel {
 // --- routing ---
 extension ProfileViewModel {
 	func myNFTsTapped() {
-		push(.profile(.myNFTs))
+		push(.profile(.myNFTs(Set(profile.nftsIDs ?? []))))
 	}
 	
 	func favoriteNFTsTapped() {
-		push(.profile(.favoriteNFTs))
+		push(.profile(.favoriteNFTs(Set(profile.favoritesIDs ?? []))))
 	}
 	
 	func editTapped() {

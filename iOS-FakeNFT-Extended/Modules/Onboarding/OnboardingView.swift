@@ -92,6 +92,7 @@ struct OnboardingView: View {
 			.onChange(of: selection, performSelectionChange)
 		}
 		.ignoresSafeArea(edges: .bottom)
+		.toolbar(.hidden)
 	}
 }
 
@@ -205,6 +206,16 @@ fileprivate extension OnboardingView {
 // MARK: - Preview
 #if DEBUG
 #Preview {
-	OnboardingView(onComplete: {})
+	@Previewable @State var path = [Page]()
+	NavigationStack(path: $path) {
+		OnboardingView(onComplete: {})
+			.navigationDestination(for: Page.self) { _ in
+				OnboardingView(onComplete: {})
+			}
+	}
+	.task {
+		try? await Task.sleep(for: .seconds(1))
+		path.append(.onboarding)
+	}
 }
 #endif

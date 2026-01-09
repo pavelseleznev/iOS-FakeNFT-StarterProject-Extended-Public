@@ -5,7 +5,7 @@
 //  Created by Pavel Seleznev on 12/19/25.
 //
 
-import Foundation
+import SwiftUI
 
 @MainActor
 @Observable
@@ -32,11 +32,20 @@ final class MyNFTViewModel {
 	init(
 		favouritesService: NFTsIDsServiceProtocol,
 		loadNFT: @escaping @Sendable (String) async throws -> NFTResponse,
-		loadPurchasedNFTs: @escaping @Sendable () async -> Set<String>
+		loadPurchasedNFTs: @escaping @Sendable () async -> Set<String>,
+		initialNFTsIDs: Set<String>
 	) {
         self.favouritesService = favouritesService
 		self.loadNFT = loadNFT
 		self.loadPurchasedNFTs = loadPurchasedNFTs
+		
+		initialNFTsIDs.forEach {
+			items.updateValue(.none, forKey: $0)
+			sortedKeys.append($0)
+			filteredKeys.append($0)
+		}
+		
+		loadNilNFTsIfNeeded()
     }
 }
 
@@ -203,8 +212,9 @@ extension MyNFTViewModel {
 				loadErrorPresented = true
 			} else {
 				applySort()
-				isLoaded = true
 			}
+			
+			isLoaded = true
 		}
 	}
 }

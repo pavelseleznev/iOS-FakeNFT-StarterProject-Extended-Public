@@ -18,13 +18,15 @@ struct MyNFTView: View {
 	init(
 		favoritesService: NFTsIDsServiceProtocol,
 		loadNFT: @escaping @Sendable (String) async throws -> NFTResponse,
-		loadPurchasedNFTs: @escaping @Sendable () async -> Set<String>
+		loadPurchasedNFTs: @escaping @Sendable () async -> Set<String>,
+		initialNFTsIDs: Set<String>
 	) {
 		_viewModel = State(
 			initialValue: .init(
 				favouritesService: favoritesService,
 				loadNFT: loadNFT,
-				loadPurchasedNFTs: loadPurchasedNFTs
+				loadPurchasedNFTs: loadPurchasedNFTs,
+				initialNFTsIDs: initialNFTsIDs
 			)
 		)
     }
@@ -107,7 +109,8 @@ struct MyNFTView: View {
 	MyNFTView(
 		favoritesService: NFTsIDsService(api: .mock, kind: .favorites),
 		loadNFT: { _ in .mock },
-		loadPurchasedNFTs: { [] }
+		loadPurchasedNFTs: { [] },
+		initialNFTsIDs: []
 	)
 }
 #endif

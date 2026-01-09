@@ -38,6 +38,21 @@ struct ProfileContainerModel: Codable, Equatable {
 		favoritesIDs = model.likes
 	}
 	
+	var anyFieldDidntLoaded: Bool {
+		if
+			let _ = name,
+			let _ = avatarURLString,
+			let _ = websiteURLString,
+			let _ = description,
+			let _ = nftsIDs,
+			let _ = favoritesIDs
+		{
+			false
+		} else {
+			true
+		}
+	}
+	
 	var anyFieldIsEmpty: Bool {
 		if
 			let name,

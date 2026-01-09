@@ -18,7 +18,12 @@ struct EditProfileForm: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            FormView(title: String(localized: nameField), placeholder: String(localized: editProfilePlaceholder), text: $name)
+            FormView(
+				title: String(localized: nameField),
+				placeholder: String(localized: editProfilePlaceholder),
+				text: $name,
+				contentType: .givenName
+			)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(descriptionField)
@@ -34,7 +39,8 @@ struct EditProfileForm: View {
 			FormView(
 				title: String(localized: websiteField),
 				placeholder: String(localized: editProfilePlaceholder),
-				text: $website
+				text: $website,
+				contentType: .URL
 			)
         }
 		.padding(.horizontal, 16)
@@ -46,6 +52,7 @@ fileprivate struct FormView: View {
 	let title: String
 	let placeholder: String
 	@Binding var text: String
+	let contentType: UITextContentType
 	
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
@@ -59,6 +66,9 @@ fileprivate struct FormView: View {
 				.background(Color.ypLightGrey)
 				.clipShape(.capsule)
 				.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 10)
+				.autocorrectionDisabled(true)
+				.textInputAutocapitalization(contentType == .URL ? .never : .words)
+				.textContentType(contentType)
 		}
 	}
 }

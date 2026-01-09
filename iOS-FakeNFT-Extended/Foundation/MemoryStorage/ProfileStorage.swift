@@ -68,6 +68,10 @@ actor ProfileStorage: ProfileStorageProtocol {
 			}
 		}
 	}
+	
+	private func guardString(_ lhs: String?, _ rhs: String?) -> String? {
+		[nil, "null"].contains(lhs) ? rhs : lhs
+	}
 }
 
 // MARK: - ProfileStorage Extensions
@@ -82,10 +86,10 @@ extension ProfileStorage {
 extension ProfileStorage {
 	func update(with model: ProfileContainerModel) async {
 		let candidate = ProfileContainerModel(
-			name: model.name ?? profile.name,
-			avatarURLString: model.avatarURLString ?? profile.avatarURLString,
-			websiteURLString: model.websiteURLString ?? profile.websiteURLString,
-			description: model.description ?? profile.description,
+			name: guardString(model.name, profile.name),
+			avatarURLString: guardString(model.avatarURLString, profile.avatarURLString),
+			websiteURLString: guardString(model.websiteURLString, profile.websiteURLString),
+			description: guardString(model.description, profile.description),
 			nftsIDs: model.nftsIDs ?? profile.nftsIDs,
 			favoritesIDs: model.favoritesIDs ?? profile.favoritesIDs
 		)
