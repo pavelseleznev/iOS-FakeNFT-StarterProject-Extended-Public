@@ -70,7 +70,7 @@ struct CatalogView: View {
 		)
 		.applyRepeatableAlert(
 			isPresented: $viewModel.errorIsPresented,
-			message: .nftCollection, // TODO: add custom & Localize
+            message: .cantGetNFTCatalogs,
 			didTapRepeat: {
 				Task {
 					await viewModel.loadCollections()

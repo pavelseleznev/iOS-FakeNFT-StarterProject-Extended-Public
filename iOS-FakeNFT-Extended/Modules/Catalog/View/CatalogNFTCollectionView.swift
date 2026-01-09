@@ -127,13 +127,13 @@ fileprivate struct AboutCollectionView: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 			
 			HStack {
-				Text("Автор коллекции:") // TODO: Localize
+                Text(.createdBy)
 					.foregroundStyle(.ypBlack)
 					.font(.regular13)
 				
 				Button {
 					// MARK: - не грузится? - норм! - с апи призодят битые url
-					performAuthorSite(catalog.websiteURLString)
+                     performAuthorSite(catalog.websiteURLString)
 				} label: {
 					Text(catalog.authorName)
 						.foregroundStyle(.ypBlueUniversal)
