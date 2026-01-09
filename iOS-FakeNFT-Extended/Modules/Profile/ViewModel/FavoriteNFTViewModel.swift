@@ -15,6 +15,8 @@ final class FavoriteNFTViewModel {
 	private(set) var items = [String : NFTResponse?]()
 	
     var loadErrorPresented = false
+    var removeFavoriteErrorMessage: LocalizedStringResource = .removeFavoriteErrorMessage
+    var favouritedNFTs: LocalizedStringResource = .favouritedNFTs
     
 	@ObservationIgnored private let service: NFTServiceProtocol
 	@ObservationIgnored private var loadingTask: Task<Void, Never>?

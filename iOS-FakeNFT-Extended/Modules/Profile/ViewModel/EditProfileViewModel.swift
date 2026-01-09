@@ -23,7 +23,8 @@ final class EditProfileViewModel {
     var photoURLInput = ""
     var loadingState: LoadingState = .idle
     var isSaveErrorPresented = false
-    var saveErrorMessage = "Не удалось сохранить данные"
+    var saveErrorMessage: LocalizedStringResource = .editProfileSaveError
+    var editProfileTitle: LocalizedStringResource = .editProfileTitle
     
 	private(set) var keyboardHeight: CGFloat = 0
 	private var originalProfile: ProfilePayload
