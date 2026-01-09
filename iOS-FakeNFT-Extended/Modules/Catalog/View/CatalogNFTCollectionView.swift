@@ -133,7 +133,9 @@ fileprivate struct AboutCollectionView: View {
 				
 				Button {
 					// MARK: - не грузится? - норм! - с апи призодят битые url
-					performAuthorSite(catalog.websiteURLString)
+                    // performAuthorSite(catalog.websiteURLString)
+                    // temp fallback, like in figma
+					performAuthorSite("https://practicum.yandex.ru")
 				} label: {
 					Text(catalog.authorName)
 						.foregroundStyle(.ypBlueUniversal)
