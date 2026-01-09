@@ -12,8 +12,13 @@ struct FavoriteNFTView: View {
     @State private var viewModel: FavoriteNFTViewModel
 	@StateObject private var debouncer = DebouncingViewModel()
     
-	init(service: NFTServiceProtocol) {
-		_viewModel = State(initialValue: FavoriteNFTViewModel(service: service))
+	init(service: NFTServiceProtocol, initialNFTsIDs: Set<String>) {
+		_viewModel = State(
+			initialValue: FavoriteNFTViewModel(
+				service: service,
+				initialNFTsIDs: initialNFTsIDs
+			)
+		)
     }
     
     private let columns: [GridItem] = [

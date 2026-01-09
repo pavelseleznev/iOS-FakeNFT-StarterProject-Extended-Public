@@ -8,8 +8,8 @@
 
 enum ProfilePage {
 	case editProfile(ProfilePayload)
-    case myNFTs
-    case favoriteNFTs
+    case myNFTs(Set<String>)
+    case favoriteNFTs(Set<String>)
 }
 
 extension ProfilePage: CustomDebugStringConvertible {

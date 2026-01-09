@@ -150,7 +150,7 @@ private extension Coordinator {
 				transaction.disablesAnimations = true
 				
 				withTransaction(transaction) {
-					path = [.tabView]
+					path = [.onboarding]
 				}
 			}
 		}
@@ -354,15 +354,16 @@ private extension Coordinator {
                 profileService: appContainer.profileService,
                 onCancel: pop
             )
-        case .myNFTs:
+        case .myNFTs(let ids):
 			MyNFTView(
 				favoritesService: appContainer.nftService.favouritesService,
 				loadNFT: appContainer.api.getNFT,
-				loadPurchasedNFTs: appContainer.purchasedNFTsService.get
+				loadPurchasedNFTs: appContainer.purchasedNFTsService.get,
+				initialNFTsIDs: ids
 			)
 
-        case .favoriteNFTs:
-			FavoriteNFTView(service: appContainer.nftService)
+        case .favoriteNFTs(let ids):
+			FavoriteNFTView(service: appContainer.nftService, initialNFTsIDs: ids)
 
         }
     }
