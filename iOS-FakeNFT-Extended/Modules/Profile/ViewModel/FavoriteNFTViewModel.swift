@@ -99,10 +99,10 @@ extension FavoriteNFTViewModel {
 	
 	func removeFromFavorites(id: String) async {
 		do {
-			try await service.removeFromFavourites(nftID: id)
 			filteredKeys.removeAll { $0 == id }
 			sortedKeys.removeAll { $0 == id }
 			items.removeValue(forKey: id)
+			try await service.removeFromFavourites(nftID: id)
 		} catch is CancellationError {
 			return
 		} catch {
