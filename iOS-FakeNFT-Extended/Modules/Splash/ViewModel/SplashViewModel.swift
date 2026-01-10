@@ -26,10 +26,11 @@ extension SplashViewModel {
 	func waitAnimations() async {
 		do {
 			HapticPerfromer.shared.play(.splashWave)
-			
+			try await Task.sleep(for: .seconds(0.5))
 			isLoading = true
 			try await Task.sleep(for: Constants.splashPresentationDuration)
 			isLoading = false
+			try await Task.sleep(for: .seconds(0.3))
 			withAnimation(.easeInOut(duration: 0.5)) {
 				performOnDissapear = true
 			}

@@ -12,6 +12,8 @@ fileprivate let blinkingAppIconSize: CGFloat = 80
 
 struct SplashView: View {
 	@State private var viewModel: SplashViewModel
+	@State private var isAppeared = false
+	
 	private let timer = Timer.publish(
 		every: loadingCommentDuration,
 		on: .main,
@@ -28,12 +30,16 @@ struct SplashView: View {
 		ZStack {
 			Color.ypWhite.ignoresSafeArea()
 			
-			Group {
-				SplashBackgroundView()
-				
+			if isAppeared {
+				Color.clear
+					.frame(width: 0, height: 0)
+					.task(priority: .utility) { await viewModel.waitAnimations() }
+			}
+			
+			ZStack {
 				Image(.vector)
 					.scaleEffect(viewModel.isLoading ? 0 : 1)
-					.opacity(viewModel.isLoading ? 0.1 : 1)
+					.opacity(viewModel.isLoading ? 0 : 1)
 				
 				VStack(spacing: 16) {
 					BlinkingAppIcon(imageSize: blinkingAppIconSize)
@@ -45,14 +51,31 @@ struct SplashView: View {
 						.progressViewStyle(.circular)
 				}
 				.scaleEffect(viewModel.isLoading ? 1 : 0)
+				.opacity(viewModel.isLoading ? 1 : 0)
 			}
-			.animation(Constants.defaultAnimation, value: viewModel.isLoading)
-			.scaleEffect(viewModel.performOnDissapear ? 3 : 1)
+			.animation(.default, value: viewModel.isLoading)
+			.scaleEffect(viewModel.performOnDissapear ? 0 : 1)
 			.opacity(viewModel.performOnDissapear ? 0 : 1)
 		}
-		.task(priority: .utility) { await viewModel.waitAnimations() }
+		.overlay {
+			if isAppeared && !viewModel.performOnDissapear {
+				SplashBackgroundView()
+					.transition(
+						.asymmetric(
+							insertion: .opacity.animation(.easeInOut(duration: 2)),
+							removal:
+								.scale(scale: 3)
+								.combined(with: .opacity)
+								.animation(Constants.defaultAnimation)
+						)
+					)
+					.drawingGroup()
+			}
+		}
+		.ignoresSafeArea()
 		.transition(.opacity)
 		.onReceive(timer, perform: viewModel.timerTick)
+		.onAppear(perform: onAppear)
 	}
 	
 	private var loadingCommentText: some View {
@@ -73,6 +96,10 @@ struct SplashView: View {
 					.colorScheme(.dark)
 					.mask(loadingCommentText)
 			}
+	}
+	
+	private func onAppear() {
+		isAppeared = true
 	}
 }
 

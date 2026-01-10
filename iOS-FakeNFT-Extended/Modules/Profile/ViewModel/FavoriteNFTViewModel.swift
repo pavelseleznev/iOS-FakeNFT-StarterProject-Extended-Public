@@ -13,6 +13,7 @@ final class FavoriteNFTViewModel {
 	private(set) var filteredKeys = [String]()
 	@ObservationIgnored private var sortedKeys = [String]()
 	private(set) var items = [String : NFTResponse?]()
+	private(set) var isLoading = false
 	
     var loadErrorPresented = false
     var removeFavoriteErrorMessage: LocalizedStringResource = .removeFavoriteErrorMessage
@@ -98,6 +99,8 @@ extension FavoriteNFTViewModel {
 	}
 	
 	func removeFromFavorites(id: String) async {
+		isLoading = true
+		defer { isLoading = false }
 		do {
 			try await service.removeFromFavourites(nftID: id)
 			filteredKeys.removeAll { $0 == id }

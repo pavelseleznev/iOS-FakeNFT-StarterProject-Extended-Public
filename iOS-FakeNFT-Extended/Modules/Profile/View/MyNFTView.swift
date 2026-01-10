@@ -66,6 +66,10 @@ struct MyNFTView: View {
 					EmptyContentView(type: .noMyNFTs)
 				}
 			}
+			.allowsHitTesting(!viewModel.isLoading)
+			.overlay {
+				LoadingView(loadingState: viewModel.isLoading ? .fetching : .idle)
+			}
 		}
 		.onAppear() {
 			viewModel.setSortOption(sortOption)

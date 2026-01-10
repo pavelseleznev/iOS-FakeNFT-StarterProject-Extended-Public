@@ -14,6 +14,7 @@ final class MyNFTViewModel {
     var loadErrorMessage: LocalizedStringResource = .addToFavoriteError
     var myNFTs: LocalizedStringResource = .myNFTs
 	private(set) var isLoaded = false
+	private(set) var isLoading = false
 	private(set) var filteredKeys = [String]()
 	private(set) var _kickUIUpdate = false
 	
@@ -90,6 +91,9 @@ extension MyNFTViewModel {
 	
 	func didTapLikeButton(_ model: NFTModelContainer?) {
 		guard let model else { return }
+		
+		isLoading = true
+		defer { isLoading = false }
 		
 		Task {
 			do {
