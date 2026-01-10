@@ -11,7 +11,7 @@ struct AlertPhotoURLModifier: ViewModifier {
     @Binding var isPresented: Bool
     @Binding var photoURL: String
 
-    let title: String
+    let title: LocalizedStringResource
     let placeholder: String
     let onSave: () -> Void
 

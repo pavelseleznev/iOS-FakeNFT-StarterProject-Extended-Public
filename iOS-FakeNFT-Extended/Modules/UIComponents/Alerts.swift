@@ -35,7 +35,7 @@ extension View {
     func applyPhotoURLAlert(
         isPresented: Binding<Bool>,
         photoURL: Binding<String>,
-        title: String = "Ccылка на фото",
+        title: LocalizedStringResource = .linkToPhoto,
         placeholder: String = "https://",
         onSave: @escaping () -> Void,
     ) -> some View {
