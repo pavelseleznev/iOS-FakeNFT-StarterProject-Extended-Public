@@ -26,10 +26,10 @@ struct FavoriteNFTView: View {
         GridItem(.flexible())
     ]
     
-    var body: some View {
-        ZStack {
-            Color.ypWhite.ignoresSafeArea()
-            
+	var body: some View {
+		ZStack {
+			Color.ypWhite.ignoresSafeArea()
+			
 			ScrollView(.vertical) {
 				LazyVGrid(
 					columns: columns,
@@ -56,19 +56,30 @@ struct FavoriteNFTView: View {
 			.scrollIndicators(.hidden)
 			.scrollDismissesKeyboard(.interactively)
 			.overlay {
-				if viewModel.filteredKeys.isEmpty {
-					EmptyContentView(type: .noFavoriteNFTs)
+				let contentIsEmpty = viewModel.filteredKeys.isEmpty
+				ZStack {
+					if contentIsEmpty {
+						EmptyContentView(type: .noFavoriteNFTs)
+							.transition(.scale.combined(with: .opacity))
+					}
 				}
+				.animation(.default, value: contentIsEmpty)
 			}
 			.allowsHitTesting(!viewModel.isLoading)
 			.overlay {
-				LoadingView(loadingState: viewModel.isLoading ? .fetching : .idle)
+				ZStack {
+					if viewModel.isLoading {
+						LoadingView(loadingState: .fetching)
+							.transition(.scale.combined(with: .opacity))
+					}
+				}
+				.animation(Constants.defaultAnimation, value: viewModel.isLoading)
 			}
-        }
+		}
 		.applyRepeatableAlert(
 			isPresented: $viewModel.loadErrorPresented,
-            message: viewModel.removeFavoriteErrorMessage,
-			didTapRepeat: viewModel.loadNilNFTsIfNeeded
+			message: viewModel.removeFavoriteErrorMessage,
+			didTapRepeat: { viewModel.loadNilNFTsIfNeeded() }
 		)
 		.onAppear {
 			debouncer.onDebounce = viewModel.onDebounce
