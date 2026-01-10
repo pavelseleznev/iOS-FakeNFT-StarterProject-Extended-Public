@@ -28,7 +28,7 @@ struct ProfileContainer<Link: View>: View {
 					.padding(.horizontal, 16)
 			}
 			
-			VStack {
+			VStack(spacing: -16) {
 				ForEach(actions()) { action in
 					action
 				}
@@ -50,11 +50,13 @@ struct ProfileContainer<Link: View>: View {
 			} actions: {
 				[
 					ProfileActionCell(
-						title: "\(LocalizedStringResource.myNFTs) (112)",
+						caption: "112",
+						title: .myNFTs,
 						action: {}
 					),
 					ProfileActionCell(
-						title: "\(LocalizedStringResource.favouritedNFTs) (11)",
+						caption: "11",
+						title: .favouritedNFTs,
 						action: {}
 					)
 				]
@@ -83,7 +85,11 @@ struct ProfileContainer<Link: View>: View {
 			.nftButtonStyle()
 		} actions: {
 			[
-				ProfileActionCell(title: "\(LocalizedStringResource.nftCollection) (112)", action: {})
+				ProfileActionCell(
+					caption: "112",
+					title: .nftCollection,
+					action: {}
+				)
 			]
 		}
 	}

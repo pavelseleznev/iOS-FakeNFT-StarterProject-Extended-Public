@@ -1298,24 +1298,6 @@
         }
       }
     },
-    "nftCollection %d" : {
-      "comment" : "The title of the NFT collection view",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "NFT Collection (%1$(count)lld)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Коллекция NFT (%(count)lld)"
-          }
-        }
-      }
-    },
     "noCurrenciesAvailable" : {
       "extractionState" : "manual",
       "localizations" : {

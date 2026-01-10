@@ -33,13 +33,15 @@ struct ProfileView: View {
 				}, actions: {
 					[
 						ProfileActionCell(
-							title: viewModel.myNFTTitle,
+							caption: "\(viewModel.profile.nftsIDs?.count ?? -1)",
+							title: .myNFTs,
 							action: {
 								viewModel.myNFTsTapped()
 							}
 						),
 						ProfileActionCell(
-							title: viewModel.favoriteTitle,
+							caption: "\(viewModel.profile.favoritesIDs?.count ?? -1)",
+							title: .favouritedNFTs,
 							action: {
 								viewModel.favoriteNFTsTapped()
 							})
