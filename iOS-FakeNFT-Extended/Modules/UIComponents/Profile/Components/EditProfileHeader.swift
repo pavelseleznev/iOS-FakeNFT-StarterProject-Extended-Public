@@ -20,6 +20,7 @@ struct EditProfileHeader: View {
 			Group {
 				if avatarURLString.isEmpty {
 					placeholder
+						.transition(.scale.combined(with: .opacity).animation(.default))
 				} else {
 					AsyncImageCached(urlString: avatarURLString) { phase in
 						switch phase {
@@ -34,6 +35,7 @@ struct EditProfileHeader: View {
 								.resizable()
 						}
 					}
+					.transition(.scale.combined(with: .opacity).animation(.default))
 				}
 			}
 			.scaledToFit()
