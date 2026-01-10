@@ -60,6 +60,10 @@ struct FavoriteNFTView: View {
 					EmptyContentView(type: .noFavoriteNFTs)
 				}
 			}
+			.allowsHitTesting(!viewModel.isLoading)
+			.overlay {
+				LoadingView(loadingState: viewModel.isLoading ? .fetching : .idle)
+			}
         }
 		.applyRepeatableAlert(
 			isPresented: $viewModel.loadErrorPresented,
