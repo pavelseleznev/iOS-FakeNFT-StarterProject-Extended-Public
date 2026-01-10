@@ -43,15 +43,18 @@ extension ProfileViewModel {
 // --- routing ---
 extension ProfileViewModel {
 	func myNFTsTapped() {
-		push(.profile(.myNFTs(Set(profile.nftsIDs ?? []))))
+		let nftsIDs = Set(profile.nftsIDs ?? [])
+		push(.profile(.myNFTs(nftsIDs)))
 	}
 	
 	func favoriteNFTsTapped() {
-		push(.profile(.favoriteNFTs(Set(profile.favoritesIDs ?? []))))
+		let nftsIDs = Set(profile.favoritesIDs ?? [])
+		push(.profile(.favoriteNFTs(nftsIDs)))
 	}
 	
 	func editTapped() {
-		push(.profile(.editProfile(.init(from: profile))))
+		let convertedProfile = ProfilePayload(from: profile)
+		push(.profile(.editProfile(convertedProfile)))
 	}
 	
 	func websiteTapped() {

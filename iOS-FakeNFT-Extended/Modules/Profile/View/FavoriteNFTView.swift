@@ -65,7 +65,6 @@ struct FavoriteNFTView: View {
 				}
 				.animation(.default, value: contentIsEmpty)
 			}
-			.allowsHitTesting(!viewModel.isLoading)
 			.overlay {
 				ZStack {
 					if viewModel.isLoading {
@@ -100,5 +99,6 @@ struct FavoriteNFTView: View {
 			NotificationCenter.default.publisher(for: .favouritesDidUpdate),
 			perform: viewModel.favouritesDidUpdate
 		)
+		.allowsHitTesting(!viewModel.isLoading)
     }
 }

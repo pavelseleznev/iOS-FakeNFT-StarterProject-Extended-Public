@@ -29,6 +29,7 @@ struct ProfileActionCell: View, Identifiable {
 				HStack(spacing: 8) {
 					Text(caption)
 						.font(.bold17)
+					
 					Image.chevronRight
 						.font(.bold22)
 				}
@@ -39,9 +40,9 @@ struct ProfileActionCell: View, Identifiable {
 			.background(
 				LinearGradient(
 					colors: [
-						.cyan.opacity(theme == .dark ? 0.1 : 1),
+						.pink.opacity(theme == .dark ? 0.08 : 0.6),
 						.ypWhite,
-						.purple.opacity(theme == .dark ? 0.2 : 1)
+						.purple.opacity(theme == .dark ? 0.08 : 0.6)
 					],
 					startPoint: .topLeading,
 					endPoint: .bottomTrailing
@@ -54,6 +55,7 @@ struct ProfileActionCell: View, Identifiable {
 	}
 }
 
+#if DEBUG
 #Preview {
 	Color.ypWhite.ignoresSafeArea()
 		.overlay {
@@ -64,3 +66,4 @@ struct ProfileActionCell: View, Identifiable {
 			}
 		}
 }
+#endif
