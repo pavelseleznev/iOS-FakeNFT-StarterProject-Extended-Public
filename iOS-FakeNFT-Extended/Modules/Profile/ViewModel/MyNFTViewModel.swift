@@ -92,10 +92,10 @@ extension MyNFTViewModel {
 	func didTapLikeButton(_ model: NFTModelContainer?) {
 		guard let model else { return }
 		
-		isLoading = true
-		defer { isLoading = false }
-		
 		Task {
+			isLoading = true
+			defer { isLoading = false }
+			
 			do {
 				if await favouritesService.contains(model.id) {
 					try await favouritesService.remove(model.id)
@@ -110,7 +110,6 @@ extension MyNFTViewModel {
 				)
 				
 				_kickUIUpdate.toggle()
-				
 			} catch is CancellationError {
 				return
 			} catch {

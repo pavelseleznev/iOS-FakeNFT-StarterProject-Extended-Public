@@ -32,7 +32,7 @@ final class FavoriteNFTViewModel {
 			items.updateValue(.none, forKey: $0)
 		}
 		
-		loadNilNFTsIfNeeded()
+		loadNilNFTsIfNeeded(isInitial: true)
     }
 }
 
@@ -141,7 +141,7 @@ extension FavoriteNFTViewModel {
 		loadNilNFTsIfNeeded()
 	}
 	
-	func loadNilNFTsIfNeeded() {
+	func loadNilNFTsIfNeeded(isInitial: Bool = false) {
 		let unloaded = items.filter(\.value.isNil).map(\.key)
 		guard !unloaded.isEmpty else { return }
 		
@@ -183,7 +183,7 @@ extension FavoriteNFTViewModel {
 			if failedCount > 0 {
 				loadErrorPresented = true
 			} else {
-				withAnimation(nil) {
+				if !isInitial {
 					applySort()
 				}
 			}

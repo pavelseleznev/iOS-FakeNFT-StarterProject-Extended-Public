@@ -25,6 +25,7 @@ struct AsyncImageCached<Content: View>: View {
 	@ViewBuilder private let content: (AsyncImageCachedPhase) -> Content
 	
 	@State private var phase: AsyncImageCachedPhase = .empty
+	private let isLoadedFromCacheInstant: Bool
 	
 	init(
 		needsCache: Bool = true,
@@ -47,7 +48,10 @@ struct AsyncImageCached<Content: View>: View {
 			!urlString.isEmpty,
 			let image = service.getFromCache(urlString: urlString)
 		{
-			phase = .loaded(image)
+			_phase = .init(initialValue: .loaded(image))
+			isLoadedFromCacheInstant = true
+		} else {
+			isLoadedFromCacheInstant = false
 		}
 	}
 	
@@ -55,12 +59,15 @@ struct AsyncImageCached<Content: View>: View {
 		content(phase)
 			.id(urlString)
 			.transition(
+				isLoadedFromCacheInstant ? .identity :
 				.asymmetric(
 					insertion: .scale.combined(with: .opacity),
 					removal: .opacity
-				).animation(animation)
+				).animation(isLoadedFromCacheInstant ? nil : animation)
 			)
 			.task(id: urlString, priority: .userInitiated) {
+				guard !isLoadedFromCacheInstant else { return }
+				
 				guard
 					!urlString.isEmpty,
 					!Task.isCancelled,
@@ -92,6 +99,12 @@ struct AsyncImageCached<Content: View>: View {
 		} else {
 			return .error
 		}
+	}
+}
+
+extension AsyncImageCached: @MainActor Equatable {
+	static func == (lhs: AsyncImageCached, rhs: AsyncImageCached) -> Bool {
+		lhs.urlString == rhs.urlString && lhs.needsCache == rhs.needsCache
 	}
 }
 

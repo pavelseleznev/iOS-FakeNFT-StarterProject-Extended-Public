@@ -62,16 +62,25 @@ struct MyNFTView: View {
 			.scrollIndicators(.hidden)
 			.scrollDismissesKeyboard(.interactively)
 			.overlay {
-				if contentIsEmpty {
-					EmptyContentView(type: .noMyNFTs)
+				ZStack {
+					if contentIsEmpty {
+						EmptyContentView(type: .noMyNFTs)
+							.transition(.scale.combined(with: .opacity))
+					}
 				}
+				.animation(.default, value: contentIsEmpty)
 			}
-			.allowsHitTesting(!viewModel.isLoading)
 			.overlay {
-				LoadingView(loadingState: viewModel.isLoading ? .fetching : .idle)
+				ZStack {
+					if viewModel.isLoading {
+						LoadingView(loadingState: .fetching)
+							.transition(.scale.combined(with: .opacity))
+					}
+				}
+				.animation(.default, value: viewModel.isLoading)
 			}
 		}
-		.onAppear() {
+		.onAppear {
 			viewModel.setSortOption(sortOption)
 			debouncer.onDebounce = viewModel.onDebounce
 		}
@@ -105,6 +114,7 @@ struct MyNFTView: View {
 			NotificationCenter.default.publisher(for: .purchasedDidUpdate),
 			perform: viewModel.purchasedDidUpdate
 		)
+		.allowsHitTesting(!viewModel.isLoading)
     }
 }
 
