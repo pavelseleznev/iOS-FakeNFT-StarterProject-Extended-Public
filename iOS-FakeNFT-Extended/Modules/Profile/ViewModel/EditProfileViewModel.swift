@@ -116,8 +116,8 @@ extension EditProfileViewModel {
 		}
 	}
 	
-	func savePhotoURLString(_ url: String) {
-		let trimmed = url.trimmingCharacters(in: .whitespacesAndNewlines)
+	func savePhotoURLString() {
+		let trimmed = photoURLInput.trimmingCharacters(in: .whitespacesAndNewlines)
 		
 		isPhotoURLAlertPresented = false
 		isPhotoActionsPresented = false

@@ -11,85 +11,117 @@ struct AlertPhotoURLModifier: ViewModifier {
     @Binding var isPresented: Bool
     @Binding var photoURL: String
 
-    let title: String
+    let title: LocalizedStringResource
     let placeholder: String
-    let onSave: (String) -> Void
+    let onSave: () -> Void
 
     @FocusState private var textFieldFocused: Bool
+	@Environment(\.colorScheme) private var theme
 
     func body(content: Content) -> some View {
         ZStack {
             content
-                .disabled(isPresented) // disable interaction under the alert
-
-            if isPresented {
-                // Dim background
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
-
-                VStack(spacing: 0) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 14)
-                        .padding(.horizontal, 16)
-                    VStack {
-                        TextField(placeholder, text: $photoURL)
-                            .textInputAutocapitalization(.never)
-                            .disableAutocorrection(true)
-                            .keyboardType(.URL)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 12)
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .foregroundStyle(.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            .focused($textFieldFocused)
-                            .onAppear {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { textFieldFocused = true }
-                            }
-                    }
-                    .padding(.top, 12)
-                    .padding([.horizontal, .bottom], 16)
-
-                    Divider()
-
-                    HStack(spacing: 0) {
-                        Button(action: {
-                            photoURL = ""
-                            withAnimation { isPresented = false }
-                        }) {
-                            Text("Отмена")
-                                .frame(maxWidth: .infinity, maxHeight: 44)
-                        }
-                        .buttonStyle(AlertPhotoButtonStyle(isPrimary: false))
-
-                        Divider()
-                            .frame(width: 1, height: 44)
-
-                        Button(action: {
-                            let trimmed = photoURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                            onSave(trimmed)
-                            withAnimation { isPresented = false }
-                        }) {
-                            Text("Сохранить")
-                                .frame(maxWidth: .infinity, maxHeight: 44)
-                        }
-                        .buttonStyle(AlertPhotoButtonStyle(isPrimary: true))
-                        .disabled(photoURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    }
-                    .frame(height: 44)
-                }
-                .frame(maxWidth: 270)
-				.background(.bar)
-                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-                .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 8)
-                .padding(.horizontal, 40)
-                .transition(.scale.combined(with: .opacity))
-                .onTapGesture {}
+				.brightness(contentBrightness)
+				.allowsHitTesting(!isPresented)
+			
+			GeometryReader { geo in
+				if isPresented {
+					VStack(spacing: 0) {
+						Text(title)
+							.font(.bold22)
+							.padding(.top)
+						
+						TextField(placeholder, text: $photoURL)
+							.autocorrectionDisabled(true)
+							.textInputAutocapitalization(.never)
+							.font(.bold17)
+							.padding()
+							.background(.regularMaterial, in: .capsule)
+							.shadow(
+								color: .ypBlackUniversal.opacity(0.1),
+								radius: 4
+							)
+							.padding()
+							.padding(.bottom, 8)
+						
+						Divider()
+						HStack(spacing: 0) {
+							Button {
+								isPresented = false
+							} label: {
+								HStack {
+									Spacer()
+									Text(.cancel).font(.bold17)
+									Spacer()
+								}
+							}
+							.padding(.vertical)
+							
+							Divider()
+							
+							Button {
+								onSave()
+								isPresented = false
+							} label: {
+								HStack {
+									Spacer()
+									Text(.save).font(.bold17)
+									Spacer()
+								}
+							}
+							.disabled(photoURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+							.padding(.vertical)
+						}
+						.frame(height: 60)
+					}
+					.background(.bar)
+					.clipShape(.buttonBorder)
+					.shadow(color: .ypBlackUniversal.opacity(0.2), radius: 15)
+					.frame(
+						width: geo.size.width * 0.8,
+						height: geo.size.height * 0.4
+					)
+					.position(
+						x: geo.frame(in: .local).midX,
+						y: geo.frame(in: .local).midY
+					)
+					.transition(
+						.asymmetric(
+							insertion: .scale.combined(with: .opacity).animation(.default),
+							removal: .scale.combined(with: .opacity).animation(.easeInOut(duration: 0.15))
+						)
+					)
+				}
             }
         }
-        .animation(.easeInOut(duration: 0.18), value: isPresented)
+		.animation(.default, value: isPresented)
     }
+	
+	private var contentBrightness: CGFloat {
+		if theme == .dark {
+			isPresented ? 0.2 : 0
+		} else {
+			isPresented ? -0.1 : 0
+		}
+	}
+}
+
+#Preview {
+	@Previewable @State var isPresented = false
+	@Previewable @State var urlString = ""
+	
+	Color.ypWhite.ignoresSafeArea()
+		.modifier(
+			AlertPhotoURLModifier(
+				isPresented: $isPresented,
+				photoURL: $urlString,
+				title: "Title",
+				placeholder: "https://",
+				onSave: {}
+			)
+		)
+		.task {
+			try? await Task.sleep(for: .seconds(1))
+			isPresented.toggle()
+		}
 }

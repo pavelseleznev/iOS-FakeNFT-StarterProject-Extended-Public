@@ -38,16 +38,6 @@ extension ProfileViewModel {
 	func load() async {
 		profile = await service.get()
 	}
-	
-    var myNFTTitle: LocalizedStringResource {
-        let count = profile.nftsIDs?.count ?? -1
-        return "\(LocalizedStringResource.myNFTs) (\(count))"
-    }
-    
-    var favoriteTitle: LocalizedStringResource {
-        let count = profile.favoritesIDs?.count ?? -1
-        return "\(LocalizedStringResource.favouritedNFTs) (\(count))"
-    }
 }
 
 // --- routing ---

@@ -38,7 +38,8 @@ struct StatisticsProfileView: View {
 				actions: {
 					[
 						ProfileActionCell(
-							title: .nftCollection(count: nftsIDsCount),
+							caption: "\(nftsIDsCount)",
+							title: .nftCollection,
 							action: viewModel.didTapProfileActionCell
 						)
 					]
