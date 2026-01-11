@@ -13,13 +13,26 @@ final class Coordinator {
 	private let secureStorage = AuthSecureStorage(service: Constants.userDataKeychainService)
 	private let appContainer: AppContainer
 	private let localStorage = StorageActor.shared
-	private var path = [Page]()
+	private var path = [Page]() {
+		didSet {
+			didUpdatePath(path)
+		}
+	}
 	private var sheet: Sheet?
 	private var fullScreenCover: FullScreenCover?
 	private var ratingViewIsPresented = false
 	
-	init(appContainer: AppContainer) {
+	@ObservationIgnored private let didUpdatePath: ([Page]) -> Void
+	@ObservationIgnored private let didUpdateTab: (Tab) -> Void
+	
+	init(
+		appContainer: AppContainer,
+		didUpdatePath: @escaping ([Page]) -> Void,
+		didUpdateTab: @escaping (Tab) -> Void
+	) {
 		self.appContainer = appContainer
+		self.didUpdatePath = didUpdatePath
+		self.didUpdateTab = didUpdateTab
 	}
 }
 
@@ -217,7 +230,8 @@ extension Coordinator {
 				appContainer: appContainer,
 				push: push,
 				present: present,
-				dismiss: dismissSheet
+				dismiss: dismissSheet,
+				didUpdateTab: didUpdateTab
 			)
 			
 		case .aboutAuthor(let websiteURLString):

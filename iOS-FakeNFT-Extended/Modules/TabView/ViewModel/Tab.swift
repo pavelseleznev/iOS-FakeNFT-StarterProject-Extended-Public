@@ -50,7 +50,9 @@ enum Tab: String, CaseIterable, Identifiable {
 		switch self {
 		case .profile:
 			ProfileView(
-				service: appContainer.profileService,
+				profileService: appContainer.profileService,
+				favouritesService: appContainer.nftService.favouritesService,
+				purchaseService: appContainer.purchasedNFTsService,
 				push: push
 			)
 			

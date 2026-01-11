@@ -31,17 +31,15 @@ final class EditProfileViewModel {
     
 	@ObservationIgnored private let profileService: ProfileServiceProtocol
 
-    
-    // MARK: - Init
     init(
 		profile: ProfilePayload,
         profileService: ProfileServiceProtocol
     ) {
         self.profileService = profileService
         
-        self.name = profile.name ?? "no name"
-		self.about = profile.description ?? "no about"
-		self.website = profile.website ?? "no url"
+        self.name = profile.name ?? ""
+		self.about = profile.description ?? ""
+		self.website = profile.website ?? ""
 		self.avatarURL = profile.avatar ?? ""
         self.originalProfile = profile
     }

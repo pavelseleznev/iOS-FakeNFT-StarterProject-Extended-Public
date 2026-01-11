@@ -8,57 +8,40 @@
 import SwiftUI
 
 struct NFTCartImageView: View {
-	
 	let model: NFTResponse?
 	let layout: NFTCellLayout
 	
-	@State private var imageIndex: Int = 0
-	
 	var body: some View {
-		AsyncImageCached(urlString: imageURLString) { phase in
-			switch phase {
-			case .empty:
-				Color.ypBackgroundUniversal
-					.overlay {
-						ProgressView()
-							.progressViewStyle(.circular)
+		Color.ypBackgroundUniversal
+			.overlay {
+				if imageURLString.isEmpty {
+					Text("?")
+						.font(.bold22)
+						.foregroundStyle(.ypWhiteUniversal)
+						.transition(.opacity)
+				} else {
+					AsyncImageCached(urlString: imageURLString) { phase in
+						switch phase {
+						case .empty:
+							ProgressView()
+						case .error:
+							ProgressView()
+						case .loaded(let image):
+							Image(uiImage: image)
+								.resizable()
+								.transition(.opacity.animation(Constants.defaultAnimation))
+						}
 					}
-			case .loaded(let image):
-				Image(uiImage: image)
-					.resizable()
-					.scaledToFit()
-			case .error:
-				Color.ypBackgroundUniversal
-					.overlay {
-						Text("?")
-							.font(.bold22)
-							.foregroundStyle(.ypWhiteUniversal)
-							.onAppear(perform: tryNextImage)
-					}
+					.progressViewStyle(.circular)
+					.transition(.opacity)
+				}
 			}
-		}
-		.applySkeleton(model)
-		.scaledToFit()
-		.aspectRatio(1, contentMode: .fit)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
+			.aspectRatio(1, contentMode: .fit)
+			.applySkeleton(model)
+			.clipShape(.buttonBorder)
 	}
 	
 	private var imageURLString: String {
-		guard
-			let model,
-			!model.imagesURLsStrings.isEmpty,
-			model.imagesURLsStrings.indices.contains(imageIndex)
-		else { return "" }
-		
-		return model.imagesURLsStrings[imageIndex]
-	}
-	
-	private func tryNextImage() {
-		guard
-			let model,
-			!model.imagesURLsStrings.isEmpty
-		else { return }
-		
-		imageIndex = (imageIndex + 1) % model.imagesURLsStrings.count
+		model?.imagesURLsStrings.first ?? ""
 	}
 }
