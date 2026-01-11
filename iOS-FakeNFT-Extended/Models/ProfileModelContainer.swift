@@ -43,7 +43,6 @@ struct ProfileContainerModel: Codable, Equatable {
 			let _ = name,
 			let _ = avatarURLString,
 			let _ = websiteURLString,
-			let _ = description,
 			let _ = nftsIDs,
 			let _ = favoritesIDs
 		{

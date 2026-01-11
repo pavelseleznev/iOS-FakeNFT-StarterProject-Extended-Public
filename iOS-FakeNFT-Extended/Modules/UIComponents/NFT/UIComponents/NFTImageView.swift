@@ -14,33 +14,35 @@ struct NFTImageView: View {
 	let likeAction: () -> Void
 	
 	var body: some View {
-		Group {
-			Color.ypBackgroundUniversal
-				.overlay {
-					if imageURLString.isEmpty {
-						Text("?")
-							.font(.bold22)
-							.foregroundStyle(.ypWhiteUniversal)
-					} else {
-						AsyncImageCached(urlString: imageURLString) { phase in
-							switch phase {
-							case .empty, .error:
-								ProgressView()
-									.progressViewStyle(.circular)
-							case .loaded(let image):
-								Image(uiImage: image)
-									.resizable()
-									.scaledToFit()
-							}
+		Color.ypBackgroundUniversal
+			.overlay {
+				if imageURLString.isEmpty {
+					Text("?")
+						.font(.bold22)
+						.foregroundStyle(.ypWhiteUniversal)
+						.transition(.opacity.animation(Constants.defaultAnimation))
+				} else {
+					AsyncImageCached(urlString: imageURLString) { phase in
+						switch phase {
+						case .empty:
+							ProgressView()
+								.progressViewStyle(.circular)
+						case .error:
+							ProgressView()
+								.progressViewStyle(.circular)
+						case .loaded(let image):
+							Image(uiImage: image)
+								.resizable()
+								.transition(.opacity.animation(Constants.defaultAnimation))
 						}
 					}
+					.transition(.opacity.animation(Constants.defaultAnimation))
 				}
-				.applySkeleton(model)
-		}
-		.scaledToFit()
-		.aspectRatio(1, contentMode: .fit)
-		.clipShape(RoundedRectangle(cornerRadius: 12))
-		.overlay(alignment: .topTrailing, content: favouriteImageButton)
+			}
+			.aspectRatio(1, contentMode: .fit)
+			.overlay(alignment: .topTrailing, content: favouriteImageButton)
+			.applySkeleton(model)
+			.clipShape(.buttonBorder)
 	}
 }
 
@@ -86,6 +88,7 @@ private extension NFTImageView {
 
 extension NFTImageView: @MainActor Equatable {
 	static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.model?.id == rhs.model?.id
+		lhs.model?.id == rhs.model?.id &&
+		lhs.isFavourited == rhs.isFavourited
 	}
 }

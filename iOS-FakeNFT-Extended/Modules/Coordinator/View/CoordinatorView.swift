@@ -37,8 +37,18 @@ struct CoordinatorView: View {
 		}
 	}
 	
-	init(appContainer: AppContainer) {
-		_coordinator = State(initialValue: .init(appContainer: appContainer))
+	init(
+		appContainer: AppContainer,
+		didUpdatePath: @escaping ([Page]) -> Void,
+		didUpdateTab: @escaping (Tab) -> Void
+	) {
+		_coordinator = State(
+			initialValue: .init(
+				appContainer: appContainer,
+				didUpdatePath: didUpdatePath,
+				didUpdateTab: didUpdateTab
+			)
+		)
 		
 		launchCount += 1
 		ratingIsAlreadyPresentedThisLaunch = false
@@ -68,6 +78,12 @@ struct CoordinatorView: View {
 	}
 }
 
+#if DEBUG
 #Preview {
-	CoordinatorView(appContainer: .mock)
+	CoordinatorView(
+		appContainer: .mock,
+		didUpdatePath: { _ in },
+		didUpdateTab: { _ in }
+	)
 }
+#endif

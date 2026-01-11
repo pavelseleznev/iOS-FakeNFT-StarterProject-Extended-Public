@@ -70,7 +70,7 @@ struct ProfileHeader: View {
 			}
 			
 			Group {
-				if let about, !about.isEmpty {
+				if let about, !about.isEmpty || about != "null" {
 					Text(about)
 				} else {
 					Text(.noDescription)
@@ -79,7 +79,6 @@ struct ProfileHeader: View {
 			.lineSpacing(4)
 			.foregroundStyle(.ypBlack)
 			.font(.regular13)
-			.applySkeleton(about)
 		}
 		.padding(.horizontal, 16)
 	}

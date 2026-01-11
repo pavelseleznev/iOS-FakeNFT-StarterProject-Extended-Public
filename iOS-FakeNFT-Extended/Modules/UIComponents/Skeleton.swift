@@ -14,7 +14,7 @@ extension View {
 			.overlay {
 				if data == nil {
 					LoadingShimmerPlaceholderView()
-						.transition(.opacity)
+						.transition(.opacity.animation(.easeInOut(duration: 0.15)))
 				}
 			}
 	}

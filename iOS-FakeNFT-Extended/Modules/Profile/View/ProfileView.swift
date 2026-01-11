@@ -10,12 +10,16 @@ import SwiftUI
 struct ProfileView: View {
     @State private var viewModel: ProfileViewModel
     init(
-		service: ProfileServiceProtocol,
+		profileService: ProfileServiceProtocol,
+		favouritesService: NFTsIDsServiceProtocol,
+		purchaseService: NFTsIDsServiceProtocol,
         push: @escaping (Page) -> Void,
     ) {
 		_viewModel = State(
 			initialValue: ProfileViewModel(
-				service: service,
+				profileService: profileService,
+				favouritesService: favouritesService,
+				purchaseService: purchaseService,
 				push: push
 			)
 		)
@@ -33,18 +37,15 @@ struct ProfileView: View {
 				}, actions: {
 					[
 						ProfileActionCell(
-							caption: "\(viewModel.profile.nftsIDs?.count ?? -1)",
+							caption: "\(viewModel.purchasedIDs.count)",
 							title: .myNFTs,
-							action: {
-								viewModel.myNFTsTapped()
-							}
+							action: viewModel.myNFTsTapped
 						),
 						ProfileActionCell(
-							caption: "\(viewModel.profile.favoritesIDs?.count ?? -1)",
+							caption: "\(viewModel.favoutiresIDs.count)",
 							title: .favouritedNFTs,
-							action: {
-								viewModel.favoriteNFTsTapped()
-							})
+							action: viewModel.favoriteNFTsTapped
+						)
 					]
 				}
 			)
@@ -52,7 +53,7 @@ struct ProfileView: View {
 		.safeAreaInset(edge: .top) {
 			editButton
 		}
-        .task(priority: .userInitiated) {
+		.task(priority: .userInitiated) {
 			await viewModel.load()
         }
 		.onReceive(

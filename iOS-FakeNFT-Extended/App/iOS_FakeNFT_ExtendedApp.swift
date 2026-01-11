@@ -23,14 +23,18 @@ struct iOS_FakeNFT_ExtendedApp: App {
 	
     var body: some Scene {
         WindowGroup {
-			CoordinatorView(appContainer: appContainer)
-				.onReceive(
-					NotificationCenter.default
-						.publisher(for: .authStateChanged)
-						.receive(on: RunLoop.main)
-					,
-					perform: handleAuthStateChangedNotification
-				)
+			CoordinatorView(
+				appContainer: appContainer,
+				didUpdatePath: updater.didUpdatePath,
+				didUpdateTab: updater.didUpdateTab
+			)
+			.onReceive(
+				NotificationCenter.default
+					.publisher(for: .authStateChanged)
+					.receive(on: RunLoop.main)
+				,
+				perform: handleAuthStateChangedNotification
+			)
         }
 		.backgroundTask(.appRefresh(Self.backgroundUpdatesTaskIdentifier)) {
 			guard await isAuthed() else { return }

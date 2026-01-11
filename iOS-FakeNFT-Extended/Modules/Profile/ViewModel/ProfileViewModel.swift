@@ -11,15 +11,23 @@ import Foundation
 @Observable
 final class ProfileViewModel {
 	private(set) var profile = ProfileContainerModel()
+	private(set) var favoutiresIDs = Set<String>()
+	private(set) var purchasedIDs = Set<String>()
     
-	private let service: ProfileServiceProtocol
+	private let profileService: ProfileServiceProtocol
+	private let favouritesService: NFTsIDsServiceProtocol
+	private let purchaseService: NFTsIDsServiceProtocol
     private let push: (Page) -> Void
     
     init(
-		service: ProfileServiceProtocol,
+		profileService: ProfileServiceProtocol,
+		favouritesService: NFTsIDsServiceProtocol,
+		purchaseService: NFTsIDsServiceProtocol,
         push: @escaping (Page) -> Void
     ) {
-		self.service = service
+		self.profileService = profileService
+		self.favouritesService = favouritesService
+		self.purchaseService = purchaseService
         self.push = push
     }
 }
@@ -33,23 +41,31 @@ extension ProfileViewModel {
 		else { return }
 		
 		profile = value
+		favoutiresIDs = Set(profile.favoritesIDs ?? [])
+		purchasedIDs = Set(profile.nftsIDs ?? [])
 	}
 	
 	func load() async {
-		profile = await service.get()
+		async let profileUpdate = profileService.get()
+		async let favouritesUpdate = favouritesService.get()
+		async let purchaseUpdate = purchaseService.get()
+		
+		let (_profile, _fav, _pur) = await (profileUpdate, favouritesUpdate, purchaseUpdate)
+		
+		profile = _profile
+		favoutiresIDs = _fav
+		purchasedIDs = _pur
 	}
 }
 
 // --- routing ---
 extension ProfileViewModel {
 	func myNFTsTapped() {
-		let nftsIDs = Set(profile.nftsIDs ?? [])
-		push(.profile(.myNFTs(nftsIDs)))
+		push(.profile(.myNFTs(purchasedIDs)))
 	}
 	
 	func favoriteNFTsTapped() {
-		let nftsIDs = Set(profile.favoritesIDs ?? [])
-		push(.profile(.favoriteNFTs(nftsIDs)))
+		push(.profile(.favoriteNFTs(favoutiresIDs)))
 	}
 	
 	func editTapped() {
